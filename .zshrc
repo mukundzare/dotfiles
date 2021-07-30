@@ -109,7 +109,12 @@ alias test="ssh zam4abt@si-611l"
 alias prod5="ssh zam4abt@si-305l"
 alias prod7="ssh zam4abt@si-307l"
 alias vpnstat="nmcli con show -active | grep -i 'tun'"
+
+#Copy to keyboard using command | ctc
+#Example: pwd | ctc will copy the current working dir
+#to the system clipboard to use elsewhere
 alias ctc="xclip -selection clipboard"     
+
 #vi mode
 bindkey -v
 export KEYTIMEOUT=1

@@ -572,7 +572,7 @@ apps are not started from a shell."
 ;;Automatically tangle the config.org file when we save it
 (defun efs/org-babel-tangle-config ()
     (when (string-equal (buffer-file-name)
-                        (expand-file-name "~/.orgfiles/config.org"))
+                        (expand-file-name "~/dotfiles/config.org"))
         ;; Dynamic scoping to the rescue
         (let ((org-confirm-babel-evaluate nil))
         (org-babel-tangle))))
