@@ -1,3 +1,10 @@
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:/usr/local/bin:$PATH
 
@@ -11,7 +18,8 @@ export ZSH="/home/zam4abt/.oh-my-zsh"
 # load a random theme each time oh-my-zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="powerlevel9k/powerlevel9k"
+ZSH_THEME="powerlevel10k/powerlevel10k"
+POWERLINE9K_MODE="nerdfont-complete"
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -73,7 +81,11 @@ ZSH_THEME="powerlevel9k/powerlevel9k"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(git zsh-autosuggestions zsh-syntax-highlighting)
+export FZF_BASE=$(which fzf)
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --margin=2' 
+[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
+plugins=(git zsh-autosuggestions zsh-syntax-highlighting fzf)
 
 source $ZSH/oh-my-zsh.sh
 
@@ -102,13 +114,12 @@ fi
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias opxdev="cd ~/opx/dev"
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-alias dev="ssh zam4abt@si-183l"
-alias test="ssh zam4abt@si-611l"
-alias prod5="ssh zam4abt@si-305l"
-alias prod7="ssh zam4abt@si-307l"
-alias vpnstat="nmcli con show -active | grep -i 'tun'"
+alias opxdev='cd ~/opx/dev'
+alias dev='ssh zam4abt@si-183l'
+alias test='ssh zam4abt@si-611l'
+alias prod5='ssh zam4abt@si-305l'
+alias prod7='ssh zam4abt@si-307l'
+alias vpnstat='nmcli con show -active | grep -i "tun"'
 
 #Copy to keyboard using command | ctc
 #Example: pwd | ctc will copy the current working dir
@@ -134,9 +145,17 @@ if [[ (-z $TMUX) &&
    osd-vpn-connect
 fi
 
-export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --margin=2 --padding=1'
 
 #Autoconnect vpn if unavailable for more than 150 seconds
 #if [[ -h ~/vpn_autoconnect.sh ]] then
 #    ~/vpn_autoconnect.sh &
 #fi
+
+# Get the 20 top non-hidden last modified files in this directory
+alias lt='ls -lt | head -20'
+
+# Get the 20 top last modified files and folders in this directoy
+alias alt='ls -alt | head -20'
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

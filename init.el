@@ -204,6 +204,9 @@
 ;;TODO Setup key-bindings
 (use-package vimish-fold)
 
+;;Use the current frame for ediff
+(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+
 ;; edit html tags like sexps
 (use-package tagedit)
 

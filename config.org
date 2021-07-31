@@ -247,6 +247,12 @@
 ;;TODO Setup key-bindings
 (use-package vimish-fold)
 #+end_src
+** Ediff
+
+#+begin_src emacs-lisp
+;;Use the current frame for ediff
+(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+#+end_src
 * Language specific
 ** HTML
 
@@ -449,7 +455,6 @@
 #+end_src
 * Shell related
 ** Ubuntu
-*** Path variable inheritance
 #+begin_src emacs-lisp
 
 ;;Use the $PATH variable from the zsh shell
@@ -469,10 +474,6 @@ apps are not started from a shell."
 (setq exec-path (split-string path-from-shell path-separator))))
 
 (set-exec-path-from-shell-PATH)
-#+end_src
-*** Symbolic links
-#+begin_src emacs-lisp
-(setq vc-follow-symlinks t)
 #+end_src
 ** Mac/Windows/X
 #+begin_src emacs-lisp
@@ -694,7 +695,7 @@ apps are not started from a shell."
 ;;Automatically tangle the config.org file when we save it
 (defun efs/org-babel-tangle-config ()
     (when (string-equal (buffer-file-name)
-                        (expand-file-name "~/.orgfiles/config.org"))
+                        (expand-file-name "~/dotfiles/config.org"))
         ;; Dynamic scoping to the rescue
         (let ((org-confirm-babel-evaluate nil))
         (org-babel-tangle))))
