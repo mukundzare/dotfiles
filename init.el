@@ -352,6 +352,9 @@
   :after (treemacs projectile)
   :ensure t)
 
+(use-package treemacs-all-the-icons
+    :config (treemacs-load-theme "all-the-icons"))
+
 (use-package treemacs-icons-dired
   :after (treemacs dired)
   :ensure t
