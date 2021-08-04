@@ -207,6 +207,9 @@
 ;;Use the current frame for ediff
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
+(use-package find-file-in-project
+    :config (setq ffip-use-rust-fd t))
+
 ;; edit html tags like sexps
 (use-package tagedit)
 

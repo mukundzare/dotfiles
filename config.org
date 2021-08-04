@@ -253,6 +253,12 @@
 ;;Use the current frame for ediff
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 #+end_src
+** File handling
+
+#+begin_src emacs-lisp
+(use-package find-file-in-project
+    :config (setq ffip-use-rust-fd t))
+#+end_src
 * Language specific
 ** HTML
 
@@ -714,4 +720,6 @@ apps are not started from a shell."
 #+begin_src emacs-lisp
 
 (use-package restclient)
+
 #+end_src
+* Encryption

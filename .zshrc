@@ -159,3 +159,5 @@ alias alt='ls -alt | head -20'
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+
+. "/home/zam4abt/.local/share/lscolors.sh"
