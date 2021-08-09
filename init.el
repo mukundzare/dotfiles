@@ -2,22 +2,33 @@
 (require 'package)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-			 ("org" . "https://orgmode.org/elpa/")
-			 ("elpa" . "https://elpa.gnu.org/packages/")
-			 ("melpa-stable" . "https://stable.melpa.org/packages/")))
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")
+                         ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
 (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
 (add-to-list 'package-pinned-packages '(magit . "melpa-stable") t)
-
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
 
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 
 (require 'use-package)
+
 (setq use-package-always-ensure t)
+  ;;Straight.el
+(defvar bootstrap-version)
+(let ((bootstrap-file
+     (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+    (bootstrap-version 5))
+  (unless (file-exists-p bootstrap-file)
+  (with-current-buffer
+      (url-retrieve-synchronously
+       "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+       'silent 'inhibit-cookies)
+    (goto-char (point-max))
+    (eval-print-last-sexp)))
+(load bootstrap-file nil 'nomessage))
+(setq package-enable-at-startup nil)
 
 (setq inhibit-startup-message t) ;Disable initial splash screen
 
@@ -67,53 +78,58 @@
 		    :weight 'regular)
 
 ;;Make ESC quit prompts
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-;;Electric return key
-(define-key global-map (kbd "RET") 'newline-and-indent)
-
-(use-package general
+  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+  
+  ;;Electric return key
+  (define-key global-map (kbd "RET") 'newline-and-indent)
+  
+  (use-package general
+    :config
+    (general-create-definer mzare/leader-keys
+      :keymaps '(normal insert visual emacs)
+      :prefix "SPC"
+      :global-prefix "C-SPC")
+  
+    (mzare/leader-keys
+     "t" '(:ignore t :which-key "toggles")
+     "tt" '(counsel-load-theme :which-key "choose theme")
+     "s" '(ace-swap-window :which-key "swap windows")))
+  
+  ;;Download Evil
+  (use-package evil
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-i-jump t)
+    :config
+    (evil-mode 1))
+  
+  
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
+;; Use evil keybindings in org-mode  
+  (use-package evil-org
+  :ensure t
+  :after org
+  :hook (org-mode . (lambda () evil-org-mode))
   :config
-  (general-create-definer mzare/leader-keys
-    :keymaps '(normal insert visual emacs)
-    :prefix "SPC"
-    :global-prefix "C-SPC")
+  (require 'evil-org-agenda)
+  (evil-org-agenda-set-keys))
 
+  (use-package hydra)
+  
+  (defhydra hydra-text-scale (:timeout 4)
+    "scale text"
+    ("j" text-scale-increase "in")
+    ("k" text-scale-decrease "out")
+    ("f" nil "finished" :exit t))
+  
+  
   (mzare/leader-keys
-   "t" '(:ignore t :which-key "toggles")
-   "tt" '(counsel-load-theme :which-key "choose theme")
-   "s" '(ace-swap-window :which-key "swap windows")))
-
-;;Download Evil
-(use-package evil
-  :init
-  (setq evil-want-integration t)
-  (setq evil-want-keybinding nil)
-  (setq evil-want-C-u-scroll t)
-  (setq evil-want-C-i-jump t)
-  :config
-  (evil-mode 1))
-
-
-(use-package evil-collection
-  :after evil
-  :config
-  (evil-collection-init))
-
-(use-package hydra)
-
-(defhydra hydra-text-scale (:timeout 4)
-  "scale text"
-  ("j" text-scale-increase "in")
-  ("k" text-scale-decrease "out")
-  ("f" nil "finished" :exit t))
-
-
-(mzare/leader-keys
- "ts" '(hydra-text-scale/body :which-key "scale text"))
-;;Toggle treemacs
-(mzare/leader-keys
-  "tm" '(treemacs :which-key "treemacs"))
+   "ts" '(hydra-text-scale/body :which-key "scale text"))
 
 ;; Ivy
 (use-package ivy
@@ -158,16 +174,21 @@
   :bind (("M-x" . counsel-M-x)
 	 ("C-x b" . counsel-ibuffer)
 	 ("C-x C-f" . counsel-find-file)
+	 ("C-c C-f" . counsel-fzf)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
   :config
   (setq ivy-initial-inputs-alist nil)) ;;Don't start searches with ^
 
 (use-package all-the-icons)
+  
+  (use-package doom-modeline
+    :ensure t
+    :init (doom-modeline-mode 1))
 
-(use-package doom-modeline
-  :ensure t
-  :init (doom-modeline-mode 1))
+;;Display time and date in modeline
+(display-time)
+  (setq display-time-day-and-date t)
 
 ;;Install kaolin-themes
 (use-package kaolin-themes)
@@ -202,13 +223,22 @@
 
 ;;To be worked on 
 ;;TODO Setup key-bindings
-(use-package vimish-fold)
+(global-origami-mode t)
+(setq evil-collection-magit-use-z-for-folds t)
 
 ;;Use the current frame for ediff
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
 
 (use-package find-file-in-project
     :config (setq ffip-use-rust-fd t))
+
+;;Switch windows numbered from 1 to n depending on number of windows
+;;Doesn't work with treemacs. To switch to treemacs buffer, press <M-0>
+(use-package ace-window)
+(global-set-key (kbd "M-o") 'ace-window)
+
+;;aw-keys - the list of initial characters used in window labels:
+(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 
 ;; edit html tags like sexps
 (use-package tagedit)
@@ -258,6 +288,7 @@
 
 (use-package counsel-projectile
   :config (counsel-projectile-mode))
+(use-package projectile-ripgrep)
 
 ;; magit
 (use-package magit)
@@ -282,7 +313,7 @@
           treemacs-directory-name-transformer    #'identity
           treemacs-display-in-side-window        t
           treemacs-eldoc-display                 t
-          treemacs-file-event-delay              5000
+          treemacs-file-event-delay              1000
           treemacs-file-extension-regex          treemacs-last-period-regex-value
           treemacs-file-follow-delay             0.2
           treemacs-file-name-transformer         #'identity
@@ -315,7 +346,7 @@
           treemacs-sorting                       'alphabetic-asc
           treemacs-space-between-root-nodes      t
           treemacs-tag-follow-cleanup            t
-          treemacs-tag-follow-delay              1.5
+          treemacs-tag-follow-delay              1
           treemacs-user-mode-line-format         nil
           treemacs-user-header-line-format       nil
           treemacs-width                         35
@@ -324,7 +355,7 @@
 
     ;; The default width and height of the icons is 22 pixels. If you are
     ;; using a Hi-DPI display, uncomment this to double the icon size.
-    ;;(treemacs-resize-icons 44)
+   ;;(treemacs-resize-icons 44)
 
     (treemacs-follow-mode t)
     (treemacs-filewatch-mode t)
@@ -568,6 +599,7 @@ apps are not started from a shell."
     (lambda () (interactive) (org-capture nil "jj")))
   (define-key global-map (kbd "C-c c") 'org-capture)
   (define-key global-map (kbd "C-c a") 'org-agenda)
+   
   (mzare/org-font-setup))
 
 ;; Org drill is a package for flashcards in org-mode
@@ -587,6 +619,34 @@ apps are not started from a shell."
         (org-babel-tangle))))
 
 (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+
+;; Use org-roam
+  (use-package org-roam
+    :ensure t
+    :init
+    (setq org-roam-v2-ack t)
+    :custom
+    (org-roam-directory "~/RoamNotes")
+    (org-roam-completion-everywhere t)
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)
+           :map org-mode-map
+           ("C-M-i" . completion-at-point))
+    :config
+    (org-roam-setup))
+  
+  ;;Org-roam v2 UI
+(use-package org-roam-ui
+    :straight
+    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+    :after org-roam
+    :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
 
 (use-package undo-tree
     :ensure t
