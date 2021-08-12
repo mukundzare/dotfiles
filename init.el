@@ -31,29 +31,35 @@
 (setq package-enable-at-startup nil)
 
 (setq inhibit-startup-message t) ;Disable initial splash screen
-
-(scroll-bar-mode -1)    ;Disable visible scrollbar
-(tool-bar-mode -1)      ;Disable the toolbar
-(tooltip-mode -1)       ;Disable tooltips
-(set-fringe-mode 10)    ;More breathing room
-
-(menu-bar-mode -1)      ;Disable menubar
-
-;;Enable visible bell
-(setq visible-bell t)
-
-(column-number-mode)
-(global-display-line-numbers-mode t)
-
-;;Disable line numbers for some modes
-(dolist (mode '(org-mode-hook
-		term-mode-hook
-		shell-mode-hook
-		eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-;; Start emacs in fullscreen mode
-(add-to-list 'default-frame-alist '(fullscreen . maximized))
+  
+  (scroll-bar-mode -1)    ;Disable visible scrollbar
+  (tool-bar-mode -1)      ;Disable the toolbar
+  (tooltip-mode -1)       ;Disable tooltips
+  (set-fringe-mode 10)    ;More breathing room
+  
+  (menu-bar-mode -1)      ;Disable menubar
+  
+  ;;Enable visible bell
+  (setq visible-bell t)
+  
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
+  
+  ;;Disable line numbers for some modes
+  (dolist (mode '(org-mode-hook
+                  term-mode-hook
+                  shell-mode-hook
+                  eshell-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+  
+  ;; Start emacs in fullscreen mode
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+  
+  ;;Show dashboard
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook))
 
 ;;Set default font
 (set-face-attribute 'default nil
@@ -274,6 +280,7 @@
 (use-package ido-completing-read+)
 
 (use-package company
+    :ensure t
     :hook global-company-mode)
 
 (use-package projectile
@@ -294,11 +301,14 @@
 (use-package magit)
 
 ;;Expand region package for incremental selection of region
-(use-package expand-region
-  :bind ("C-=" . er/expand-region))
+  (use-package expand-region
+    :bind ("C-=" . er/expand-region))
+  
+  ;;Smart parens
+  (use-package smartparens)
+  ;;Multiple cursors
 
-;;Smart parens
-(use-package smartparens)
+(use-package multiple-cursors)
 
 (use-package treemacs
   :ensure t

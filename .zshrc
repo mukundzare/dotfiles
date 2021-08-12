@@ -161,3 +161,6 @@ alias alt='ls -alt | head -20'
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
 . "/home/zam4abt/.local/share/lscolors.sh"
+
+export NETRC="~/dotfiles/"
+alias curl="gpg --batch -q -d ~/.netrc.gpg | curl --netrc-file /dev/stdin"
