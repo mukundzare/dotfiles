@@ -155,7 +155,7 @@ fi
 alias lt='ls -lt | head -20'
 
 # Get the 20 top last modified files and folders in this directoy
-alias alt='ls -alt | head -20'
+alias alt='ls -alht | head -20'
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
@@ -164,3 +164,22 @@ alias alt='ls -alt | head -20'
 
 export NETRC="~/dotfiles/"
 alias curl="gpg --batch -q -d ~/.netrc.gpg | curl --netrc-file /dev/stdin"
+
+# For emacs vterm compatibility
+vterm_printf(){
+    if [ -n "$TMUX" ] && ([ "${TERM%%-*}" = "tmux" ] || [ "${TERM%%-*}" = "screen" ] ); then
+        # Tell tmux to pass the escape sequences through
+        printf "\ePtmux;\e\e]%s\007\e\\" "$1"
+    elif [ "${TERM%%-*}" = "screen" ]; then
+        # GNU screen (screen, screen-256color, screen-256color-bce)
+        printf "\eP\e]%s\007\e\\" "$1"
+    else
+        printf "\e]%s\e\\" "$1"
+    fi
+}
+
+vterm_prompt_end() {
+    vterm_printf "51;A$(whoami)@$(hostname):$(pwd)";
+}
+setopt PROMPT_SUBST
+PROMPT=$PROMPT'%{$(vterm_prompt_end)%}'

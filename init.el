@@ -31,35 +31,38 @@
 (setq package-enable-at-startup nil)
 
 (setq inhibit-startup-message t) ;Disable initial splash screen
-  
+
   (scroll-bar-mode -1)    ;Disable visible scrollbar
   (tool-bar-mode -1)      ;Disable the toolbar
   (tooltip-mode -1)       ;Disable tooltips
   (set-fringe-mode 10)    ;More breathing room
-  
+
   (menu-bar-mode -1)      ;Disable menubar
-  
+
   ;;Enable visible bell
   (setq visible-bell t)
-  
+
   (column-number-mode)
   (global-display-line-numbers-mode t)
-  
+
   ;;Disable line numbers for some modes
   (dolist (mode '(org-mode-hook
                   term-mode-hook
                   shell-mode-hook
                   eshell-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
-  
+
   ;; Start emacs in fullscreen mode
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
-  
+
   ;;Show dashboard
 (use-package dashboard
   :ensure t
   :config
   (dashboard-setup-startup-hook))
+
+;;Confirm if I want to exit emacs
+(setq confirm-kill-emacs 'y-or-n-p)
 
 ;;Set default font
 (set-face-attribute 'default nil
@@ -95,10 +98,14 @@
       :keymaps '(normal insert visual emacs)
       :prefix "SPC"
       :global-prefix "C-SPC")
-  
+
     (mzare/leader-keys
      "t" '(:ignore t :which-key "toggles")
      "tt" '(counsel-load-theme :which-key "choose theme")
+     "mi" '(mc/edit-lines :which-key "mult-curs-edit-lines")
+     "mn" '(mc/mark-next-like-this :which-key "mult-curs-mark-next")
+     "mp" '(mc/mark-previous-like-this :which-key "mult-curs-mark-prev")
+     "ma" '(mc/mark-all-like-this :which-key "mult-curs-mark-all")
      "s" '(ace-swap-window :which-key "swap windows")))
   
   ;;Download Evil
@@ -181,6 +188,7 @@
 	 ("C-x b" . counsel-ibuffer)
 	 ("C-x C-f" . counsel-find-file)
 	 ("C-c C-f" . counsel-fzf)
+	 ("C-c g" . counsel-git-grep)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
   :config
@@ -280,8 +288,14 @@
 (use-package ido-completing-read+)
 
 (use-package company
-    :ensure t
-    :hook global-company-mode)
+    :init
+    (add-hook 'after-init-hook 'global-company-mode))
+
+;; Enable yasnippet
+(use-package yasnippet
+    :config
+    (setq yas-snippet-dirs '("~/Brain-dump/yasnippets"))
+    (yas-global-mode 1))
 
 (use-package projectile
   :diminish projectile-mode
@@ -301,14 +315,23 @@
 (use-package magit)
 
 ;;Expand region package for incremental selection of region
-  (use-package expand-region
-    :bind ("C-=" . er/expand-region))
-  
-  ;;Smart parens
-  (use-package smartparens)
-  ;;Multiple cursors
+(use-package expand-region
+  :bind ("C-=" . er/expand-region))
 
+;;Smart parens
+(use-package smartparens)
+
+;;Multiple cursors
 (use-package multiple-cursors)
+
+;;Aggresive-indent mode
+(use-package aggressive-indent
+:hook (emacs-lisp-mode. aggressive-indent-mode))
+
+(use-package flycheck
+  
+  :init (setq flycheck-indication-mode 'right-fringe)
+  :hook (prog-mode . flycheck-mode))
 
 (use-package treemacs
   :ensure t
@@ -434,6 +457,35 @@ apps are not started from a shell."
 
 (when (memq window-system '(mac ns x))
 (exec-path-from-shell-initialize))
+
+(defun efs/configure-eshell ()
+  ;; Save command history when commands are entered
+  (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
+
+  ;; Truncate buffer for performance
+  (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
+
+  ;; Bind some useful keys for evil-mode
+  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
+  (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
+  (evil-normalize-keymaps)
+
+  (setq eshell-history-size         10000
+        eshell-buffer-maximum-lines 10000
+        eshell-hist-ignoredups t
+        eshell-scroll-to-bottom-on-input t))
+
+(use-package eshell-git-prompt)
+
+(use-package eshell
+  :hook (eshell-first-time-mode . efs/configure-eshell)
+  :config
+
+  (with-eval-after-load 'esh-opt
+    (setq eshell-destroy-buffer-when-process-dies t)
+    (setq eshell-visual-commands '("htop" "zsh" "vim")))
+
+  (eshell-git-prompt-use-theme 'powerline))
 
 (defun mzare/org-mode-setup ()
   (org-indent-mode)
@@ -664,3 +716,68 @@ apps are not started from a shell."
     (global-undo-tree-mode))
 
 (use-package restclient)
+
+(use-package git-gutter
+  :straight git-gutter-fringe
+  :diminish
+  :hook ((text-mode . git-gutter-mode)
+         (prog-mode . git-gutter-mode)
+         (org-mode . git-gutter-mode))
+  :config
+  (setq git-gutter:update-interval 2)
+    (require 'git-gutter-fringe)
+    (set-face-foreground 'git-gutter-fr:added "LightGreen")
+    (fringe-helper-define 'git-gutter-fr:added nil
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      ".........."
+      ".........."
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      ".........."
+      ".........."
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      "XXXXXXXXXX")
+
+    (set-face-foreground 'git-gutter-fr:modified "LightGoldenrod")
+    (fringe-helper-define 'git-gutter-fr:modified nil
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      ".........."
+      ".........."
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      ".........."
+      ".........."
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      "XXXXXXXXXX")
+
+    (set-face-foreground 'git-gutter-fr:deleted "LightCoral")
+    (fringe-helper-define 'git-gutter-fr:deleted nil
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      ".........."
+      ".........."
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      ".........."
+      ".........."
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"
+      "XXXXXXXXXX"))
+
+  ;; These characters are used in terminal mode
+  (setq git-gutter:modified-sign "≡")
+  (setq git-gutter:added-sign "≡")
+  (setq git-gutter:deleted-sign "≡")
+  (set-face-foreground 'git-gutter:added "LightGreen")
+  (set-face-foreground 'git-gutter:modified "LightGoldenrod")
+  (set-face-foreground 'git-gutter:deleted "LightCoral")
