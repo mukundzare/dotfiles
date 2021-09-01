@@ -106,6 +106,8 @@
      "mn" '(mc/mark-next-like-this :which-key "mult-curs-mark-next")
      "mp" '(mc/mark-previous-like-this :which-key "mult-curs-mark-prev")
      "ma" '(mc/mark-all-like-this :which-key "mult-curs-mark-all")
+     "eb" '(ediff-buffers :which-key "ediff-buffers")
+     "ef" '(ediff-files :which-key "ediff-files")
      "s" '(ace-swap-window :which-key "swap windows")))
   
   ;;Download Evil
