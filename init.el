@@ -419,11 +419,6 @@
 (use-package treemacs-all-the-icons
     :config (treemacs-load-theme "all-the-icons"))
 
-(use-package treemacs-icons-dired
-  :after (treemacs dired)
-  :ensure t
-  :config (treemacs-icons-dired-mode))
-
 (use-package treemacs-magit
   :after (treemacs magit)
   :ensure t)
@@ -436,6 +431,35 @@
 
 (treemacs-define-custom-image-icon "/usr/share/icons/planisware_v1.png" "ojs")
 (treemacs-define-custom-image-icon "/usr/share/icons/planisware_v2.png" "pjs")
+
+(use-package dired
+  :ensure nil
+  :commands (dired dired-jump)
+  :bind (("C-x C-j" . dired-jump))
+  :custom ((dired-listing-switches "-agho --group-directories-first"))
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "h" 'dired-single-up-directory
+    "l" 'dired-single-buffer))
+
+(use-package dired-single)
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
+
+(use-package dired-open
+  :config
+  ;; Doesn't work as expected!
+  ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
+  (setq dired-open-extensions '(("png" . "feh")
+                                ("mkv" . "mpv"))))
+
+(use-package dired-hide-dotfiles
+  :hook (dired-mode . dired-hide-dotfiles-mode)
+  :config
+  (evil-collection-define-key 'normal 'dired-mode-map
+    "H" 'dired-hide-dotfiles-mode))
+(require 'dired-x)
 
 ;;Use the $PATH variable from the zsh shell
 
@@ -458,7 +482,7 @@ apps are not started from a shell."
 (when (memq window-system '(mac ns x))
 (exec-path-from-shell-initialize))
 
-(defun efs/configure-eshell ()
+(defun mzare/configure-eshell ()
   ;; Save command history when commands are entered
   (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
 
@@ -478,14 +502,14 @@ apps are not started from a shell."
 (use-package eshell-git-prompt)
 
 (use-package eshell
-  :hook (eshell-first-time-mode . efs/configure-eshell)
-  :config
+    :ensure nil
+    :hook (eshell-first-time-mode . mzare/configure-eshell)
+    :config
+    (with-eval-after-load 'esh-opt
+        (setq eshell-destroy-buffer-when-process-dies t)
+        (setq eshell-visual-commands '("htop" "zsh" "vim")))
 
-  (with-eval-after-load 'esh-opt
-    (setq eshell-destroy-buffer-when-process-dies t)
-    (setq eshell-visual-commands '("htop" "zsh" "vim")))
-
-  (eshell-git-prompt-use-theme 'powerline))
+    (eshell-git-prompt-use-theme 'powerline))
 
 (defun mzare/org-mode-setup ()
   (org-indent-mode)
@@ -673,14 +697,14 @@ apps are not started from a shell."
   (js . t)))
 
 ;;Automatically tangle the config.org file when we save it
-(defun efs/org-babel-tangle-config ()
+(defun mzare/org-babel-tangle-config ()
     (when (string-equal (buffer-file-name)
                         (expand-file-name "~/dotfiles/config.org"))
         ;; Dynamic scoping to the rescue
         (let ((org-confirm-babel-evaluate nil))
         (org-babel-tangle))))
 
-(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'efs/org-babel-tangle-config)))
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'mzare/org-babel-tangle-config)))
 
 ;; Use org-roam
   (use-package org-roam
@@ -778,6 +802,8 @@ apps are not started from a shell."
   (setq git-gutter:modified-sign "≡")
   (setq git-gutter:added-sign "≡")
   (setq git-gutter:deleted-sign "≡")
-  (set-face-foreground 'git-gutter:added "LightGreen")
   (set-face-foreground 'git-gutter:modified "LightGoldenrod")
+  (set-face-foreground 'git-gutter:added "LightGreen")
   (set-face-foreground 'git-gutter:deleted "LightCoral")
+
+(pdf-tools-install)

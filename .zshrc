@@ -115,10 +115,10 @@ fi
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 alias opxdev='cd ~/opx/dev'
-alias dev='ssh zam4abt@si-183l'
-alias test='ssh zam4abt@si-611l'
-alias prod5='ssh zam4abt@si-305l'
-alias prod7='ssh zam4abt@si-307l'
+alias dev='ssh si-183l'
+alias test='ssh si-611l'
+alias prod5='ssh si-305l'
+alias prod7='ssh si-307l'
 alias vpnstat='nmcli con show -active | grep -i "tun"'
 
 #Copy to keyboard using command | ctc
@@ -183,3 +183,4 @@ vterm_prompt_end() {
 }
 setopt PROMPT_SUBST
 PROMPT=$PROMPT'%{$(vterm_prompt_end)%}'
+fpath+=${ZDOTDIR:-~}/.zsh_functions
