@@ -30,6 +30,9 @@
 (load bootstrap-file nil 'nomessage))
 (setq package-enable-at-startup nil)
 
+(defvar *opx2-network-folder-work-path* (file-name-as-directory "~/opx/plw-devenv/runtime/dist/"))
+(load (format "%semacs.el" *opx2-network-folder-work-path*))
+
 (setq inhibit-startup-message t) ;Disable initial splash screen
 
   (scroll-bar-mode -1)    ;Disable visible scrollbar
@@ -76,8 +79,8 @@
 
 ;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil
-		    ;;:font "Jetbrains Mono"
-		    :font "Fira Code"
+		   ;;:font "Jetbrains Mono"
+		   :font "Fira Code"
 		    :height 100)
 
 ;; Set the variable pitch face
@@ -187,7 +190,7 @@
 ;; Counsel
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
-	 ("C-x b" . counsel-ibuffer)
+	 ("C-x b" . counsel-switch-buffer)
 	 ("C-x C-f" . counsel-find-file)
 	 ("C-c C-f" . counsel-fzf)
 	 ("C-c g" . counsel-git-grep)
@@ -206,16 +209,28 @@
 (display-time)
   (setq display-time-day-and-date t)
 
+;; make sure to use :defer keyword
+(use-package apropospriate-theme :ensure :defer)
+(use-package nord-theme :ensure :defer)
+
 ;;Install kaolin-themes
 (use-package kaolin-themes)
 
 ;;Install doom-themes
-(use-package doom-themes
-  :init (load-theme 'doom-Iosvkem t))
+(use-package doom-themes)
 
 ;;Sets up the working buffer to be darker than
 ;;rest of the buffers
 (solaire-global-mode +1)
+
+(use-package circadian
+  :ensure t
+  :config
+  (setq calendar-latitude 48.9)
+  (setq calendar-longitude 9.2)
+  (setq circadian-themes '((:sunrise . kaolin-valley-light)
+                           (:sunset  . doom-gruvbox-light)))
+  (circadian-setup))
 
 ;;Parentheses are color-coded
 (use-package rainbow-delimiters
@@ -240,7 +255,8 @@
 ;;To be worked on 
 ;;TODO Setup key-bindings
 (global-origami-mode t)
-(setq evil-collection-magit-use-z-for-folds t)
+;;Disabled magit z folding because it was causing issues
+;;(setq evil-collection-magit-use-z-for-folds t)
 
 ;;Use the current frame for ediff
 (setq ediff-window-setup-function 'ediff-setup-windows-plain)
@@ -284,8 +300,8 @@
 (use-package json-mode)
 
 ;;Set major mode for OJS and PJS files to javascript mode
-(add-to-list 'auto-mode-alist '("\\.ojs" . javascript-mode))
-(add-to-list 'auto-mode-alist '("\\.pjs" . javascript-mode))
+;;(add-to-list 'auto-mode-alist '("\\.ojs" . javascript-mode))
+;;(add-to-list 'auto-mode-alist '("\\.pjs" . javascript-mode))
 
 (use-package ido-completing-read+)
 
@@ -682,6 +698,7 @@ apps are not started from a shell."
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
   (add-to-list 'org-structure-template-alist '("js" . "src js"))
+  (add-to-list 'org-structure-template-alist '("sql" . "src sql"))
 
   (define-key global-map (kbd "C-c j")
     (lambda () (interactive) (org-capture nil "jj")))
@@ -746,8 +763,7 @@ apps are not started from a shell."
 (use-package git-gutter
   :straight git-gutter-fringe
   :diminish
-  :hook ((text-mode . git-gutter-mode)
-         (prog-mode . git-gutter-mode)
+  :hook ((text-mode . git-gutter-mode) (prog-mode . git-gutter-mode)
          (org-mode . git-gutter-mode))
   :config
   (setq git-gutter:update-interval 2)
@@ -804,8 +820,8 @@ apps are not started from a shell."
   (setq git-gutter:modified-sign "≡")
   (setq git-gutter:added-sign "≡")
   (setq git-gutter:deleted-sign "≡")
-  (set-face-foreground 'git-gutter:modified "LightGoldenrod")
-  (set-face-foreground 'git-gutter:added "LightGreen")
-  (set-face-foreground 'git-gutter:deleted "LightCoral")
+  ;;(set-face-background 'git-gutter:modified "LightGoldenrod")
+  ;;(set-face-foreground 'git-gutter:added "LightGreen")
+  ;;(set-face-foreground 'git-gutter:deleted "LightCoral")
 
 (pdf-tools-install)

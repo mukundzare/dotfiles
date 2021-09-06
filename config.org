@@ -2,7 +2,7 @@
 #+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
 * Package system config
-
+** General config
 #+begin_src emacs-lisp
   
   ;;Initialize packages sources
@@ -36,6 +36,11 @@
       (eval-print-last-sexp)))
   (load bootstrap-file nil 'nomessage))
   (setq package-enable-at-startup nil)
+#+end_src
+* Planisware config for emacs
+#+begin_src emacs-lisp
+(defvar *opx2-network-folder-work-path* (file-name-as-directory "~/opx/plw-devenv/runtime/dist/"))
+(load (format "%semacs.el" *opx2-network-folder-work-path*))
 #+end_src
 
 * Basic UI Configuration
@@ -90,8 +95,8 @@
 
 ;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil
-		    ;;:font "Jetbrains Mono"
-		    :font "Fira Code"
+		   ;;:font "Jetbrains Mono"
+		   :font "Fira Code"
 		    :height 100)
 
 ;; Set the variable pitch face
@@ -210,7 +215,7 @@
 ;; Counsel
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
-	 ("C-x b" . counsel-ibuffer)
+	 ("C-x b" . counsel-switch-buffer)
 	 ("C-x C-f" . counsel-find-file)
 	 ("C-c C-f" . counsel-fzf)
 	 ("C-c g" . counsel-git-grep)
@@ -235,17 +240,28 @@
 ** Themes
 
 #+begin_src emacs-lisp
+;; make sure to use :defer keyword
+(use-package apropospriate-theme :ensure :defer)
+(use-package nord-theme :ensure :defer)
 
 ;;Install kaolin-themes
 (use-package kaolin-themes)
 
 ;;Install doom-themes
-(use-package doom-themes
-  :init (load-theme 'doom-Iosvkem t))
+(use-package doom-themes)
 
 ;;Sets up the working buffer to be darker than
 ;;rest of the buffers
 (solaire-global-mode +1)
+
+(use-package circadian
+  :ensure t
+  :config
+  (setq calendar-latitude 48.9)
+  (setq calendar-longitude 9.2)
+  (setq circadian-themes '((:sunrise . kaolin-valley-light)
+                           (:sunset  . doom-gruvbox-light)))
+  (circadian-setup))
 #+end_src
 ** Rainbow delimiters
 
@@ -284,7 +300,8 @@
 ;;To be worked on 
 ;;TODO Setup key-bindings
 (global-origami-mode t)
-(setq evil-collection-magit-use-z-for-folds t)
+;;Disabled magit z folding because it was causing issues
+;;(setq evil-collection-magit-use-z-for-folds t)
 #+end_src
 ** Ediff
 
@@ -355,8 +372,8 @@
 
 #+begin_src emacs-lisp
 ;;Set major mode for OJS and PJS files to javascript mode
-(add-to-list 'auto-mode-alist '("\\.ojs" . javascript-mode))
-(add-to-list 'auto-mode-alist '("\\.pjs" . javascript-mode))
+;;(add-to-list 'auto-mode-alist '("\\.ojs" . javascript-mode))
+;;(add-to-list 'auto-mode-alist '("\\.pjs" . javascript-mode))
 #+end_src
 * Completion package
 ** Ido
@@ -811,6 +828,7 @@ apps are not started from a shell."
   (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
   (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
   (add-to-list 'org-structure-template-alist '("js" . "src js"))
+  (add-to-list 'org-structure-template-alist '("sql" . "src sql"))
 
   (define-key global-map (kbd "C-c j")
     (lambda () (interactive) (org-capture nil "jj")))
@@ -897,8 +915,7 @@ apps are not started from a shell."
 (use-package git-gutter
   :straight git-gutter-fringe
   :diminish
-  :hook ((text-mode . git-gutter-mode)
-         (prog-mode . git-gutter-mode)
+  :hook ((text-mode . git-gutter-mode) (prog-mode . git-gutter-mode)
          (org-mode . git-gutter-mode))
   :config
   (setq git-gutter:update-interval 2)
@@ -955,9 +972,9 @@ apps are not started from a shell."
   (setq git-gutter:modified-sign "≡")
   (setq git-gutter:added-sign "≡")
   (setq git-gutter:deleted-sign "≡")
-  (set-face-foreground 'git-gutter:modified "LightGoldenrod")
-  (set-face-foreground 'git-gutter:added "LightGreen")
-  (set-face-foreground 'git-gutter:deleted "LightCoral")
+  ;;(set-face-background 'git-gutter:modified "LightGoldenrod")
+  ;;(set-face-foreground 'git-gutter:added "LightGreen")
+  ;;(set-face-foreground 'git-gutter:deleted "LightCoral")
 
 #+end_src
 
