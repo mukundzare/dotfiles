@@ -1,3 +1,4 @@
 # Ignore any swap files created by emacs
 *~
 **/#*#
+*.el$

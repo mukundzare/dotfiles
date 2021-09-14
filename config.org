@@ -1,26 +1,94 @@
 #+title: Emacs config
 #+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+* Custom functions
+** Git grep
+#+begin_src emacs-lisp
+  (defun mz/counsel-git-grep (dir)
+    (counsel-git-grep (thing-at-point 'word t)
+                      (expand-file-name dir)))
+#+end_src
+** OPX development
+*** Git grep within the development repository
+#+begin_src emacs-lisp
+    (defun mz/counsel-git-grep-opx  ()
+    (interactive)
+  (mz/counsel-git-grep "~/opx/dev"))
+#+end_src
+*** Git grep within the standard repo
+#+begin_src emacs-lisp
+    (defun mz/counsel-git-grep-std  ()
+    (interactive)
+  (mz/counsel-git-grep "~/opx/v6_3_6_standard_scripts"))
+#+end_src
+** Frequent file management
+#+begin_src emacs-lisp
+  ;;Setup variables
+  (defvar mz/emacs-config-location
+    "~/dotfiles/config.org"
+    "Location of the emacs config.org file")
+  
+  (defvar mz/work-diary-location
+    "~/.orgfiles/work_diary.org"
+    "Location of the emacs config.org file")
+
+  (defvar mz/emacs-init-el-location
+    "~/dotfiles/init.el"
+    "Location of the emacs init.el file")
+  
+  (defun mz/get-open-buffer (file-location)
+    "Open the FILE-LOCATION's buffer if it exists
+     else open the file located at FILE-LOCATION and return the buffer"
+    (or (get-file-buffer file-location)
+        (find-file-noselect file-location)))
+
+  ;;Open my emacs work_diary.org in a new buffer
+  (defun mz/find-work-diary ()
+    "Open my personal emacs config org file"
+    (interactive)
+    (pop-to-buffer-same-window
+     (mz/get-open-buffer mz/work-diary-location)))
+  
+  ;;Open my emacs config file in a new buffer
+  (defun mz/find-emacs-config-org ()
+    "Open my personal emacs config org file"
+    (interactive)
+    (pop-to-buffer-same-window
+     (mz/get-open-buffer mz/emacs-config-location)))
+  
+  ;;Reload my init.el
+  (defun mz/reload-init-el ()
+    "Open a new buffer for init.el, eval the contents.
+                  If a buffer already exists, then revert the buffer contents to the current file contents on the disk and eval the contents.
+                  In both the cases above, the init.el buffers will be killed."
+    (interactive)
+    (let ((init-buffer
+           (mz/get-open-buffer mz/emacs-init-el-location)))
+      (with-current-buffer init-buffer
+        (revert-buffer nil t)
+        (eval-buffer)))
+    (kill-matching-buffers ".*init.el.*" nil t))
+#+end_src
 * Package system config
 ** General config
 #+begin_src emacs-lisp
-  
+
   ;;Initialize packages sources
   (require 'package)
-  
+
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                            ("org" . "https://orgmode.org/elpa/")
                            ("elpa" . "https://elpa.gnu.org/packages/")
                            ("melpa-stable" . "https://stable.melpa.org/packages/")))
-  
+
   (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
   (add-to-list 'package-pinned-packages '(magit . "melpa-stable") t)
-  
+
   (unless (package-installed-p 'use-package)
     (package-install 'use-package))
-  
+
   (require 'use-package)
-  
+
   (setq use-package-always-ensure t)
     ;;Straight.el
   (defvar bootstrap-version)
@@ -47,41 +115,35 @@
 
 #+begin_src emacs-lisp
     (setq inhibit-startup-message t) ;Disable initial splash screen
-    
+
     (scroll-bar-mode -1)    ;Disable visible scrollbar
     (tool-bar-mode -1)      ;Disable the toolbar
     (tooltip-mode -1)       ;Disable tooltips
     (set-fringe-mode 10)    ;More breathing room
-    
+
     (menu-bar-mode -1)      ;Disable menubar
-    
+
     ;;Enable visible bell
     (setq visible-bell t)
-    
+
     (column-number-mode)
     (global-display-line-numbers-mode t)
-    
+
     ;;Disable line numbers for some modes
     (dolist (mode '(org-mode-hook
                     term-mode-hook
                     shell-mode-hook
                     eshell-mode-hook))
       (add-hook mode (lambda () (display-line-numbers-mode 0))))
-    
+
     ;; Start emacs in fullscreen mode
     (add-to-list 'default-frame-alist '(fullscreen . maximized))
-    
-    ;;Show dashboard
-  (use-package dashboard
-    :ensure t
-    :config
-    (dashboard-setup-startup-hook))
-  
+
   ;;Confirm if I want to exit emacs
   (setq confirm-kill-emacs 'y-or-n-p)
 #+end_src
 
-* Font configuration 
+* Font configuration
 #+begin_src emacs-lisp
 ;;Set default font
 (set-face-attribute 'default nil
@@ -95,15 +157,15 @@
 
 ;; Set the fixed pitch face
 (set-face-attribute 'fixed-pitch nil
-		   ;;:font "Jetbrains Mono"
-		   :font "Fira Code"
-		    :height 100)
+                   ;;:font "Jetbrains Mono"
+                   :font "Fira Code"
+                    :height 100)
 
 ;; Set the variable pitch face
 (set-face-attribute 'variable-pitch nil
-		    :font "Cantarell"
-		    :height 120
-		    :weight 'regular)
+                    :font "Cantarell"
+                    :height 120
+                    :weight 'regular)
 #+end_src
 
 * Key bindings
@@ -117,21 +179,27 @@
   
   (use-package general
     :config
-    (general-create-definer mzare/leader-keys
+    (general-create-definer mz/leader-keys
       :keymaps '(normal insert visual emacs)
       :prefix "SPC"
       :global-prefix "C-SPC")
-
-    (mzare/leader-keys
-     "t" '(:ignore t :which-key "toggles")
-     "tt" '(counsel-load-theme :which-key "choose theme")
-     "mi" '(mc/edit-lines :which-key "mult-curs-edit-lines")
-     "mn" '(mc/mark-next-like-this :which-key "mult-curs-mark-next")
-     "mp" '(mc/mark-previous-like-this :which-key "mult-curs-mark-prev")
-     "ma" '(mc/mark-all-like-this :which-key "mult-curs-mark-all")
-     "eb" '(ediff-buffers :which-key "ediff-buffers")
-     "ef" '(ediff-files :which-key "ediff-files")
-     "s" '(ace-swap-window :which-key "swap windows")))
+  
+    (mz/leader-keys
+      "t" '(:ignore t :which-key "toggles")
+      "o" '(:ignore t :which-key "opx")
+      "e" '(:ignore t :which-key "emacs")
+      "og" '(:ignore t :which-key "git grep")
+      "ow" '(mz/find-work-diary :which-key "Work diary")
+      "tt" '(counsel-load-theme :which-key "choose theme")
+      "db" '(ediff-buffers :which-key "ediff-buffers")
+      "df" '(ediff-files :which-key "ediff-files")
+      "ogg" '(mz/counsel-git-grep-opx :which-key "Search OPX BEG repo")
+      "ogs" '(mz/counsel-git-grep-std :which-key "Search OPX Std. repo")
+      "ec" '(mz/find-emacs-config-org :which-key "Open emacs config.org")
+      "ei" '(mz/reload-init-el :which-key "Reload init.el")
+      "p" '(switch-to-prev-buffer :which-key "switch-to-prev-buffer")
+      "n" '(switch-to-next-buffer :which-key "switch-to-next-buffer")
+      "s" '(ace-swap-window :which-key "swap windows")))
   
   ;;Download Evil
   (use-package evil
@@ -148,15 +216,15 @@
     :after evil
     :config
     (evil-collection-init))
-;; Use evil keybindings in org-mode  
+  ;; Use evil keybindings in org-mode
   (use-package evil-org
-  :ensure t
-  :after org
-  :hook (org-mode . (lambda () evil-org-mode))
-  :config
-  (require 'evil-org-agenda)
-  (evil-org-agenda-set-keys))
-
+    :ensure t
+    :after org
+    :hook (org-mode . (lambda () evil-org-mode))
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
+  
   (use-package hydra)
   
   (defhydra hydra-text-scale (:timeout 4)
@@ -166,8 +234,8 @@
     ("f" nil "finished" :exit t))
   
   
-  (mzare/leader-keys
-   "ts" '(hydra-text-scale/body :which-key "scale text"))
+  (mz/leader-keys
+    "ts" '(hydra-text-scale/body :which-key "scale text"))
 #+end_src
 * UI Configuration
 ** Ivy & counsel
@@ -178,22 +246,22 @@
 (use-package ivy
   :diminish
   :bind (("C-s" . swiper)
-	 :map ivy-minibuffer-map
-	 ("TAB" . ivy-alt-done)
-	 ("C-l" . ivy-alt-done)
-	 ("C-j" . ivy-next-line)
-	 ("C-k" . ivy-previous-line)
-	 :map ivy-switch-buffer-map
-	 ("C-k" . ivy-previous-line)
-	 ("C-l" . ivy-done)
-	 ("C-d" . ivy-switch-buffer-kill)
-	 :map ivy-reverse-i-search-map
-	 ("C-k" . ivy-previous-line)
-	 ("C-d" . ivy-reverse-i-search-kill))
+         :map ivy-minibuffer-map
+         ("TAB" . ivy-alt-done)
+         ("C-l" . ivy-alt-done)
+         ("C-j" . ivy-next-line)
+         ("C-k" . ivy-previous-line)
+         :map ivy-switch-buffer-map
+         ("C-k" . ivy-previous-line)
+         ("C-l" . ivy-done)
+         ("C-d" . ivy-switch-buffer-kill)
+         :map ivy-reverse-i-search-map
+         ("C-k" . ivy-previous-line)
+         ("C-d" . ivy-reverse-i-search-kill))
   :config
   (ivy-mode 1))
 
-;; Ivy-rich 
+;; Ivy-rich
 (use-package ivy-rich
   :init
   (ivy-rich-mode 1))
@@ -201,7 +269,7 @@
 (use-package all-the-icons-ivy-rich
     :ensure t
     :init (all-the-icons-ivy-rich-mode 1)
-    :config 
+    :config
     ;; Whether display the colorful icons.
     ;; It respects `all-the-icons-color-icons'.
     (setq all-the-icons-ivy-rich-color-icon t)
@@ -215,10 +283,10 @@
 ;; Counsel
 (use-package counsel
   :bind (("M-x" . counsel-M-x)
-	 ("C-x b" . counsel-switch-buffer)
-	 ("C-x C-f" . counsel-find-file)
-	 ("C-c C-f" . counsel-fzf)
-	 ("C-c g" . counsel-git-grep)
+         ("C-x b" . counsel-switch-buffer)
+         ("C-x C-f" . counsel-find-file)
+         ("C-c C-f" . counsel-fzf)
+         ("C-c g" . counsel-git-grep)
          :map minibuffer-local-map
          ("C-r" . 'counsel-minibuffer-history))
   :config
@@ -228,7 +296,7 @@
 
 #+begin_src emacs-lisp
   (use-package all-the-icons)
-  
+
   (use-package doom-modeline
     :ensure t
     :init (doom-modeline-mode 1))
@@ -260,7 +328,7 @@
   (setq calendar-latitude 48.9)
   (setq calendar-longitude 9.2)
   (setq circadian-themes '((:sunrise . kaolin-valley-light)
-                           (:sunset  . doom-gruvbox-light)))
+                           (:sunset  . doom-Iosvkem)))
   (circadian-setup))
 #+end_src
 ** Rainbow delimiters
@@ -297,7 +365,7 @@
 #+end_src
 ** Folding
 #+begin_src emacs-lisp
-;;To be worked on 
+;;To be worked on
 ;;TODO Setup key-bindings
 (global-origami-mode t)
 ;;Disabled magit z folding because it was causing issues
@@ -317,80 +385,80 @@
 #+end_src
 ** Window management
 #+begin_src emacs-lisp
-;;Switch windows numbered from 1 to n depending on number of windows
-;;Doesn't work with treemacs. To switch to treemacs buffer, press <M-0>
-(use-package ace-window)
-(global-set-key (kbd "M-o") 'ace-window)
+  ;;Switch windows numbered from 1 to n depending on number of windows
+  ;;Doesn't work with treemacs. To switch to treemacs buffer, press <M-0>
+  (use-package ace-window)
+  (global-set-key (kbd "M-o") 'ace-window)
 
-;;aw-keys - the list of initial characters used in window labels:
-(setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+  ;;aw-keys - the list of initial characters used in window labels:
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 #+end_src
 * Language specific
 ** HTML
 
 #+begin_src emacs-lisp
-;; edit html tags like sexps
-(use-package tagedit)
+  ;; edit html tags like sexps
+  (use-package tagedit)
 #+end_src
 ** Clojure
 
 #+begin_src emacs-lisp
 
-(use-package paredit)
+  (use-package paredit)
 
-;;Enable paredit automatically
-(autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of lisp code" t) 
-(add-hook 'clojure-mode 'enable-paredit-mode)
-(add-hook 'clojurescript-mode 'enable-paredit-mode)
+  ;;Enable paredit automatically
+  (autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of lisp code" t)
+  (add-hook 'clojure-mode 'enable-paredit-mode)
+  (add-hook 'clojurescript-mode 'enable-paredit-mode)
 
-;; key bindings and code colorization for Clojure
-;; https://github.com/clojure-emacs/clojure-mode
-(use-package clojure-mode)
+  ;; key bindings and code colorization for Clojure
+  ;; https://github.com/clojure-emacs/clojure-mode
+  (use-package clojure-mode)
 
-;; extra syntax highlighting for clojure
-(use-package clojure-mode-extra-font-locking)
+  ;; extra syntax highlighting for clojure
+  (use-package clojure-mode-extra-font-locking)
 
-;; integration with a Clojure REPL
-;; https://github.com/clojure-emacs/cider
-(use-package cider)
+  ;; integration with a Clojure REPL
+  ;; https://github.com/clojure-emacs/cider
+  (use-package cider)
 #+end_src
 ** CSV
 #+begin_src emacs-lisp
-(use-package csv)
+  (use-package csv)
 #+end_src
 ** YAML
 
 #+begin_src emacs-lisp
-(use-package yaml-mode)
+  (use-package yaml-mode)
 #+end_src
 ** JSON
 
 #+begin_src emacs-lisp
-(use-package json-mode)
+  (use-package json-mode)
 #+end_src
 ** Planisware script
 
 #+begin_src emacs-lisp
-;;Set major mode for OJS and PJS files to javascript mode
-;;(add-to-list 'auto-mode-alist '("\\.ojs" . javascript-mode))
-;;(add-to-list 'auto-mode-alist '("\\.pjs" . javascript-mode))
+  ;;Set major mode for OJS and PJS files to javascript mode
+  ;;(add-to-list 'auto-mode-alist '("\\.ojs" . javascript-mode))
+  ;;(add-to-list 'auto-mode-alist '("\\.pjs" . javascript-mode))
 #+end_src
 * Completion package
 ** Ido
 #+begin_src emacs-lisp
 
-(use-package ido-completing-read+)
+  (use-package ido-completing-read+)
 #+end_src
 ** Company mode
 #+begin_src emacs-lisp
-(use-package company
+  (use-package company
     :init
     (add-hook 'after-init-hook 'global-company-mode))
 #+end_src
 ** YASnippet
 #+begin_src emacs-lisp
-;; Enable yasnippet
-(use-package yasnippet
+  ;; Enable yasnippet
+  (use-package yasnippet
     :config
     (setq yas-snippet-dirs '("~/Brain-dump/yasnippets"))
     (yas-global-mode 1))
@@ -398,7 +466,7 @@
 * Development related
 ** Projectile
 #+begin_src emacs-lisp
-  
+
   (use-package projectile
     :diminish projectile-mode
     :config (projectile-mode)
@@ -408,7 +476,7 @@
     (when (file-directory-p "~/")
       (setq projectile-project-search-path '("~/")))
     (setq projectile-switch-project-action #'projectile-dired))
-  
+
   (use-package counsel-projectile
     :config (counsel-projectile-mode))
   (use-package projectile-ripgrep)
@@ -417,23 +485,25 @@
 ** Magit
 
 #+begin_src emacs-lisp
-;; magit
-(use-package magit)
+  ;; magit
+  (use-package magit
+    :config
+    (global-set-key (kbd "C-x g") 'magit-status))
 #+end_src
 ** Usability
 
 #+begin_src emacs-lisp
-  
+
   ;;Expand region package for incremental selection of region
   (use-package expand-region
     :bind ("C-=" . er/expand-region))
-  
+
   ;;Smart parens
   (use-package smartparens)
-  
+
   ;;Multiple cursors
   (use-package multiple-cursors)
-  
+
   ;;Aggresive-indent mode
   (use-package aggressive-indent
   :hook (emacs-lisp-mode. aggressive-indent-mode))
@@ -441,7 +511,7 @@
 ** Debugging
 #+begin_src emacs-lisp
 (use-package flycheck
-  
+
   :init (setq flycheck-indication-mode 'right-fringe)
   :hook (prog-mode . flycheck-mode))
 #+end_src
@@ -612,7 +682,7 @@ apps are not started from a shell."
 ** Eshell
 #+begin_src emacs-lisp
 
-(defun mzare/configure-eshell ()
+(defun mz/configure-eshell ()
   ;; Save command history when commands are entered
   (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
 
@@ -633,7 +703,7 @@ apps are not started from a shell."
 
 (use-package eshell
     :ensure nil
-    :hook (eshell-first-time-mode . mzare/configure-eshell)
+    :hook (eshell-first-time-mode . mz/configure-eshell)
     :config
     (with-eval-after-load 'esh-opt
         (setq eshell-destroy-buffer-when-process-dies t)
@@ -647,26 +717,27 @@ apps are not started from a shell."
 
 #+begin_src emacs-lisp
 
-(defun mzare/org-mode-setup ()
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (visual-line-mode 1)
-  (setq evil-auto-indent nil))
+  (defun mz/org-mode-setup ()
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (visual-line-mode 1)
+    (setq evil-auto-indent nil)
+    (evil-define-key '(normal insert visual) org-mode-map (kbd "TAB") 'org-cycle))
 
 
-(defun mzare/org-mode-visual-fill ()
-  (setq visual-fill-column-width 150
-        visual-fill-column-center-text t)
-  (visual-fill-column-mode 1))
-(use-package visual-fill-column
-  :hook (org-mode . mzare/org-mode-visual-fill))
+  (defun mz/org-mode-visual-fill ()
+    (setq visual-fill-column-width 150
+          visual-fill-column-center-text t)
+    (visual-fill-column-mode 1))
+  (use-package visual-fill-column
+    :hook (org-mode . mz/org-mode-visual-fill))
 #+end_src
 *** Fonts
 
 #+begin_src emacs-lisp
 
 
-(defun mzare/org-font-setup ()
+(defun mz/org-font-setup ()
   ;; Replace list hyphen with dot
   (font-lock-add-keywords 'org-mode
                           '(("^ *\\([-]\\) "
@@ -689,7 +760,7 @@ apps are not started from a shell."
   (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
   (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
   (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)))   
+  (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)))
 #+end_src
 *** Bullet points
 
@@ -705,7 +776,7 @@ apps are not started from a shell."
 #+begin_src emacs-lisp
 
 (use-package org
-  :hook (org-mode . mzare/org-mode-setup)
+  :hook (org-mode . mz/org-mode-setup)
   :config
   (setq org-ellipsis " ▾")
 
@@ -714,10 +785,10 @@ apps are not started from a shell."
   (setq org-log-into-drawer t)
 
   (setq org-agenda-files
-	'("~/.orgfiles/myorg.org"
-	"~/.orgfiles/work_diary.org"
-	"~/.orgfiles/someday.org"
-	"~/.orgfiles/emacs-todo.org"))
+        '("~/.orgfiles/myorg.org"
+        "~/.orgfiles/work_diary.org"
+        "~/.orgfiles/someday.org"
+        "~/.orgfiles/emacs-todo.org"))
 
   (require 'org-habit)
 
@@ -729,13 +800,13 @@ apps are not started from a shell."
       (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
   (setq org-refile-targets
-	'(("~/.orgfiles/ARCHIVE/Archive.org" :maxlevel . 1)
-	  ("~/.orgfiles/someday.org" :maxlevel . 1)
-	  ("~/.orgfiles/ARCHIVE/Tasks.org" :maxlevel . 1)))
+        '(("~/.orgfiles/ARCHIVE/Archive.org" :maxlevel . 1)
+          ("~/.orgfiles/someday.org" :maxlevel . 1)
+          ("~/.orgfiles/ARCHIVE/Tasks.org" :maxlevel . 1)))
 
   ;; Save Org buffers after refiling!
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
-  
+
   (setq org-tag-alist
     '((:startgroup)
        ; Put mutually exclusive tags here
@@ -822,20 +893,14 @@ apps are not started from a shell."
       ("o" "Office")
       ("oo" "Task" entry (file+olp "~/.orgfiles/work_diary.org" "Inbox")
        "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
-
   (require 'org-tempo)
-
-  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
-  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
-  (add-to-list 'org-structure-template-alist '("js" . "src js"))
-  (add-to-list 'org-structure-template-alist '("sql" . "src sql"))
 
   (define-key global-map (kbd "C-c j")
     (lambda () (interactive) (org-capture nil "jj")))
   (define-key global-map (kbd "C-c c") 'org-capture)
   (define-key global-map (kbd "C-c a") 'org-agenda)
-   
-  (mzare/org-font-setup))
+
+  (mz/org-font-setup))
 #+end_src
 ** Enhancements
 #+begin_src emacs-lisp
@@ -843,26 +908,37 @@ apps are not started from a shell."
 (use-package org-drill)
 #+end_src
 
-** Org-babel specific 
+** Org-babel specific
+** Modes to support
+#+begin_src emacs-lisp
+;;Define Planisware script to be a language mode for org-babel literate programming
+ (add-to-list 'org-src-lang-modes '("OPX2 Javascript" . opx2-js))
+  (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
+  (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
+  (add-to-list 'org-structure-template-alist '("js" . "src js"))
+  (add-to-list 'org-structure-template-alist '("sql" . "src sql"))
+  (add-to-list 'org-structure-template-alist '("plw" . "src opx2-js"))
+
+#+end_src
 ** Languages to load for evaluating the results in org-mode
 #+begin_src emacs-lisp
-(org-babel-do-load-languages 
-'org-babel-load-languages
-'((emacs-lisp . t )
-  (js . t)))
+  (org-babel-do-load-languages
+  'org-babel-load-languages
+  '((emacs-lisp . t )
+    (js . t)))
 #+end_src
 ** Autotangle
 #+begin_src emacs-lisp
 
 ;;Automatically tangle the config.org file when we save it
-(defun mzare/org-babel-tangle-config ()
+(defun mz/org-babel-tangle-config ()
     (when (string-equal (buffer-file-name)
                         (expand-file-name "~/dotfiles/config.org"))
         ;; Dynamic scoping to the rescue
         (let ((org-confirm-babel-evaluate nil))
         (org-babel-tangle))))
 
-(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'mzare/org-babel-tangle-config)))
+(add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'mz/org-babel-tangle-config)))
 #+end_src
 ** Org-roam
 #+begin_src emacs-lisp
@@ -883,7 +959,7 @@ apps are not started from a shell."
     (org-roam-setup))
   
   ;;Org-roam v2 UI
-(use-package org-roam-ui
+  (use-package org-roam-ui
     :straight
     (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
     :after org-roam
@@ -892,7 +968,8 @@ apps are not started from a shell."
     (setq org-roam-ui-sync-theme t
           org-roam-ui-follow t
           org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
+          org-roam-ui-open-on-start t)
+    (org-roam-db-autosync-mode))
 #+end_src
 * History config
 #+begin_src emacs-lisp
@@ -981,5 +1058,15 @@ apps are not started from a shell."
 * Document management
 ** PDF tools
 #+begin_src emacs-lisp
-(pdf-tools-install)
+  (pdf-tools-install)
+#+end_src
+* Emacs statistics
+** Save the frequency of keys pressed in emacs
+#+begin_src emacs-lisp
+(keyfreq-mode 1)
+#+end_src
+
+* Emacs save sessions
+#+begin_src emacs-lisp
+(desktop-save-mode 1)
 #+end_src
