@@ -148,19 +148,23 @@
 #+begin_src emacs-lisp
   ;;Set default font
   (set-face-attribute 'default nil
-                      :family "Fira Code"
+                      ;;:family "Fira Code"
                       ;;:family "Jetbrains Mono"
-                                          ;:family "JetBrains Mono NL"
+                      ;;:family "JetBrains Mono NL"
                       ;;:family "clearlyu"
-                      :height 102
+                      :family "Source Code Pro"
+                      :height 95
                       :weight 'normal
-                      :width 'expanded)
+                      :width 'normal)
   
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
                       ;;:font "Jetbrains Mono"
-                      :font "Fira Code"
-                      :height 100)
+                      ;;:font "Fira Code"
+                      :font "Source Code Pro"
+                      :height 100
+                      :weight 'normal
+                      :width 'normal)
   
   ;; Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
@@ -945,32 +949,40 @@
 #+begin_src emacs-lisp
   ;; Use org-roam
   (use-package org-roam
+    :straight (:host github :repo "org-roam/org-roam"
+                     :files (:defaults "extensions/*"))
     :ensure t
     :init
     (setq org-roam-v2-ack t)
     :custom
     (org-roam-directory "~/RoamNotes")
     (org-roam-completion-everywhere t)
+    (org-roam-capture-templates
+     '(("d" "default" plain
+        "%?"
+        :if-new (file+head "%<%Y%m%d%H%M%S>-$(slug).org" "#+title:${title}\n")
+        :unnarrowed t)))
     :bind (("C-c n l" . org-roam-buffer-toggle)
            ("C-c n f" . org-roam-node-find)
            ("C-c n i" . org-roam-node-insert)
            :map org-mode-map
            ("C-M-i" . completion-at-point))
     :config
-    (org-roam-setup))
+    (org-roam-setup)
+    ;;(org-roam-db-autosync-mode)
+    (org-roam-db-sync 'force))
   
   ;;Org-roam v2 UI
-  (use-package org-roam-ui
-    :straight
-    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
-    :after org-roam
-    :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t)
-    (org-roam-db-autosync-mode))
+ ;; (use-package org-roam-ui
+ ;;   :straight
+ ;;   (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+ ;;   :after org-roam
+ ;;   ;;:hook (after-init . org-roam-ui-mode)
+ ;;   :config
+ ;;   (setq org-roam-ui-sync-theme t
+ ;;         org-roam-ui-follow t
+ ;;         org-roam-ui-update-on-save t
+ ;;         org-roam-ui-open-on-start nil))
 #+end_src
 * History config
 #+begin_src emacs-lisp
@@ -1063,6 +1075,10 @@
     :ensure t
     :config
     (pdf-tools-install))
+#+end_src
+** Adoc mode
+#+begin_src emacs-lisp
+(use-package adoc-mode)
 #+end_src
 * Emacs statistics
 ** Save the frequency of keys pressed in emacs
