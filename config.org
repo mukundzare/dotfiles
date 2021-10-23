@@ -2,6 +2,7 @@
 #+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
 #+STARTUP: overview
 #+PROPERTY: header-args:emacs-lisp :tangle ./init.el :mkdirp yes
+
 * Custom functions
 ** Git grep
 #+begin_src emacs-lisp
@@ -30,7 +31,7 @@
     "Location of the emacs config.org file")
   
   (defvar mz/work-diary-location
-    "~/.orgfiles/work_diary.org"
+    "~/orgfiles/work_diary.org"
     "Location of the emacs config.org file")
   
   (defvar mz/emacs-init-el-location
@@ -70,6 +71,12 @@
         (eval-buffer)))
     (kill-matching-buffers ".*init.el.*" nil t))
 #+end_src
+** Dates
+#+begin_src emacs-lisp
+    (defun insert-current-date ()
+  (interactive)
+    (insert (shell-command-to-string "echo -n $(date +%Y-%m-%d)")))
+#+end_src
 * Package system config
 ** General config
 #+begin_src emacs-lisp
@@ -78,13 +85,12 @@
   (require 'package)
   
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("org" . "https://orgmode.org/elpa/")
                            ("elpa" . "https://elpa.gnu.org/packages/")
                            ("melpa-stable" . "https://stable.melpa.org/packages/")))
   
   (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
   (add-to-list 'package-pinned-packages '(magit . "melpa-stable") t)
-  
+ 
   (unless (package-installed-p 'use-package)
     (package-install 'use-package))
   
@@ -156,7 +162,7 @@
                       :height 95
                       :weight 'normal
                       :width 'normal)
-  
+
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
                       ;;:font "Jetbrains Mono"
@@ -165,12 +171,11 @@
                       :height 100
                       :weight 'normal
                       :width 'normal)
-  
+
   ;; Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
-                      :font "Cantarell"
-                      :height 120
-                      :weight 'regular)
+                      :font "Roboto"
+                      :height 110)
 #+end_src
 
 * Key bindings
@@ -332,7 +337,7 @@
     :config
     (setq calendar-latitude 48.9)
     (setq calendar-longitude 9.2)
-    (setq circadian-themes '((:sunrise . kaolin-valley-light)
+    (setq circadian-themes '((:sunrise . doom-zenburn)
                              (:sunset  . doom-Iosvkem)))
     (circadian-setup))
 #+end_src
@@ -408,24 +413,27 @@
 ** Clojure
 
 #+begin_src emacs-lisp
-  
+
   (use-package paredit)
-  
+
   ;;Enable paredit automatically
   (autoload 'enable-paredit-mode "paredit" "Turn on pseudo-structural editing of lisp code" t)
   (add-hook 'clojure-mode 'enable-paredit-mode)
   (add-hook 'clojurescript-mode 'enable-paredit-mode)
-  
+
   ;; key bindings and code colorization for Clojure
   ;; https://github.com/clojure-emacs/clojure-mode
   (use-package clojure-mode)
-  
+
   ;; extra syntax highlighting for clojure
   (use-package clojure-mode-extra-font-locking)
-  
+
   ;; integration with a Clojure REPL
   ;; https://github.com/clojure-emacs/cider
   (use-package cider)
+
+;;enable cider-mode when an asciidoc file is opened
+  (add-hook 'adoc-mode-hook 'cider-mode)
 #+end_src
 ** CSV
 #+begin_src emacs-lisp
@@ -655,6 +663,13 @@
       "H" 'dired-hide-dotfiles-mode))
   (require 'dired-x)
 #+end_src
+** Recent files
+#+begin_src emacs-lisp
+(recentf-mode 1)
+(setq recentf-max-menu-items 25)
+(setq recentf-max-saved-items 25)
+(global-set-key "\C-x\ \C-r" 'recentf-open-files)
+#+end_src
 * Shell related
 ** Ubuntu
 *** Shell variables
@@ -721,22 +736,34 @@
 *** General layout
 
 #+begin_src emacs-lisp
-  
+
   (defun mz/org-mode-setup ()
     (org-indent-mode)
     (variable-pitch-mode 1)
     (visual-line-mode 1)
     (setq evil-auto-indent nil)
     (evil-define-key '(normal insert visual) org-mode-map (kbd "TAB") 'org-cycle))
-  
-  
+
+
   (defun mz/org-mode-visual-fill ()
     (setq visual-fill-column-width 150
           visual-fill-column-center-text t)
     (visual-fill-column-mode 1))
   (use-package visual-fill-column
     :hook (org-mode . mz/org-mode-visual-fill))
-#+end_src
+
+  ;;org-pretty-entities makes characters like
+  ;;\under appear as _ (underscore).
+  ;;org-emphasis-markers hide markers like the forward slashes in
+  ;; /This is italic/
+  (setq org-pretty-entities nil
+        org-hide-emphasis-markers nil)
+
+  ;;To toggle showing and editing of emphasis markers
+  ;;use org-appear
+  (use-package org-appear
+    :hook (org-mode . org-appear-mode))
+    #+end_src
 *** Fonts
 
 #+begin_src emacs-lisp
@@ -757,7 +784,7 @@
                       (org-level-6 . 1.1)
                       (org-level-7 . 1.1)
                       (org-level-8 . 1.1)))
-        (set-face-attribute (car face) nil :font "Cantarell" :weight 'regular :height (cdr face)))
+        (set-face-attribute (car face) nil :font "Roboto" :weight 'regular :height (cdr face)))
       ;; Ensure that anything that should be fixed-pitch in Org files appears that way
       (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
       (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
@@ -790,10 +817,10 @@
     (setq org-log-into-drawer t)
   
     (setq org-agenda-files
-          '("~/.orgfiles/myorg.org"
-            "~/.orgfiles/work_diary.org"
-            "~/.orgfiles/someday.org"
-            "~/.orgfiles/emacs-todo.org"))
+          '("~/orgfiles/myorg.org"
+            "~/orgfiles/work_diary.org"
+            "~/orgfiles/someday.org"
+            "~/orgfiles/emacs-todo.org"))
   
     (require 'org-habit)
   
@@ -805,9 +832,9 @@
             (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
   
     (setq org-refile-targets
-          '(("~/.orgfiles/ARCHIVE/Archive.org" :maxlevel . 1)
-            ("~/.orgfiles/someday.org" :maxlevel . 1)
-            ("~/.orgfiles/ARCHIVE/Tasks.org" :maxlevel . 1)))
+          '(("~/orgfiles/ARCHIVE/Archive.org" :maxlevel . 1)
+            ("~/orgfiles/someday.org" :maxlevel . 1)
+            ("~/orgfiles/ARCHIVE/Tasks.org" :maxlevel . 1)))
   
     ;; Save Org buffers after refiling!
     (advice-add 'org-refile :after 'org-save-all-org-buffers)
@@ -875,28 +902,28 @@
   
     (setq org-capture-templates
           `(("t" "Tasks / Projects")
-            ("tt" "Task" entry (file+olp "~/.orgfiles/myorg.org" "Inbox")
+            ("tt" "Task" entry (file+olp "~/orgfiles/myorg.org" "Inbox")
              "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
             ("j" "Journal Entries")
             ("jj" "Journal" entry
-             (file+olp+datetree "~/.orgfiles/Journal.org")
+             (file+olp+datetree "~/orgfiles/Journal.org")
              "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
              ;; ,(dw/read-file-as-string "~/Notes/Templates/Daily.org")
              :clock-in :clock-resume
              :empty-lines 1)
             ("jm" "Meeting" entry
-             (file+olp+datetree "~/.orgfiles/Journal.org")
+             (file+olp+datetree "~/orgfiles/Journal.org")
              "* %<%I:%M %p> - %a :meetings:\n\n%?\n\n"
              :clock-in :clock-resume
              :empty-lines 1)
             ("w" "Workflows")
-            ("we" "Checking Email" entry (file+olp+datetree "~/.orgfiles/Journal.org")
+            ("we" "Checking Email" entry (file+olp+datetree "~/orgfiles/Journal.org")
              "* Checking Email :email:\n\n%?" :clock-in :clock-resume :empty-lines 1)
             ("m" "Metrics Capture")
-            ("mw" "Weight" table-line (file+headline "~/.orgfiles/Metrics.org" "Weight")
+            ("mw" "Weight" table-line (file+headline "~/orgfiles/Metrics.org" "Weight")
              "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
             ("o" "Office")
-            ("oo" "Task" entry (file+olp "~/.orgfiles/work_diary.org" "Inbox")
+            ("oo" "Task" entry (file+olp "~/orgfiles/work_diary.org" "Inbox")
              "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)))
     (require 'org-tempo)
   
@@ -1088,5 +1115,8 @@
 
 * Emacs save sessions
 #+begin_src emacs-lisp
-(desktop-save-mode 1)
+;;Disabled for now because it is 
+;;causing issues with PID conflicts 
+;;TODO : Read manual
+;;(desktop-save-mode 1)
 #+end_src
