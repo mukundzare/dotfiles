@@ -6,22 +6,32 @@
 * Custom functions
 ** Git grep
 #+begin_src emacs-lisp
-  (defun mz/counsel-git-grep (dir)
-    (counsel-git-grep (thing-at-point 'word t)
+  (defun mz/counsel-git-grep
+      (dir use-thing-at-point?)
+    (counsel-git-grep (and use-thing-at-point? (thing-at-point 'word t))
                       (expand-file-name dir)))
 #+end_src
 ** OPX development
 *** Git grep within the development repository
 #+begin_src emacs-lisp
-  (defun mz/counsel-git-grep-opx  ()
-    (interactive)
-    (mz/counsel-git-grep "~/opx/dev"))
+  (defun mz/opx-buffer-p ()
+    "Returns true if the currently opened buffer's file's extension is either
+    ojs or pjs"
+    (when (buffer-file-name)
+      (let ((buffer-ext (file-name-extension (buffer-file-name))))
+        (some (lambda (ext) (equal ext
+                                   buffer-ext))
+              '("ojs" "pjs")))))
+
+    (defun mz/counsel-git-grep-opx  ()
+      (interactive)
+      (mz/counsel-git-grep "~/opx/dev" (mz/opx-buffer-p)))
 #+end_src
 *** Git grep within the standard repo
 #+begin_src emacs-lisp
   (defun mz/counsel-git-grep-std  ()
     (interactive)
-    (mz/counsel-git-grep "~/opx/v6_3_6_standard_scripts"))
+    (mz/counsel-git-grep "~/opx/v6_3_6_standard_scripts" (mz/opx-buffer-p)))
 #+end_src
 ** Frequent file management
 #+begin_src emacs-lisp
@@ -403,6 +413,10 @@
   ;;aw-keys - the list of initial characters used in window labels:
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 #+end_src
+** Navigation
+#+begin_src emacs-lisp
+  (global-set-key (kbd "C-:") 'evil-avy-goto-char)
+#+end_src
 * Language specific
 ** HTML
 
@@ -421,9 +435,17 @@
   (add-hook 'clojure-mode 'enable-paredit-mode)
   (add-hook 'clojurescript-mode 'enable-paredit-mode)
 
+;; First install the package:
+(use-package flycheck-clj-kondo
+  :ensure t)
+
   ;; key bindings and code colorization for Clojure
   ;; https://github.com/clojure-emacs/clojure-mode
-  (use-package clojure-mode)
+;; then install the checker as soon as `clojure-mode' is loaded
+(use-package clojure-mode
+  :ensure t
+  :config
+  (require 'flycheck-clj-kondo))
 
   ;; extra syntax highlighting for clojure
   (use-package clojure-mode-extra-font-locking)
@@ -475,6 +497,48 @@
     :config
     (setq yas-snippet-dirs '("~/Brain-dump/yasnippets"))
     (yas-global-mode 1))
+#+end_src
+** Marginalia
+#+begin_src emacs-lisp
+(use-package marginalia
+    :ensure t
+    :config
+    (marginalia-mode))
+#+end_src
+
+** Embark
+#+begin_src emacs-lisp
+  (use-package embark
+    :ensure t
+
+    :bind
+    (("C-." . embark-act)         ;; pick some comfortable binding
+     ("C-;" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+
+    :init
+
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
+
+    :config
+
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
+#+end_src
+
+** consult-dir
+#+begin_src emacs-lisp
+;; (use-package consult-dir
+;;    :ensure t
+;;    :bind (("C-x C-d" . consult-dir)
+;;           :map minibuffer-local-completion-map
+;;           ("C-x C-d" . consult-dir)
+;;           ("C-x C-j" . consult-dir-jump-file)))
+
 #+end_src
 * Development related
 ** Projectile
@@ -974,42 +1038,42 @@
 #+end_src
 ** Org-roam
 #+begin_src emacs-lisp
-  ;; Use org-roam
-  (use-package org-roam
-    :straight (:host github :repo "org-roam/org-roam"
-                     :files (:defaults "extensions/*"))
-    :ensure t
-    :init
-    (setq org-roam-v2-ack t)
-    :custom
-    (org-roam-directory "~/RoamNotes")
-    (org-roam-completion-everywhere t)
-    (org-roam-capture-templates
-     '(("d" "default" plain
-        "%?"
-        :if-new (file+head "%<%Y%m%d%H%M%S>-$(slug).org" "#+title:${title}\n")
-        :unnarrowed t)))
-    :bind (("C-c n l" . org-roam-buffer-toggle)
-           ("C-c n f" . org-roam-node-find)
-           ("C-c n i" . org-roam-node-insert)
-           :map org-mode-map
-           ("C-M-i" . completion-at-point))
-    :config
-    (org-roam-setup)
-    ;;(org-roam-db-autosync-mode)
-    (org-roam-db-sync 'force))
-  
+   ;; Use org-roam
+   (use-package org-roam
+     :straight (:host github :repo "org-roam/org-roam"
+                      :files (:defaults "extensions/*"))
+     :ensure t
+     :init
+     (setq org-roam-v2-ack t)
+     :custom
+     (org-roam-directory "~/RoamNotes")
+     (org-roam-completion-everywhere t)
+     ;;(org-roam-capture-templates
+     ;; '(("d" "default" plain
+     ;;    "%?"
+     ;;    :if-new (file+head "%<%Y%m%d%H%M%S>-$(slug).org" "#+title:${title}\n")
+     ;;    :unnarrowed t)))
+     :bind (("C-c n l" . org-roam-buffer-toggle)
+            ("C-c n f" . org-roam-node-find)
+            ("C-c n i" . org-roam-node-insert)
+            :map org-mode-map
+            ("C-M-i" . completion-at-point))
+     :config
+     (org-roam-setup)
+     ;(org-roam-db-autosync-mode)
+     (org-roam-db-sync 'force))
+
   ;;Org-roam v2 UI
- ;; (use-package org-roam-ui
- ;;   :straight
- ;;   (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
- ;;   :after org-roam
- ;;   ;;:hook (after-init . org-roam-ui-mode)
- ;;   :config
- ;;   (setq org-roam-ui-sync-theme t
- ;;         org-roam-ui-follow t
- ;;         org-roam-ui-update-on-save t
- ;;         org-roam-ui-open-on-start nil))
+   (use-package org-roam-ui
+     :straight
+     (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+     :after org-roam
+     ;;:hook (after-init . org-roam-ui-mode)
+     :config
+     (setq org-roam-ui-sync-theme t
+           org-roam-ui-follow t
+           org-roam-ui-update-on-save t
+           org-roam-ui-open-on-start nil))
 #+end_src
 * History config
 #+begin_src emacs-lisp
