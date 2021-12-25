@@ -157,6 +157,7 @@ alias lt='ls -lt | head -20'
 # Get the 20 top last modified files and folders in this directoy
 alias alt='ls -alht | head -20'
 
+alias ll='ls -alht' 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
