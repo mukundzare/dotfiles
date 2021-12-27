@@ -8,6 +8,81 @@
 #+begin_src emacs-lisp
 ;;; -*- lexical-binding: t; -*-
 #+end_src
+* Constants
+#+begin_src emacs-lisp
+
+  (defconst sys/win32p
+    (eq system-type 'windows-nt)
+    "Are we running on a WinTel system?")
+
+  (defconst sys/linuxp
+    (eq system-type 'gnu/linux)
+    "Are we running on a GNU/Linux system?")
+
+  (defconst sys/macp
+    (eq system-type 'darwin)
+    "Are we running on a Mac system?")
+
+  (defconst sys/mac-x-p
+    (and (display-graphic-p) sys/macp)
+    "Are we running under X on a Mac system?")
+
+  (defconst sys/mac-ns-p
+    (eq window-system 'ns)
+    "Are we running on a GNUstep or Macintosh Cocoa display?")
+
+  (defconst sys/mac-cocoa-p
+    (featurep 'cocoa)
+    "Are we running with Cocoa on a Mac system?")
+
+  (defconst sys/mac-port-p
+    (eq window-system 'mac)
+    "Are we running a macport build on a Mac system?")
+
+  (defconst sys/linux-x-p
+    (and (display-graphic-p) sys/linuxp)
+    "Are we running under X on a GNU/Linux system?")
+
+  (defconst sys/cygwinp
+    (eq system-type 'cygwin)
+    "Are we running on a Cygwin system?")
+
+  (defconst sys/rootp
+    (string-equal "root" (getenv "USER"))
+    "Are you using ROOT user?")
+
+  (defconst emacs/>=25p
+    (>= emacs-major-version 25)
+    "Emacs is 25 or above.")
+
+  (defconst emacs/>=26p
+    (>= emacs-major-version 26)
+    "Emacs is 26 or above.")
+
+  (defconst emacs/>=25.3p
+    (or emacs/>=26p
+        (and (= emacs-major-version 25)
+             (>= emacs-minor-version 3)))
+    "Emacs is 25.3 or above.")
+
+  (defconst emacs/>=25.2p
+    (or emacs/>=26p
+        (and (= emacs-major-version 25)
+             (>= emacs-minor-version 2)))
+    "Emacs is 25.2 or above.")
+
+  (defconst emacs/>=27p
+    (>= emacs-major-version 27)
+    "Emacs is 27 or above.")
+
+  (defconst emacs/>=28p
+    (>= emacs-major-version 28)
+    "Emacs is 28 or above.")
+
+  (defconst emacs/>=29p
+    (>= emacs-major-version 29)
+    "Emacs is 29 or above.")
+#+end_src
 * Custom functions
 ** Git grep
 #+begin_src emacs-lisp
@@ -54,8 +129,8 @@
     "Location of the emacs init.el file")
 
   (defun mz/get-open-buffer (file-location)
-    "Open the FILE-LOCATION's buffer if it exists
-     else open the file located at FILE-LOCATION and return the buffer"
+    "Open the  FILE-LOCATION's buffer  if it  exists else  open the
+     file located at FILE-LOCATION and return the buffer"
     (or (get-file-buffer file-location)
         (find-file-noselect file-location)))
 
@@ -75,9 +150,10 @@
 
   ;;Reload my init.el
   (defun mz/reload-init-el ()
-    "Open a new buffer for init.el, eval the contents.
-                  If a buffer already exists, then revert the buffer contents to the current file contents on the disk and eval the contents.
-                  In both the cases above, the init.el buffers will be killed."
+    "Open a new buffer for init.el,  eval the contents. If a buffer
+  already exists,  then revert the  buffer contents to  the current
+  file contents  on the  disk and  eval the  contents. In  both the
+  cases above, the init.el buffers will be killed."
     (interactive)
     (let ((init-buffer
            (mz/get-open-buffer mz/emacs-init-el-location)))
@@ -179,6 +255,12 @@
   ;;Confirm if I want to exit emacs
   (setq confirm-kill-emacs 'y-or-n-p)
 
+  (winner-mode 1)
+
+  (blink-cursor-mode -1)
+
+;; Sentences should end after single space.
+  (setq sentence-end-double-space nil)
 #+end_src
 
 * Font configuration
@@ -189,8 +271,8 @@
                       ;;:family "Jetbrains Mono"
                       ;;:family "JetBrains Mono NL"
                       ;;:family "clearlyu"
-                      :family "Source Code Pro"
-                      :height 95
+                      :family "Cascadia Code PL"
+                      :height 100
                       :weight 'normal
                       :width 'normal)
 
@@ -198,15 +280,16 @@
   (set-face-attribute 'fixed-pitch nil
                       ;;:font "Jetbrains Mono"
                       ;;:font "Fira Code"
-                      :font "Source Code Pro"
+                      ;;:font "Source Code Pro"
+                      :font "Cascadia Code PL"
                       :height 100
                       :weight 'normal
                       :width 'normal)
 
   ;; Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
-                      :font "Roboto"
-                      :height 110)
+                      :font "Source Serif Pro"
+                      :height 120)
 #+end_src
 
 * Key bindings
@@ -359,7 +442,7 @@
 
   ;;Sets up the working buffer to be darker than
   ;;rest of the buffers
-  (solaire-global-mode +1)
+  ;(solaire-global-mode +1)
 
   (use-package circadian
     :ensure t
@@ -438,6 +521,137 @@
 #+begin_src emacs-lisp
   (global-set-key (kbd "C-:") 'evil-avy-goto-char)
 #+end_src
+** Highlighting
+#+begin_src emacs-lisp
+    ;; Highlight the current line
+    (use-package hl-line
+      :ensure nil
+      :hook ((after-init . global-hl-line-mode)
+             ((dashboard-mode eshell-mode shell-mode term-mode vterm-mode) .
+              (lambda () (setq-local global-hl-line-mode nil)))))
+
+    ;; Highlight matching parens
+    (use-package paren
+      :ensure nil
+      :hook (after-init . show-paren-mode)
+      :init (setq show-paren-when-point-inside-paren t
+                  show-paren-when-point-in-periphery t)
+      :config
+      (with-no-warnings
+        ;; Display matching line for off-screen paren.
+        (defun display-line-overlay (pos str &optional face)
+          "Display line at POS as STR with FACE.
+
+       FACE defaults to inheriting from default and highlight."
+          (let ((ol (save-excursion
+                      (goto-char pos)
+                      (make-overlay (line-beginning-position)
+                                    (line-end-position)))))
+            (overlay-put ol 'display str)
+            (overlay-put ol 'face
+                         (or face '(:inherit highlight)))
+            ol))
+
+        (defvar-local show-paren--off-screen-overlay nil)
+        (defun show-paren-off-screen (&rest _args)
+          "Display matching line for off-screen paren."
+          (when (overlayp show-paren--off-screen-overlay)
+            (delete-overlay show-paren--off-screen-overlay))
+          ;; Check if it's appropriate to show match info,
+          (when (and (overlay-buffer show-paren--overlay)
+                     (not (or cursor-in-echo-area
+                              executing-kbd-macro
+                              noninteractive
+                              (minibufferp)
+                              this-command))
+                     (and (not (bobp))
+                          (memq (char-syntax (char-before)) '(?\) ?\$)))
+                     (= 1 (logand 1 (- (point)
+                                       (save-excursion
+                                         (forward-char -1)
+                                         (skip-syntax-backward "/\\")
+                                         (point))))))
+            ;; Rebind `minibuffer-message' called by `blink-matching-open'
+            ;; to handle the overlay display.
+            (cl-letf (((symbol-function #'minibuffer-message)
+                       (lambda (msg &rest args)
+                         (let ((msg (apply #'format-message msg args)))
+                           (setq show-paren--off-screen-overlay
+                                 (display-line-overlay
+                                  (window-start) msg ))))))
+              (blink-matching-open))))
+        (advice-add #'show-paren-function :after #'show-paren-off-screen)))
+
+    ;; Highlight indentations
+    (use-package highlight-indent-guides
+      :diminish
+      :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)
+      :init (setq highlight-indent-guides-method 'character
+                  highlight-indent-guides-responsive 'top
+                  highlight-indent-guides-suppress-auto-error t)
+      :config
+      (with-no-warnings
+        ;; Don't display first level of indentation
+        (defun my-indent-guides-for-all-but-first-column (level responsive display)
+          (unless (< level 1)
+            (highlight-indent-guides--highlighter-default level responsive display)))
+        (setq highlight-indent-guides-highlighter-function
+              #'my-indent-guides-for-all-but-first-column)
+
+        ;; Disable in `macrostep' expanding
+        (with-eval-after-load 'macrostep
+          (advice-add #'macrostep-expand
+                      :after (lambda (&rest _)
+                               (when highlight-indent-guides-mode
+                                 (highlight-indent-guides-mode -1))))
+          (advice-add #'macrostep-collapse
+                      :after (lambda (&rest _)
+                               (when (derived-mode-p 'prog-mode 'yaml-mode)
+                                 (highlight-indent-guides-mode 1)))))
+
+        ;; Don't display indentations in `swiper'
+        ;; https://github.com/DarthFennec/highlight-indent-guides/issues/40
+        (with-eval-after-load 'ivy
+          (defun my-ivy-cleanup-indentation (str)
+            "Clean up indentation highlighting in ivy minibuffer."
+            (let ((pos 0)
+                  (next 0)
+                  (limit (length str))
+                  (prop 'highlight-indent-guides-prop))
+              (while (and pos next)
+                (setq next (text-property-not-all pos limit prop nil str))
+                (when next
+                  (setq pos (text-property-any next limit prop nil str))
+                  (ignore-errors
+                    (remove-text-properties next pos '(display nil face nil) str))))))
+          (advice-add #'ivy-cleanup-string :after #'my-ivy-cleanup-indentation))))
+
+  ;; Colorize color names in buffers
+  (use-package rainbow-mode
+    :diminish
+    :bind (:map special-mode-map
+           ("w" . rainbow-mode))
+    :hook ((html-mode php-mode) . rainbow-mode)
+    :config
+    (with-no-warnings
+      ;; HACK: Use overlay instead of text properties to override `hl-line' faces.
+      ;; @see https://emacs.stackexchange.com/questions/36420
+      (defun my-rainbow-colorize-match (color &optional match)
+        (let* ((match (or match 0))
+               (ov (make-overlay (match-beginning match) (match-end match))))
+          (overlay-put ov 'ovrainbow t)
+          (overlay-put ov 'face `((:foreground ,(if (> 0.5 (rainbow-x-color-luminance color))
+                                                    "white" "black"))
+                                  (:background ,color)))))
+      (advice-add #'rainbow-colorize-match :override #'my-rainbow-colorize-match)
+
+      (defun my-rainbow-clear-overlays ()
+        "Clear all rainbow overlays."
+        (remove-overlays (point-min) (point-max) 'ovrainbow t))
+      (advice-add #'rainbow-turn-off :after #'my-rainbow-clear-overlays)))
+
+
+#+end_src
 * Language specific
 ** HTML
 #+begin_src emacs-lisp
@@ -511,14 +725,17 @@
 #+end_src
 ** Company mode
 #+begin_src emacs-lisp
-  (use-package company
-    :init
-    (add-hook 'after-init-hook 'global-company-mode))
+(use-package company
+  :init
+  (add-hook 'after-init-hook 'global-company-mode)
+  :config
+  (use-package company-box
+    :hook (company-mode . company-box-mode)))
 
-  ;;Company-quickhelp for popup documentation
-  (use-package company-quickhelp
-    :config
-    (company-quickhelp-mode))
+;;Company-quickhelp for popup documentation
+(use-package company-quickhelp
+  :config
+  (company-quickhelp-mode))
 
 #+end_src
 ** YASnippet
@@ -767,11 +984,47 @@
     :config
     (evil-collection-define-key 'normal 'dired-mode-map
       "h" 'dired-single-up-directory
-      "l" 'dired-single-buffer))
+      "l" 'dired-single-buffer)
+    (setq dired-recursive-deletes 'always
+          dired-recursive-copies 'always)
+
+  ;; Show git info in dired
+    (use-package dired-git-info
+    :bind (:map dired-mode-map
+                ("C-c g" . dired-git-info-mode)))
+    (when sys/macp
+      ;; Suppress the warning: `ls does not support --dired'.
+      (setq dired-use-ls-dired nil)
+
+      (when (executable-find "gls")
+        ;; Use GNU ls as `gls' from `coreutils' if available.
+        (setq insert-directory-program "gls")))
+
+    (when (or (and sys/macp (executable-find "gls"))
+              (and (not sys/macp) (executable-find "ls")))
+      ;; Using `insert-directory-program'
+      (setq ls-lisp-use-insert-directory-program t)
+
+      ;; Show directory first
+      (setq dired-listing-switches "-alh --group-directories-first")
+
+      ;; Quick sort dired buffers via hydra
+      (use-package dired-quick-sort
+        :bind (:map dired-mode-map
+                    ("S" . hydra-dired-quick-sort/body)))))
+
+
+
+  ;; Allow rsync from dired buffers
+  (use-package dired-rsync
+    :bind (:map dired-mode-map
+                ("C-c C-r" . dired-rsync)))
 
   (use-package dired-single)
 
   (use-package all-the-icons-dired
+    :diminish
+    :init (setq all-the-icons-dired-monochrome nil)
     :hook (dired-mode . all-the-icons-dired-mode))
 
   (use-package dired-open
@@ -786,7 +1039,40 @@
     :config
     (evil-collection-define-key 'normal 'dired-mode-map
       "H" 'dired-hide-dotfiles-mode))
-  (require 'dired-x)
+
+  ;;Colourful dired
+  (use-package diredfl
+    :init (diredfl-global-mode 1))
+
+  ;; Extra Dired functionality
+  (use-package dired-aux :ensure nil)
+  (use-package dired-x
+    :ensure nil
+    :demand
+    :config
+    (let ((cmd (cond (sys/mac-x-p "open")
+                     (sys/linux-x-p "xdg-open")
+                     (sys/win32p "start")
+                     (t ""))))
+      (setq dired-guess-shell-alist-user
+            `(("\\.pdf\\'" ,cmd)
+              ("\\.docx\\'" ,cmd)
+              ("\\.\\(?:djvu\\|eps\\)\\'" ,cmd)
+              ("\\.\\(?:jpg\\|jpeg\\|png\\|gif\\|xpm\\)\\'" ,cmd)
+              ("\\.\\(?:xcf\\)\\'" ,cmd)
+              ("\\.csv\\'" ,cmd)
+              ("\\.tex\\'" ,cmd)
+              ("\\.\\(?:mp4\\|mkv\\|avi\\|flv\\|rm\\|rmvb\\|ogv\\)\\(?:\\.part\\)?\\'" ,cmd)
+              ("\\.\\(?:mp3\\|flac\\)\\'" ,cmd)
+              ("\\.html?\\'" ,cmd)
+              ("\\.md\\'" ,cmd))))
+
+    (setq dired-omit-files
+          (concat dired-omit-files
+                  "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*")))
+  ;; `find-dired' alternative using `fd'
+  (when (executable-find "fd")
+    (use-package fd-dired))
 #+end_src
 ** Recent files
 #+begin_src emacs-lisp
@@ -865,7 +1151,7 @@
   (defun mz/org-mode-setup ()
     (org-indent-mode)
     (variable-pitch-mode 1)
-    (visual-line-mode 1)
+    (global-visual-line-mode 1)
     (setq evil-auto-indent nil)
     (evil-define-key '(normal insert visual) org-mode-map (kbd "TAB") 'org-cycle))
 
@@ -889,6 +1175,16 @@
   (use-package org-appear
     :hook (org-mode . org-appear-mode))
 #+end_src
+*** Source code blocks
+#+begin_src emacs-lisp
+  (require 'color)
+  (defun color-darken-or-lighten-name ()
+    (let ((face-bg-color (face-attribute 'default
+                                         :background)))
+      (if (kaolin-themes--color-dark-p face-bg-color)
+          (color-lighten-name face-bg-color 5)
+        (color-darken-name face-bg-color 3))))
+#+end_src
 *** Fonts
 
 #+begin_src emacs-lisp
@@ -897,19 +1193,19 @@
   (defun mz/org-font-setup ()
     ;; Replace list hyphen with dot
     (font-lock-add-keywords 'org-mode
-                            '(("^ *\\([-]\\) "
-                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+			    '(("^ *\\([-]\\) "
+			       (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
     ;; Set faces for heading levels
     (with-eval-after-load 'org-faces
       (dolist (face '((org-level-1 . 1.2)
-                      (org-level-2 . 1.1)
-                      (org-level-3 . 1.05)
-                      (org-level-4 . 1.0)
-                      (org-level-5 . 1.1)
-                      (org-level-6 . 1.1)
-                      (org-level-7 . 1.1)
-                      (org-level-8 . 1.1)))
-        (set-face-attribute (car face) nil :font "Roboto" :weight 'regular :height (cdr face)))
+		      (org-level-2 . 1.1)
+		      (org-level-3 . 1.05)
+		      (org-level-4 . 1.0)
+		      (org-level-5 . 1.1)
+		      (org-level-6 . 1.1)
+		      (org-level-7 . 1.1)
+		      (org-level-8 . 1.1)))
+	(set-face-attribute (car face) nil :font "Source Serif Pro" :weight 'regular :height (cdr face)))
       ;; Ensure that anything that should be fixed-pitch in Org files appears that way
       (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
       (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
@@ -917,7 +1213,10 @@
       (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
       (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
       (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-      (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)))
+      (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
+      (set-face-attribute 'org-block nil
+			  :background (color-darken-or-lighten-name)) ))
+
 #+end_src
 *** Bullet points
 
