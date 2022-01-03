@@ -83,6 +83,13 @@
     (>= emacs-major-version 29)
     "Emacs is 29 or above.")
 #+end_src
+* Centaur functions
+#+begin_src emacs-lisp
+(defun icons-displayable-p ()
+  "Return non-nil if `all-the-icons' is displayable."
+  (and (display-graphic-p)
+       (require 'all-the-icons nil t)))
+#+end_src
 * Custom functions
 ** Git grep
 #+begin_src emacs-lisp
@@ -204,8 +211,8 @@
 #+end_src
 * Planisware config for emacs
 #+begin_src emacs-lisp
-  ;(defvar *opx2-network-folder-work-path* (file-name-as-directory "~/opx/plw-devenv/runtime/dist/"))
-  ;(load (format "%semacs.el" *opx2-network-folder-work-path*))
+                                          ;(defvar *opx2-network-folder-work-path* (file-name-as-directory "~/opx/plw-devenv/runtime/dist/"))
+                                          ;(load (format "%semacs.el" *opx2-network-folder-work-path*))
 #+end_src
 
 * Basic UI Configuration
@@ -259,8 +266,23 @@
 
   (blink-cursor-mode -1)
 
-;; Sentences should end after single space.
-  (setq sentence-end-double-space nil)
+  ;; Sentences should end after single space.
+  (setq-default major-mode 'text-mode
+                fill-column 80
+                tab-width 4
+                indent-tabs-mode nil)     ; Permanently indent with spaces, never with TABs
+
+  (setq inhibit-compacting-font-caches t  ; Don’t compact font caches during GC.
+        delete-by-moving-to-trash t       ; Deleting files go to OS's trash folder
+        make-backup-files nil             ; Forbide to make backup files
+        auto-save-default nil             ; Disable auto save
+
+        uniquify-buffer-name-style 'post-forward-angle-brackets ; Show path if names are same
+        adaptive-fill-regexp "[ t]+|[ t]*([0-9]+.|*+)[ t]*"
+        adaptive-fill-first-line-regexp "^* *$"
+        sentence-end "\\([。！？]\\|……\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]*"
+        sentence-end-double-space nil
+        word-wrap-by-category t)
 #+end_src
 
 * Font configuration
@@ -315,6 +337,7 @@
       "og" '(:ignore t :which-key "git grep")
       "ow" '(mz/find-work-diary :which-key "Work diary")
       "tt" '(counsel-load-theme :which-key "choose theme")
+      "tm" '(modus-themes-toggle :which-key "toggle modus themes")
       "db" '(ediff-buffers :which-key "ediff-buffers")
       "df" '(ediff-files :which-key "ediff-files")
       "ogg" '(mz/counsel-git-grep-opx :which-key "Search OPX BEG repo")
@@ -350,6 +373,67 @@
     (evil-org-agenda-set-keys))
 
   (use-package hydra)
+  ;; Pretty hydra
+  (use-package pretty-hydra
+    :bind ("<f6>" . toggles-hydra/body)
+    :init
+    (cl-defun pretty-hydra-title (title &optional icon-type icon-name
+                                        &key face height v-adjust)
+      "Add an icon in the hydra title."
+      (let ((face (or face `(:foreground ,(face-background 'highlight))))
+            (height (or height 1.0))
+            (v-adjust (or v-adjust 0.0)))
+        (concat
+         (when (and (icons-displayable-p) icon-type icon-name)
+           (let ((f (intern (format "all-the-icons-%s" icon-type))))
+             (when (fboundp f)
+               (concat
+                (apply f (list icon-name :face face :height height :v-adjust v-adjust))
+                " "))))
+         (propertize title 'face face))))
+
+    ;; Global toggles
+    (with-no-warnings
+      (pretty-hydra-define toggles-hydra (:title (pretty-hydra-title "Toggles" 'faicon "toggle-on" :v-adjust -0.1)
+                                                 :color amaranth :quit-key "q")
+        ("Basic"
+         (("n" (if (fboundp 'display-line-numbers-mode)
+                   (display-line-numbers-mode (if display-line-numbers-mode -1 1))
+                 (global-linum-mode (if global-linum-mode -1 1)))
+           "line number"
+           :toggle (or (bound-and-true-p display-line-numbers-mode) global-linum-mode))
+          ("a" global-aggressive-indent-mode "aggressive indent" :toggle t)
+          ("d" global-hungry-delete-mode "hungry delete" :toggle t)
+          ("e" electric-pair-mode "electric pair" :toggle t)
+          ("c" flyspell-mode "spell check" :toggle t)
+          ("s" prettify-symbols-mode "pretty symbol" :toggle t)
+          ("l" global-page-break-lines-mode "page break lines" :toggle t)
+          ("b" display-battery-mode "battery" :toggle t)
+          ("i" display-time-mode "time" :toggle t)
+          ("m" doom-modeline-mode "modern mode-line" :toggle t))
+         "Highlight"
+         (("h l" global-hl-line-mode "line" :toggle t)
+          ("h p" show-paren-mode "paren" :toggle t)
+          ("h s" symbol-overlay-mode "symbol" :toggle t)
+          ("h r" rainbow-mode "rainbow" :toggle t)
+          ("h w" (setq-default show-trailing-whitespace (not show-trailing-whitespace))
+           "whitespace" :toggle show-trailing-whitespace)
+          ("h d" rainbow-delimiters-mode "delimiter" :toggle t)
+          ("h i" highlight-indent-guides-mode "indent" :toggle t)
+          ("h t" global-hl-todo-mode "todo" :toggle t))
+         "Program"
+         (("f" flycheck-mode "flycheck" :toggle t)
+          ("F" flymake-mode "flymake" :toggle t)
+          ("o" origami-mode "folding" :toggle t)
+          ("O" hs-minor-mode "hideshow" :toggle t)
+          ("u" subword-mode "subword" :toggle t)
+          ("W" which-function-mode "which function" :toggle t)
+          ("E" toggle-debug-on-error "debug on error" :toggle (default-value 'debug-on-error))
+          ("Q" toggle-debug-on-quit "debug on quit" :toggle (default-value 'debug-on-quit))
+          ("v" global-diff-hl-mode "gutter" :toggle t)
+          ("V" diff-hl-flydiff-mode "live gutter" :toggle t)
+          ("M" diff-hl-margin-mode "margin gutter" :toggle t)
+          ("D" diff-hl-dired-mode "dired gutter" :toggle t))))))
 
   (defhydra hydra-text-scale (:timeout 4)
     "scale text"
@@ -420,20 +504,104 @@
   (use-package all-the-icons)
 
   (use-package doom-modeline
-    :ensure t
-    :init (doom-modeline-mode 1))
+    :hook (after-init . doom-modeline-mode)
+    :init
+    (setq doom-modeline-minor-modes nil)
+    ;; Prevent flash of unstyled modeline at startup
+    (unless after-init-time
+      (setq-default mode-line-format nil))
+    :bind (:map doom-modeline-mode-map
+                ("C-<f6>" . doom-modeline-hydra/body))
+    :pretty-hydra
+    ((:title (pretty-hydra-title "Mode Line" 'fileicon "emacs" :face 'all-the-icons-purple :v-adjust -0.1)
+             :color amaranth :quit-key "q")
+     ("Icon"
+      (("i" (setq doom-modeline-icon (not doom-modeline-icon))
+        "display icons" :toggle doom-modeline-icon)
+       ("u" (setq doom-modeline-unicode-fallback (not doom-modeline-unicode-fallback))
+        "unicode fallback" :toggle doom-modeline-unicode-fallback)
+       ("m" (setq doom-modeline-major-mode-icon (not doom-modeline-major-mode-icon))
+        "major mode" :toggle doom-modeline-major-mode-icon)
+       ("c" (setq doom-modeline-major-mode-color-icon (not doom-modeline-major-mode-color-icon))
+        "colorful major mode" :toggle doom-modeline-major-mode-color-icon)
+       ("s" (setq doom-modeline-buffer-state-icon (not doom-modeline-buffer-state-icon))
+        "buffer state" :toggle doom-modeline-buffer-state-icon)
+       ("o" (setq doom-modeline-buffer-modification-icon (not doom-modeline-buffer-modification-icon))
+        "modification" :toggle doom-modeline-buffer-modification-icon)
+       ("v" (setq doom-modeline-modal-icon (not doom-modeline-modal-icon))
+        "modal" :toggle doom-modeline-modal-icon))
+      "Segment"
+      (("H" (setq doom-modeline-hud (not doom-modeline-hud))
+        "hud" :toggle doom-modeline-hud)
+       ("M" (setq doom-modeline-minor-modes (not doom-modeline-minor-modes))
+        "minor modes" :toggle doom-modeline-minor-modes)
+       ("W" (setq doom-modeline-enable-word-count (not doom-modeline-enable-word-count))
+        "word count" :toggle doom-modeline-enable-word-count)
+       ("E" (setq doom-modeline-buffer-encoding (not doom-modeline-buffer-encoding))
+        "encoding" :toggle doom-modeline-buffer-encoding)
+       ("I" (setq doom-modeline-indent-info (not doom-modeline-indent-info))
+        "indent" :toggle doom-modeline-indent-info)
+       ("L" (setq doom-modeline-lsp (not doom-modeline-lsp))
+        "lsp" :toggle doom-modeline-lsp)
+       ("P" (setq doom-modeline-persp-name (not doom-modeline-persp-name))
+        "perspective" :toggle doom-modeline-persp-name)
+       ("G" (setq doom-modeline-github (not doom-modeline-github))
+        "github" :toggle doom-modeline-github)
+       ("N" (setq doom-modeline-gnus (not doom-modeline-gnus))
+        "gnus" :toggle doom-modeline-gnus)
+       ("U" (setq doom-modeline-mu4e (not doom-modeline-mu4e))
+        "mu4e" :toggle doom-modeline-mu4e)
+       ("R" (setq doom-modeline-irc (not doom-modeline-irc))
+        "irc" :toggle doom-modeline-irc)
+       ("F" (setq doom-modeline-irc-buffers (not doom-modeline-irc-buffers))
+        "irc buffers" :toggle doom-modeline-irc-buffers)
+       ("S" (progn
+              (setq doom-modeline-checker-simple-format (not doom-modeline-checker-simple-format))
+              (and (bound-and-true-p flycheck-mode) (flycheck-buffer)))
+        "simple checker" :toggle doom-modeline-checker-simple-format)
+       ("V" (setq doom-modeline-env-version (not doom-modeline-env-version))
+        "version" :toggle doom-modeline-env-version))
+      "Project Detection"
+      (("p f" (setq doom-modeline-project-detection 'ffip)
+        "ffip"
+        :toggle (eq doom-modeline-project-detection 'ffip))
+       ("p t" (setq doom-modeline-project-detection 'projectile)
+        "projectile"
+        :toggle (eq doom-modeline-project-detection 'projectile))
+       ("p p" (setq doom-modeline-project-detection 'project)
+        "project"
+        :toggle (eq doom-modeline-project-detection 'project))
+       ("p n" (setq doom-modeline-project-detection nil)
+        "disable"
+        :toggle (eq doom-modeline-project-detection nil)))
+      "Misc"
+      (("g" (progn
+              (message "Fetching GitHub notifications...")
+              (run-with-timer 300 nil #'doom-modeline--github-fetch-notifications)
+              (browse-url "https://github.com/notifications"))
+        "github notifications" :exit t)
+       ("e" (if (bound-and-true-p flycheck-mode)
+                (flycheck-list-errors)
+              (flymake-show-diagnostics-buffer))
+        "list errors" :exit t)
+       ("O" (if (bound-and-true-p grip-mode)
+                (grip-browse-preview)
+              (message "Not in preview"))
+        "browse preview" :exit t)
+       ("z h" (counsel-read-setq-expression 'doom-modeline-height) "set height")
+       ("z w" (counsel-read-setq-expression 'doom-modeline-bar-width) "set bar width")
+       ("z g" (counsel-read-setq-expression 'doom-modeline-github-interval) "set github interval")
+       ("z n" (counsel-read-setq-expression 'doom-modeline-gnus-timer) "set gnus interval")))))
 
   ;;Display time and date in modeline
-  (display-time)
-  (setq display-time-day-and-date t)
+  (use-package time
+    :ensure nil
+    :init (setq display-time-24hr-format t
+                display-time-day-and-date t))
 #+end_src
 ** Themes
 
 #+begin_src emacs-lisp
-  ;; make sure to use :defer keyword
-  (use-package apropospriate-theme :ensure :defer)
-  (use-package nord-theme :ensure :defer)
-
   ;;Install kaolin-themes
   (use-package kaolin-themes)
 
@@ -442,18 +610,23 @@
 
   ;;Sets up the working buffer to be darker than
   ;;rest of the buffers
-  ;(solaire-global-mode +1)
+  (solaire-global-mode +1)
 
-  (use-package circadian
-    :ensure t
+  (use-package modus-themes
+    :init
+    ;; Add all your customizations prior to loading the themes
+    (setq modus-themes-italic-constructs t
+          modus-themes-bold-constructs nil
+          modus-themes-org-blocks 'gray-background
+          modus-themes-mode-line '(borderless accented)
+          modus-themes-region '(bg-only no-extend))
+
+    ;; Load the theme files before enabling a theme (else you get an error).
+    (modus-themes-load-themes)
     :config
-    ;(setq calendar-latitude 48.9)
-    ;(setq calendar-longitude 9.2)
-    (setq calendar-latitude 19.7)
-    (setq calendar-longitude 72.2)
-    (setq circadian-themes '((:sunrise . modus-operandi)
-                             (:sunset  . modus-vivendi)))
-    (circadian-setup))
+    ;; Load the theme of your choice:
+    (modus-themes-load-operandi))
+
 #+end_src
 ** Rainbow delimiters
 
@@ -523,114 +696,114 @@
 #+end_src
 ** Highlighting
 #+begin_src emacs-lisp
-    ;; Highlight the current line
-    (use-package hl-line
-      :ensure nil
-      :hook ((after-init . global-hl-line-mode)
-             ((dashboard-mode eshell-mode shell-mode term-mode vterm-mode) .
-              (lambda () (setq-local global-hl-line-mode nil)))))
+  ;; Highlight the current line
+  (use-package hl-line
+    :ensure nil
+    :hook ((after-init . global-hl-line-mode)
+           ((dashboard-mode eshell-mode shell-mode term-mode vterm-mode) .
+            (lambda () (setq-local global-hl-line-mode nil)))))
 
-    ;; Highlight matching parens
-    (use-package paren
-      :ensure nil
-      :hook (after-init . show-paren-mode)
-      :init (setq show-paren-when-point-inside-paren t
-                  show-paren-when-point-in-periphery t)
-      :config
-      (with-no-warnings
-        ;; Display matching line for off-screen paren.
-        (defun display-line-overlay (pos str &optional face)
-          "Display line at POS as STR with FACE.
+  ;; Highlight matching parens
+  (use-package paren
+    :ensure nil
+    :hook (after-init . show-paren-mode)
+    :init (setq show-paren-when-point-inside-paren t
+                show-paren-when-point-in-periphery t)
+    :config
+    (with-no-warnings
+      ;; Display matching line for off-screen paren.
+      (defun display-line-overlay (pos str &optional face)
+        "Display line at POS as STR with FACE.
 
-       FACE defaults to inheriting from default and highlight."
-          (let ((ol (save-excursion
-                      (goto-char pos)
-                      (make-overlay (line-beginning-position)
-                                    (line-end-position)))))
-            (overlay-put ol 'display str)
-            (overlay-put ol 'face
-                         (or face '(:inherit highlight)))
-            ol))
+         FACE defaults to inheriting from default and highlight."
+        (let ((ol (save-excursion
+                    (goto-char pos)
+                    (make-overlay (line-beginning-position)
+                                  (line-end-position)))))
+          (overlay-put ol 'display str)
+          (overlay-put ol 'face
+                       (or face '(:inherit highlight)))
+          ol))
 
-        (defvar-local show-paren--off-screen-overlay nil)
-        (defun show-paren-off-screen (&rest _args)
-          "Display matching line for off-screen paren."
-          (when (overlayp show-paren--off-screen-overlay)
-            (delete-overlay show-paren--off-screen-overlay))
-          ;; Check if it's appropriate to show match info,
-          (when (and (overlay-buffer show-paren--overlay)
-                     (not (or cursor-in-echo-area
-                              executing-kbd-macro
-                              noninteractive
-                              (minibufferp)
-                              this-command))
-                     (and (not (bobp))
-                          (memq (char-syntax (char-before)) '(?\) ?\$)))
-                     (= 1 (logand 1 (- (point)
-                                       (save-excursion
-                                         (forward-char -1)
-                                         (skip-syntax-backward "/\\")
-                                         (point))))))
-            ;; Rebind `minibuffer-message' called by `blink-matching-open'
-            ;; to handle the overlay display.
-            (cl-letf (((symbol-function #'minibuffer-message)
-                       (lambda (msg &rest args)
-                         (let ((msg (apply #'format-message msg args)))
-                           (setq show-paren--off-screen-overlay
-                                 (display-line-overlay
-                                  (window-start) msg ))))))
-              (blink-matching-open))))
-        (advice-add #'show-paren-function :after #'show-paren-off-screen)))
+      (defvar-local show-paren--off-screen-overlay nil)
+      (defun show-paren-off-screen (&rest _args)
+        "Display matching line for off-screen paren."
+        (when (overlayp show-paren--off-screen-overlay)
+          (delete-overlay show-paren--off-screen-overlay))
+        ;; Check if it's appropriate to show match info,
+        (when (and (overlay-buffer show-paren--overlay)
+                   (not (or cursor-in-echo-area
+                            executing-kbd-macro
+                            noninteractive
+                            (minibufferp)
+                            this-command))
+                   (and (not (bobp))
+                        (memq (char-syntax (char-before)) '(?\) ?\$)))
+                   (= 1 (logand 1 (- (point)
+                                     (save-excursion
+                                       (forward-char -1)
+                                       (skip-syntax-backward "/\\")
+                                       (point))))))
+          ;; Rebind `minibuffer-message' called by `blink-matching-open'
+          ;; to handle the overlay display.
+          (cl-letf (((symbol-function #'minibuffer-message)
+                     (lambda (msg &rest args)
+                       (let ((msg (apply #'format-message msg args)))
+                         (setq show-paren--off-screen-overlay
+                               (display-line-overlay
+                                (window-start) msg ))))))
+            (blink-matching-open))))
+      (advice-add #'show-paren-function :after #'show-paren-off-screen)))
 
-    ;; Highlight indentations
-    (use-package highlight-indent-guides
-      :diminish
-      :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)
-      :init (setq highlight-indent-guides-method 'character
-                  highlight-indent-guides-responsive 'top
-                  highlight-indent-guides-suppress-auto-error t)
-      :config
-      (with-no-warnings
-        ;; Don't display first level of indentation
-        (defun my-indent-guides-for-all-but-first-column (level responsive display)
-          (unless (< level 1)
-            (highlight-indent-guides--highlighter-default level responsive display)))
-        (setq highlight-indent-guides-highlighter-function
-              #'my-indent-guides-for-all-but-first-column)
+  ;; Highlight indentations
+  (use-package highlight-indent-guides
+    :diminish
+    :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)
+    :init (setq highlight-indent-guides-method 'character
+                highlight-indent-guides-responsive 'top
+                highlight-indent-guides-suppress-auto-error t)
+    :config
+    (with-no-warnings
+      ;; Don't display first level of indentation
+      (defun my-indent-guides-for-all-but-first-column (level responsive display)
+        (unless (< level 1)
+          (highlight-indent-guides--highlighter-default level responsive display)))
+      (setq highlight-indent-guides-highlighter-function
+            #'my-indent-guides-for-all-but-first-column)
 
-        ;; Disable in `macrostep' expanding
-        (with-eval-after-load 'macrostep
-          (advice-add #'macrostep-expand
-                      :after (lambda (&rest _)
-                               (when highlight-indent-guides-mode
-                                 (highlight-indent-guides-mode -1))))
-          (advice-add #'macrostep-collapse
-                      :after (lambda (&rest _)
-                               (when (derived-mode-p 'prog-mode 'yaml-mode)
-                                 (highlight-indent-guides-mode 1)))))
+      ;; Disable in `macrostep' expanding
+      (with-eval-after-load 'macrostep
+        (advice-add #'macrostep-expand
+                    :after (lambda (&rest _)
+                             (when highlight-indent-guides-mode
+                               (highlight-indent-guides-mode -1))))
+        (advice-add #'macrostep-collapse
+                    :after (lambda (&rest _)
+                             (when (derived-mode-p 'prog-mode 'yaml-mode)
+                               (highlight-indent-guides-mode 1)))))
 
-        ;; Don't display indentations in `swiper'
-        ;; https://github.com/DarthFennec/highlight-indent-guides/issues/40
-        (with-eval-after-load 'ivy
-          (defun my-ivy-cleanup-indentation (str)
-            "Clean up indentation highlighting in ivy minibuffer."
-            (let ((pos 0)
-                  (next 0)
-                  (limit (length str))
-                  (prop 'highlight-indent-guides-prop))
-              (while (and pos next)
-                (setq next (text-property-not-all pos limit prop nil str))
-                (when next
-                  (setq pos (text-property-any next limit prop nil str))
-                  (ignore-errors
-                    (remove-text-properties next pos '(display nil face nil) str))))))
-          (advice-add #'ivy-cleanup-string :after #'my-ivy-cleanup-indentation))))
+      ;; Don't display indentations in `swiper'
+      ;; https://github.com/DarthFennec/highlight-indent-guides/issues/40
+      (with-eval-after-load 'ivy
+        (defun my-ivy-cleanup-indentation (str)
+          "Clean up indentation highlighting in ivy minibuffer."
+          (let ((pos 0)
+                (next 0)
+                (limit (length str))
+                (prop 'highlight-indent-guides-prop))
+            (while (and pos next)
+              (setq next (text-property-not-all pos limit prop nil str))
+              (when next
+                (setq pos (text-property-any next limit prop nil str))
+                (ignore-errors
+                  (remove-text-properties next pos '(display nil face nil) str))))))
+        (advice-add #'ivy-cleanup-string :after #'my-ivy-cleanup-indentation))))
 
   ;; Colorize color names in buffers
   (use-package rainbow-mode
     :diminish
     :bind (:map special-mode-map
-           ("w" . rainbow-mode))
+                ("w" . rainbow-mode))
     :hook ((html-mode php-mode) . rainbow-mode)
     :config
     (with-no-warnings
@@ -649,6 +822,64 @@
         "Clear all rainbow overlays."
         (remove-overlays (point-min) (point-max) 'ovrainbow t))
       (advice-add #'rainbow-turn-off :after #'my-rainbow-clear-overlays)))
+
+  ;; Volatile highlights for some operations
+  (use-package volatile-highlights
+    :diminish
+    :hook (after-init . volatile-highlights-mode)
+    :config
+    (with-no-warnings
+      (when (fboundp 'pulse-momentary-highlight-region)
+        (defun my-vhl-pulse (beg end &optional _buf face)
+          "Pulse the changes."
+          (pulse-momentary-highlight-region beg end face))
+        (advice-add #'vhl/.make-hl :override #'my-vhl-pulse))))
+
+  ;;Pulse current line
+  (use-package pulse
+    :ensure nil
+    :custom-face
+    (pulse-highlight-start-face ((t (:inherit region))))
+    (pulse-highlight-face ((t (:inherit region))))
+    :hook (((dumb-jump-after-jump
+             imenu-after-jump) . my-recenter-and-pulse)
+           ((bookmark-after-jump
+             magit-diff-visit-file
+             next-error) . my-recenter-and-pulse-line))
+    :init
+    (with-no-warnings
+      (defun my-pulse-momentary-line (&rest _)
+        "Pulse the current line."
+        (pulse-momentary-highlight-one-line (point)))
+
+      (defun my-pulse-momentary (&rest _)
+        "Pulse the region or the current line."
+        (if (fboundp 'xref-pulse-momentarily)
+            (xref-pulse-momentarily)
+          (my-pulse-momentary-line)))
+
+      (defun my-recenter-and-pulse(&rest _)
+        "Recenter and pulse the region or the current line."
+        (recenter)
+        (my-pulse-momentary))
+
+      (defun my-recenter-and-pulse-line (&rest _)
+        "Recenter and pulse the current line."
+        (recenter)
+        (my-pulse-momentary-line))
+
+      (dolist (cmd '(recenter-top-bottom
+                     other-window windmove-do-window-select
+                     ace-window aw--select-window
+                     pager-page-down pager-page-up
+                     treemacs-select-window
+                     symbol-overlay-basic-jump))
+        (advice-add cmd :after #'my-pulse-momentary-line))
+
+      (dolist (cmd '(pop-to-mark-command
+                     pop-global-mark
+                     goto-last-change))
+        (advice-add cmd :after #'my-recenter-and-pulse))))
 
 
 #+end_src
@@ -1081,28 +1312,50 @@
   (setq recentf-max-saved-items 25)
   (global-set-key "\C-x\ \C-r" 'recentf-open-files)
 #+end_src
+* Performance
+#+begin_src emacs-lisp
+  (with-no-warnings
+    ;; Optimization
+    (when sys/win32p
+      (setq w32-get-true-file-attributes nil   ; decrease file IO workload
+            w32-pipe-read-delay 0              ; faster IPC
+            w32-pipe-buffer-size (* 64 1024))) ; read more at a time (was 4K)
+    (unless sys/macp
+      (setq command-line-ns-option-alist nil))
+    (unless sys/linuxp
+      (setq command-line-x-option-alist nil))
+
+    ;; Increase how much is read from processes in a single chunk (default is 4kb)
+    (setq read-process-output-max #x10000)  ; 64kb
+
+    ;; Don't ping things that look like domain names.
+    (setq ffap-machine-p-known 'reject)
+
+    ;; Garbage Collector Magic Hack
+    (use-package gcmh
+      :diminish
+      :init
+      (setq gcmh-idle-delay 5
+            gcmh-high-cons-threshold #x1000000) ; 16MB
+      (gcmh-mode 1)))
+
+  (when emacs/>=27p
+    (use-package so-long
+      :ensure nil
+      :hook (after-init . global-so-long-mode)
+      :config (setq so-long-threshold 400)))
+#+end_src
 * Shell related
 ** Ubuntu
 *** Shell variables
 #+begin_src emacs-lisp
 
-  ;;Use the $PATH variable from the zsh shell
-
-  (defun set-exec-path-from-shell-PATH ()
-    "Set up Emacs' `exec-path' and PATH environment variable to match
-  that used by the user's shell.
-
-  This is particularly useful under Mac OS X and macOS, where GUI
-  apps are not started from a shell."
-    (interactive)
-    (let ((path-from-shell (replace-regexp-in-string
-                            "[ \t\n]*$" "" (shell-command-to-string
-                                            "$SHELL --login -c 'echo $PATH'"
-                                            ))))
-      (setenv "PATH" path-from-shell)
-      (setq exec-path (split-string path-from-shell path-separator))))
-
-  (set-exec-path-from-shell-PATH)
+(when (or sys/mac-x-p sys/linux-x-p (daemonp))
+  (use-package exec-path-from-shell
+    :init
+    (setq exec-path-from-shell-variables '("PATH" "MANPATH")
+          exec-path-from-shell-arguments '("-l"))
+    (exec-path-from-shell-initialize)))
 #+end_src
 ** Mac/Windows/X
 #+begin_src emacs-lisp
@@ -1175,37 +1428,24 @@
   (use-package org-appear
     :hook (org-mode . org-appear-mode))
 #+end_src
-*** Source code blocks
-#+begin_src emacs-lisp
-  (require 'color)
-  (defun color-darken-or-lighten-name ()
-    (let ((face-bg-color (face-attribute 'default
-                                         :background)))
-      (if (kaolin-themes--color-dark-p face-bg-color)
-          (color-lighten-name face-bg-color 5)
-        (color-darken-name face-bg-color 3))))
-#+end_src
 *** Fonts
-
 #+begin_src emacs-lisp
-
-
   (defun mz/org-font-setup ()
     ;; Replace list hyphen with dot
     (font-lock-add-keywords 'org-mode
-			    '(("^ *\\([-]\\) "
-			       (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+                            '(("^ *\\([-]\\) "
+                               (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
     ;; Set faces for heading levels
     (with-eval-after-load 'org-faces
       (dolist (face '((org-level-1 . 1.2)
-		      (org-level-2 . 1.1)
-		      (org-level-3 . 1.05)
-		      (org-level-4 . 1.0)
-		      (org-level-5 . 1.1)
-		      (org-level-6 . 1.1)
-		      (org-level-7 . 1.1)
-		      (org-level-8 . 1.1)))
-	(set-face-attribute (car face) nil :font "Source Serif Pro" :weight 'regular :height (cdr face)))
+                      (org-level-2 . 1.1)
+                      (org-level-3 . 1.05)
+                      (org-level-4 . 1.0)
+                      (org-level-5 . 1.1)
+                      (org-level-6 . 1.1)
+                      (org-level-7 . 1.1)
+                      (org-level-8 . 1.1)))
+        (set-face-attribute (car face) nil :font "Source Serif Pro" :weight 'regular :height (cdr face)))
       ;; Ensure that anything that should be fixed-pitch in Org files appears that way
       (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
       (set-face-attribute 'org-code nil   :inherit '(shadow fixed-pitch))
@@ -1213,9 +1453,7 @@
       (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
       (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
       (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
-      (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)
-      (set-face-attribute 'org-block nil
-			  :background (color-darken-or-lighten-name)) ))
+      (set-face-attribute 'org-checkbox nil :inherit 'fixed-pitch)))
 
 #+end_src
 *** Bullet points
@@ -1438,7 +1676,6 @@
 #+end_src
 * History config
 #+begin_src emacs-lisp
-
   (use-package undo-tree
     :ensure t
     :config
@@ -1547,9 +1784,41 @@
 * Session management
 #+begin_src emacs-lisp
   ;;Save minibuffer history
-  (savehist-mode 1)
 
-  ;;See also workspace management
+  (use-package savehist
+    :ensure nil
+    :hook (after-init . savehist-mode)
+    :init (setq enable-recursive-minibuffers t ; Allow commands in minibuffers
+                history-length 1000
+                savehist-additional-variables '(mark-ring
+                                                global-mark-ring
+                                                search-ring
+                                                regexp-search-ring
+                                                extended-command-history)
+                savehist-autosave-interval 300))
+
+  ;;Save place in files automatically
+  (use-package saveplace
+    :ensure nil
+    :hook (after-init . save-place-mode))
+
+  (use-package recentf
+    :ensure nil
+    :bind (("C-x C-r" . recentf-open-files))
+    :hook (after-init . recentf-mode)
+    :init (setq recentf-max-saved-items 300
+                recentf-exclude
+                '("\\.?cache" ".cask" "url" "COMMIT_EDITMSG\\'" "bookmarks"
+                  "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
+                  "\\.?ido\\.last$" "\\.revive$" "/G?TAGS$" "/.elfeed/"
+                  "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/"
+                  (lambda (file) (file-in-directory-p file package-user-dir))))
+    :config
+    (push (expand-file-name recentf-save-file) recentf-exclude)
+    (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
+
+  
+
 #+end_src
 * Workspace management
 Perspective el works for separating contexts of problems on which one is working including the ability to save window and buffer layouts
