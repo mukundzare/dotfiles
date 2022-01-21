@@ -163,6 +163,9 @@ alias ll='ls -alht'
 
 . "/home/zam4abt/.local/share/lscolors.sh"
 
+GPG_TTY=$(tty)
+export GPG_TTY
+
 export NETRC="~/dotfiles/"
 alias curl="gpg --batch -q -d ~/.netrc.gpg | curl --netrc-file /dev/stdin"
 
