@@ -114,11 +114,6 @@ fi
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias opxdev='cd ~/opx/dev'
-alias dev='ssh si-183l'
-alias test='ssh si-611l'
-alias prod5='ssh si-305l'
-alias prod7='ssh si-307l'
 alias vpnstat='nmcli con show -active | grep -i "tun"'
 
 #Copy to keyboard using command | ctc
@@ -133,6 +128,10 @@ export KEYTIMEOUT=1
 #Set java into $PATH
 export PATH="/usr/bin/jdk-16.0.1/bin:$PATH"
 
+#Set GOBIN path for go packages
+export PATH="/home/zam4abt/go/bin:$PATH"
+
+export PATH="${PATH}:${HOME}/.local/bin/"
 export http_proxy=http://localhost:3128
 export https_proxy=http://localhost:3128
 export ftp_proxy=http://localhost:3128
