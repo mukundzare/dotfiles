@@ -17,11 +17,38 @@
 ** Hashtable library ht.el
 #+begin_src emacs-lisp
   (use-package ht
-    :ensure t)
+    :ensure nil)
 #+end_src
 ** Dash-el
 #+begin_src emacs-lisp
   (use-package dash)
+#+end_src
+** Emacssql
+#+begin_src emacs-lisp
+  (use-package emacsql-sqlite)
+#+end_src
+** F-el
+#+begin_src emacs-lisp
+  (use-package f)
+#+end_src
+** My personal libraries
+#+begin_src emacs-lisp
+  (defvar mz--my-personal-libs-dir (file-name-as-directory "~/emacs-libs/"))
+
+  (defun mz--get-el-files-from-dir (dir-name)
+    (seq-filter (lambda (file)
+          (and (equal (file-name-extension file)
+                  "el")
+                       (not (s-ends-with-p "~undo-tree~" file)))) ;Somehow undo-tree
+                      ;now adds a suffix
+                      ;to all files
+                (directory-files dir-name)))
+
+  (dolist (file-name (mz--get-el-files-from-dir mz--my-personal-libs-dir))
+    (load (format "%s%s"
+                  mz--my-personal-libs-dir
+                  file-name)
+          t))
 #+end_src
 * Constants
 #+begin_src emacs-lisp
@@ -267,7 +294,7 @@
   (add-to-list 'default-frame-alist '(fullscreen . maximized))
 
   ;; Enable fill-column indicator in all programming modes
-  (setq-default display-fill-column-indicator-character ?\u254e)
+  ;;(setq-default display-fill-column-indicator-character ?\u254e)
   (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
 
   ;;Confirm if I want to exit emacs
@@ -293,39 +320,46 @@
         adaptive-fill-first-line-regexp "^* *$"
         sentence-end "\\([。！？]\\|……\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]*"
         sentence-end-double-space nil
+        highlight-nonselected-windows t
         word-wrap-by-category t)
-  #+end_src
+#+end_src
 
+** Fancy battery
+#+begin_src emacs-lisp
+  (use-package fancy-battery
+    :custom (fancy-battery-mode))
+#+end_src
 * Font configuration
 #+begin_src emacs-lisp
   ;;Set default font
   (set-face-attribute 'default nil
                       ;;:family "Fira Code"
-                      :family "JetBrains Mono"
-                      ;;:font "Source Code Pro"
+                                          ;:family "Hack"
+                      ;;:family "JetBrains Mono"
+                      ;;:family "Source Code Pro"
                       ;;:family "Cascadia Code PL"
+                      ;;:family "Noto Mono"
                       ;;:family "Roboto Mono"
+                      :family "Consolas"
                       ;;:family "Inconsolata"
-                      :height 105
-                      :weight 'normal
-                      :width 'normal)
+                      :height 110)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
-                      ;;:font "Fira Code"
-                      :font "JetBrains Mono"
-                      ;;:font "Source Code Pro"
-                      ;;:font "Cascadia Code PL"
+                      ;;:family "Fira Code"
+                      ;;:family "Consolas"
+                                          ;:family "JetBrains Mono"
+                      ;;:family "Source Code Pro"
+                      ;;:family "Cascadia Code PL"
                       ;;:family "Roboto Mono"
+                      :family "Consolas"
                       ;;:family "Inconsolata"
-                      :height 105
-                      :weight 'normal
-                      :width 'normal)
+                      :height 1.0)
 
   ;; Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
                       :font "Source Serif Pro"
-                      :height 105)
+                      :height 1.0)
 #+end_src
 
 * Key bindings
@@ -379,7 +413,8 @@
     (evil-collection-init))
   ;; Use evil keybindings in org-mode
   (use-package evil-org
-    :ensure t
+                                          ;:ensure t
+    :straight t
     :after org
     :hook (org-mode . (lambda () evil-org-mode))
     :config
@@ -458,7 +493,7 @@
 
   (mz/leader-keys
     "ts" '(hydra-text-scale/body :which-key "scale text"))
-#+end_src
+    #+end_src
 ** Lisp specific
 *** Evil-cleverparens
 #+begin_src emacs-lisp
@@ -473,7 +508,7 @@
   (use-package ivy
     :diminish
     :init
-    (setq ivy-use-virtual-buffers 'bookmarks)
+    (setq ivy-use-virtual-buffers nil)
     :bind (("C-s" . swiper)
            :map ivy-minibuffer-map
            ("TAB" . ivy-alt-done)
@@ -488,7 +523,7 @@
            ("C-k" . ivy-previous-line)
            ("C-d" . ivy-reverse-i-search-kill))
     :config
-    (setq ivy-display-style nil)
+    (setq ivy-display-style 'fancy)
     (ivy-mode 1))
 
   (use-package ivy-hydra)
@@ -498,7 +533,8 @@
     (ivy-rich-mode 1))
 
   (use-package all-the-icons-ivy-rich
-    :ensure t
+                                          ;:ensure t
+    :straight t
     :init (all-the-icons-ivy-rich-mode 1)
     :config
     ;; Whether display the colorful icons.
@@ -568,7 +604,7 @@
     (ivy-prescient-mode 1))
 
 
-    #+end_src
+#+end_src
 ** Modeline
 
 #+begin_src emacs-lisp
@@ -666,46 +702,52 @@
 
   ;;Display time and date in modeline
   (use-package time
-    :ensure nil
+    ;:ensure nil
+  :straight t
     :init (setq display-time-24hr-format t
                 display-time-day-and-date t))
 #+end_src
 ** Themes
 
 #+begin_src emacs-lisp
-  ;;Install kaolin-themes
-  (use-package kaolin-themes)
+                                            ;Install kaolin-themes
+    (use-package kaolin-themes)
 
-  ;;Install doom-themes
-  (use-package doom-themes)
+    ;;Install doom-themes
+    (use-package doom-themes)
 
-  ;;Sets up the working buffer to be darker than
-  ;;rest of the buffers
-  (solaire-global-mode +1)
+    ;;Sets up the working buffer to be darker than
+    ;;rest of the buffers
+                                            ;(solaire-global-mode +1)
 
-  (use-package modus-themes
-    :init
-    ;; Add all your customizations prior to loading the themes
-    (setq modus-themes-italic-constructs t
-          modus-themes-bold-constructs t
-          modus-themes-org-blocks 'tinted-background
-          ;modus-themes-syntax '(green-strings yellow-comments faint)
-          modus-themes-hl-line '(intense)
-          modus-themes-mode-line '(3d borderless accented)
-          modus-themes-region '(bg-only no-extend)
-          modus-themes-headings '((1 . (background overline variable-pitch 1.5))
-                                  (2 . (background overline 1.3))
-                                  (3 . (background overline 1.2))
-                                  (4 . (background 1.15))
-                                  (t . (monochrome))))
+    (use-package modus-themes
+      :init
+      ;; Add all your customizations prior to loading the themes
+      (setq modus-themes-italic-constructs t
+            modus-themes-bold-constructs t
+            modus-themes-org-blocks 'tinted-background
+            modus-themes-hl-line '(intense)
+            modus-themes-mode-line '(3d borderless accented)
+            modus-themes-prompts '(background bold italic)
+            modus-themes-region '(bg-only no-extend)
+            modus-themes-headings '((1 . (background overline variable-pitch 1.4))
+                                    (2 . (background overline 1.3))
+                                    (3 . (background overline 1.2))
+                                    (4 . (background 1.2))
+                                    (5 . (background 1.2))
+                                    (6 . (background 1.2))
+                                    (7 . (background 1.2))
+                                    (8 . (background 1.2))
+                                    (t . (monochrome))))
+      ;; Load the theme files before enabling a theme (else you get an error).
+      (modus-themes-load-themes)
+      :config
+      ;; Load the theme of your choice:
+      (modus-themes-load-operandi))
 
-
-    ;; Load the theme files before enabling a theme (else you get an error).
-    (modus-themes-load-themes)
-    :config
-    ;; Load the theme of your choice:
-    (modus-themes-load-operandi))
-
+                                            ; Use theme-magic to use the same emacs theme across all other applications
+    (use-package theme-magic
+      :config (theme-magic-export-theme-mode))
 #+end_src
 ** Rainbow delimiters
 
@@ -723,9 +765,9 @@
     :init (which-key-mode)
     :diminish which-key-mode
     :config
-    (setq which-key-idle-delay 0.1))
+    (setq which-key-idle-delay 0.5))
 #+end_src
-** Helpful help
+*** Helpful help
 
 #+begin_src emacs-lisp
   
@@ -739,20 +781,21 @@
     ([remap describe-variable] . counsel-describe-variable)
     ([remap describe-key] . helpful-key))
 #+end_src
-** Folding
+*** Folding
 #+begin_src emacs-lisp
   ;;To be worked on
   ;;TODO Setup key-bindings
-  (global-origami-mode t)
+                                          ;(global-origami-mode t)
   ;;Disabled magit z folding because it was causing issues
   ;;(setq evil-collection-magit-use-z-for-folds t)
-#+end_src
-** Ediff
+  #+end_src
+*** Ediff
 
 #+begin_src emacs-lisp
   ;; A comprehensive visual interface to diff & patch
   (use-package ediff
-    :ensure nil
+                                          ;:ensure nil
+    :straight t
     :hook(;; show org ediffs unfolded
           (ediff-prepare-buffer . outline-show-all)
           ;; restore window layout when done
@@ -761,14 +804,18 @@
     (setq ediff-window-setup-function 'ediff-setup-windows-plain
           ediff-split-window-function 'split-window-horizontally
           ediff-merge-split-window-function 'split-window-horizontally))
-#+end_src
-** File handling
+          #+end_src
+*** File handling
 
 #+begin_src emacs-lisp
   (use-package find-file-in-project
     :config (setq ffip-use-rust-fd t))
 #+end_src
-** Window management
+*** Frame management
+#+begin_src emacs-lisp
+  (setq-default frame-title-format '("Emacs - " user-login-name "@" system-name " - %b"))
+#+end_src
+*** Window management
 #+begin_src emacs-lisp
   ;;Switch windows numbered from 1 to n depending on number of windows
   ;;Doesn't work with treemacs. To switch to treemacs buffer, press <M-0>
@@ -778,22 +825,32 @@
   ;;aw-keys - the list of initial characters used in window labels:
   (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
 #+end_src
-** Navigation
+*** Buffer management
+I don't need to keep certain buffers like help mode open when the buffer is buried so kill it.
+#+begin_src emacs-lisp
+  (dolist (key-map '(helpful-mode-map
+                     calendar-mode-map
+                     help-mode-map))
+    (evil-collection-define-key 'normal key-map "q" 'kill-this-buffer))
+#+end_src
+*** Navigation
 #+begin_src emacs-lisp
   (global-set-key (kbd "C-:") 'evil-avy-goto-char)
 #+end_src
-** Highlighting
+*** Highlighting
 #+begin_src emacs-lisp
   ;; Highlight the current line
   (use-package hl-line
-    :ensure nil
+    ;:ensure nil
+    :straight t
     :hook ((after-init . global-hl-line-mode)
            ((dashboard-mode eshell-mode shell-mode term-mode vterm-mode) .
             (lambda () (setq-local global-hl-line-mode nil)))))
 
   ;; Highlight matching parens
   (use-package paren
-    :ensure nil
+                                          ;:ensure nil
+    :straight t
     :hook (after-init . show-paren-mode)
     :init (setq show-paren-when-point-inside-paren t
                 show-paren-when-point-in-periphery t)
@@ -803,7 +860,7 @@
       (defun display-line-overlay (pos str &optional face)
         "Display line at POS as STR with FACE.
 
-         FACE defaults to inheriting from default and highlight."
+               FACE defaults to inheriting from default and highlight."
         (let ((ol (save-excursion
                     (goto-char pos)
                     (make-overlay (line-beginning-position)
@@ -925,7 +982,8 @@
 
   ;;Pulse current line
   (use-package pulse
-    :ensure nil
+                                          ;:ensure nil
+    :straight t
     :custom-face
     (pulse-highlight-start-face ((t (:inherit region))))
     (pulse-highlight-face ((t (:inherit region))))
@@ -970,19 +1028,69 @@
         (advice-add cmd :after #'my-recenter-and-pulse))))
 
 
-#+end_src
-** All-the-icons
+                     #+end_src
+*** All-the-icons
 #+begin_src emacs-lisp
   (use-package all-the-icons-ibuffer
-    :ensure t
+    :straight t
+                                          ;:ensure t
     :init (all-the-icons-ibuffer-mode 1))
 
-#+end_src
-** Info colours
+    #+end_src
+*** Info colours
 #+begin_src emacs-lisp
   (use-package info-colors
     :hook
     (Info-selection . info-colors-fontify-node))
+#+end_src
+*** Smooth scrolling
+#+begin_src emacs-lisp
+  ;; Vertical Scroll
+  (setq scroll-step 1)
+  (setq scroll-margin 1)
+  (setq scroll-conservatively 101)
+  (setq scroll-up-aggressively 0.01)
+  (setq scroll-down-aggressively 0.01)
+  (setq auto-window-vscroll nil)
+  (setq fast-but-imprecise-scrolling nil)
+  (setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
+  (setq mouse-wheel-progressive-speed nil)
+  ;; Horizontal Scroll
+  (setq hscroll-step 1)
+  (setq hscroll-margin 1)
+#+end_src
+*** Prettify symbols
+Prettify symbols mode, a built-in mode for displaying sequences of characters as fancy characters or symbols.
+#+begin_src emacs-lisp
+  (global-prettify-symbols-mode 1)
+  (defun add-pretty-lambda ()
+    "Make some word or string show as pretty Unicode symbols.  See https://unicodelookup.com for more."
+    (setq prettify-symbols-alist
+          '(("lambda" . 955)
+            ("delta" . 120517)
+            ("epsilon" . 120518)
+            ("->" . 8594)
+            ("->>" . 8608)
+            ("<=" . 8804)
+            (">=" . 8805))))
+  (add-hook 'prog-mode-hook 'add-pretty-lambda)
+  (add-hook 'org-mode-hook 'add-pretty-lambda)
+#+end_src
+** Auto text resize depending on monitor
+#+begin_src emacs-lisp
+  (use-package textsize
+    :disabled t
+    :commands textsize-mode
+    :init
+    (textsize-mode)
+    (setq textsize-default-points 12)
+    :config
+    (setq textsize-monitor-size-thresholds '((0 . 3)
+                                             (350 . 0)
+                                             (500 . 3)))
+    (setq textsize-pixel-pitch-thresholds '((0 . 2)
+                                            (0.12 . 0)
+                                            (0.18 . -3))))
 #+end_src
 * Language specific
 ** HTML
@@ -1006,15 +1114,18 @@
       emacs-lisp-mode-hook) . (paredit-mode)))
 
   (use-package flycheck-clj-kondo
-    :ensure t)
+    :straight t)
+                                          ;:ensure t)
 
   ;; key bindings and code colorization for Clojure
   ;; https://github.com/clojure-emacs/clojure-mode
   ;; then install the checker as soon as `clojure-mode' is loaded
   (use-package clojure-mode
-    :ensure t
+                                          ;:ensure t
+    :straight t
     :config
-    (require 'flycheck-clj-kondo))
+    (require 'flycheck-clj-kondo)
+    (setq clojure-align-forms-automatically t))
 
   ;; extra syntax highlighting for clojure
   (use-package clojure-mode-extra-font-locking)
@@ -1034,7 +1145,7 @@
 
   ;;enable cider-mode when an asciidoc file is opened
   (add-hook 'adoc-mode-hook 'cider-mode)
-#+end_src
+  #+end_src
 ** CSV
 #+begin_src emacs-lisp
   (use-package csv)
@@ -1058,6 +1169,13 @@
   ;;Turn on eldoc mode
   (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 #+end_src
+*** EROS
+See here: https://github.com/xiongtx/eros
+Evaluation Result OverlayS for Emacs Lisp.
+#+begin_src emacs-lisp
+  (use-package eros
+    :config (eros-mode 1))
+#+end_src
 * Completion package
 ** Ido
 #+begin_src emacs-lisp
@@ -1070,7 +1188,7 @@
     :init
     (add-hook 'after-init-hook 'global-company-mode)
     :config
-    (setq company-tooltip-minimum 4
+    (setq company-tooltip-minimum 5
           company-tooltip-flip-when-above t)
     (use-package company-box
       :hook (company-mode . company-box-mode)))
@@ -1092,16 +1210,17 @@
 ** Marginalia
 #+begin_src emacs-lisp
   (use-package marginalia
-    :ensure t
+                                          ;:ensure t
+    :straight t
     :config
     (marginalia-mode))
-#+end_src
+  #+end_src
 
 ** Embark
 #+begin_src emacs-lisp
   (use-package embark
-    :ensure t
-
+                                          ;:ensure t
+    :straight t
     :bind
     (("C-." . embark-act)         ;; pick some comfortable binding
      ("C-;" . embark-dwim)        ;; good alternative: M-.
@@ -1119,16 +1238,22 @@
                  '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
                    nil
                    (window-parameters (mode-line-format . none)))))
-#+end_src
+                                          #+end_src
 
 ** consult-dir
 #+begin_src emacs-lisp
   (use-package consult-dir
-    :ensure t
+                                          ;:ensure t
+    :straight t
     :bind (("C-x C-d" . consult-dir)
            :map minibuffer-local-completion-map
            ("C-x C-j" . consult-dir-jump-file)))
 
+  #+end_src
+** Autocomplete (For Planisware)
+#+begin_src emacs-lisp
+  (use-package auto-complete
+    :hook (opx2-js-mode . auto-complete-mode))
 #+end_src
 * Development related
 ** lsp-mode
@@ -1139,9 +1264,13 @@
     (setq lsp-keymap-prefix "C-c l")
     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
            (sql-mode . lsp)
+           (clojure-mode . lsp)
            ;; if you want which-key integration
            (lsp-mode . lsp-enable-which-key-integration))
     :commands lsp)
+
+  ;;Settings for database connections for lsp-mode
+  (setq lsp-sqls-workspace-config-path "workspace")
 
   ;; optionally
   (use-package lsp-ui :commands lsp-ui-mode)
@@ -1151,7 +1280,6 @@
 
   ;; optionally if you want to use debugger
   (use-package dap-mode)
-                                          ; (use-package dap-LANGUAGE) to load the dap adapter for your language
 
   ;; optional if you want which-key integration
   (use-package which-key
@@ -1203,15 +1331,38 @@
 
   ;; Automatic parenthesis pairing
   (use-package elec-pair
-    :ensure nil
+    :straight t
+                                          ;:ensure nil
     :hook (after-init . electric-pair-mode)
-    :init (setq electric-pair-inhibit-predicate 'electric-pair-conservative-inhibit))
+    :init (setq electric-pair-inhibit-predicate
+                'electric-pair-conservative-inhibit))
 
   ;;Aggresive-indent mode
   (use-package aggressive-indent
     :hook (emacs-lisp-mode. aggressive-indent-mode))
 
-#+end_src
+  ;;Do not save duplicates in the kill ring
+  (setq kill-do-not-save-duplicates t
+        ;;Save the clipboard content to kill-ring before replacing it with a
+        ;;new yank
+        save-interprogram-paste-before-kill t
+        confirm-kill-processes nil
+        echo-keystrokes 0.1
+        ;; Add a newline automatically at the end of the file upon save.
+        require-final-newline t)
+
+  (use-package popup-kill-ring
+    :bind ("M-y" . popup-kill-ring))
+
+  (use-package discover-my-major
+    :bind ("C-h C-m" . discover-my-major))
+
+  ;; So Long mitigates slowness due to extremely long lines.
+  ;; Currently available in Emacs master branch *only*!
+  (when (fboundp 'global-so-long-mode)
+    (global-so-long-mode))
+
+    #+end_src
 ** Debugging
 #+begin_src emacs-lisp
   (use-package flycheck
@@ -1220,13 +1371,14 @@
     :hook (prog-mode . flycheck-mode))
 
   ;;Emacs debug on error
-  (setq debug-on-error t)
+  (setq debug-on-error nil)
 #+end_src
 * File management
 ** Treemacs
 #+begin_src emacs-lisp
   (use-package treemacs
-    :ensure t
+    :straight t
+                                          ;:ensure t
     :defer t
     :init
     (with-eval-after-load 'winum
@@ -1302,24 +1454,18 @@
 
   (use-package treemacs-evil
     :after (treemacs evil)
-    :ensure t)
+    :straight t)
 
   (use-package treemacs-projectile
     :after (treemacs projectile)
-    :ensure t)
+    :straight t)
 
   (use-package treemacs-all-the-icons
     :config (treemacs-load-theme "all-the-icons"))
 
   (use-package treemacs-magit
     :after (treemacs magit)
-    :ensure t)
-
-  (use-package treemacs-persp ;;treemacs-perspective if you use perspective.el vs. persp-mode
-    :after (treemacs persp-mode) ;;or perspective vs. persp-mode
-    :ensure t
-    :config (treemacs-set-scope-type 'Perspectives))
-
+    :straight t)
 
   (treemacs-define-custom-image-icon "/usr/share/icons/planisware_v1.png" "ojs")
   (treemacs-define-custom-image-icon "/usr/share/icons/planisware_v2.png" "pjs")
@@ -1331,7 +1477,15 @@
     :ensure nil
     :commands (dired dired-jump)
     :bind (("C-x C-j" . dired-jump))
-    :custom ((dired-listing-switches "-agho --group-directories-first"))
+    :custom
+    (dired-listing-switches "-agho --group-directories-first")
+    (auto-revert-interval 3)
+    (dired-recursive-copies 'always)
+    (global-auto-revert-non-file-buffers t)
+    (dired-dwim-target t)
+    (delete-by-moving-to-trash t)
+    (load-prefer-newer t)
+    (auto-revert-use-notify nil)
     :config
     (evil-collection-define-key 'normal 'dired-mode-map
       "h" 'dired-single-up-directory
@@ -1339,6 +1493,7 @@
     (setq dired-recursive-deletes 'always
           dired-recursive-copies 'always)
 
+    (global-auto-revert-mode t)
     ;; Show git info in dired
     (use-package dired-git-info
       :bind (:map dired-mode-map
@@ -1424,7 +1579,7 @@
   ;; `find-dired' alternative using `fd'
   (when (executable-find "fd")
     (use-package fd-dired))
-#+end_src
+  #+end_src
 ** Recent files
 #+begin_src emacs-lisp
   (recentf-mode 1)
@@ -1433,7 +1588,14 @@
   (global-set-key "\C-x\ \C-r" 'recentf-open-files)
 
 #+end_src
+** ZTree
+See: https://github.com/fourier/ztree
+#+begin_src emacs-lisp
+  (use-package ztree)
+#+end_src
 * Performance
+
+See also: [[info:emacs#Scrolling][emacs#Scrolling]]
 #+begin_src emacs-lisp
   (with-no-warnings
     ;; Optimization
@@ -1462,10 +1624,19 @@
 
   (when emacs/>=27p
     (use-package so-long
-      :ensure nil
+      :straight t
+                                          ;:ensure nil
       :hook (after-init . global-so-long-mode)
       :config (setq so-long-threshold 400)))
 
+  (setq fast-but-imprecise-scrolling t)
+#+end_src
+** Explain pause mode
+#+begin_src emacs-lisp
+  (use-package explain-pause-mode
+    :straight (explain-pause-mode :type git :host github :repo "lastquestion/explain-pause-mode")
+    :config
+    (explain-pause-mode))
 #+end_src
 * Shell related
 ** Ubuntu
@@ -1475,8 +1646,6 @@
   (when (or sys/mac-x-p sys/linux-x-p (daemonp))
     (use-package exec-path-from-shell
       :init
-      (setq exec-path-from-shell-variables '("PATH" "MANPATH")
-            exec-path-from-shell-arguments '("-l"))
       (exec-path-from-shell-initialize)))
 #+end_src
 ** Mac/Windows/X
@@ -1487,7 +1656,6 @@
 #+end_src
 ** Eshell
 #+begin_src emacs-lisp
-
   (defun mz/configure-eshell ()
     ;; Save command history when commands are entered
     (add-hook 'eshell-pre-command-hook 'eshell-save-some-history)
@@ -1496,8 +1664,7 @@
     (add-to-list 'eshell-output-filter-functions 'eshell-truncate-buffer)
 
     ;; Bind some useful keys for evil-mode
-    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
-    (evil-define-key '(normal insert visual) eshell-mode-map (kbd "<home>") 'eshell-bol)
+    (evil-collection-define-key '(normal insert visual) eshell-mode-map (kbd "C-r") 'counsel-esh-history)
     (evil-normalize-keymaps)
 
     (setq eshell-history-size         10000
@@ -1508,7 +1675,8 @@
   (use-package eshell-git-prompt)
 
   (use-package eshell
-    :ensure nil
+    :straight t
+                                          ;:ensure nil
     :hook (eshell-first-time-mode . mz/configure-eshell)
     :config
     (with-eval-after-load 'esh-opt
@@ -1543,7 +1711,7 @@
   ;;org-emphasis-markers hide markers like the forward slashes in
   ;; /This is italic/
   (setq org-pretty-entities nil
-        org-hide-emphasis-markers nil)
+        org-hide-emphasis-markers t)
 
   ;;To toggle showing and editing of emphasis markers
   ;;use org-appear
@@ -1600,7 +1768,11 @@
 
   (use-package org
     :hook (org-mode . mz/org-mode-setup)
+    :custom
+    ;;
+    (org-hierarchical-todo-statistics nil)
     :config
+    (setq org-startup-with-inline-images t)
     (setq org-ellipsis " ▾")
 
     (setq org-agenda-start-with-log-mode t) (setq org-log-done 'time)
@@ -1618,8 +1790,8 @@
     (setq org-habit-graph-column 60)
 
     (setq org-todo-keywords
-          '((sequence "TODO(t)" "NEXT(n)" "ON_HOLD(h)" "|" "DONE(d!)")
-            (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+          '((sequence "TODO(t!)" "NEXT(n)" "ON_HOLD(h!)" "|" "DONE(d!)")
+            (sequence "BACKLOG(b)" "PLAN(p)" "ACTIVE(a!)" "REVIEW(v!)" "WAIT(w@/!)" "HOLD(h)" "|" "RBEI(r!)" "COMPLETED(c!)" "CANC(k@)")))
 
     (setq org-refile-targets
           '(("~/orgfiles/ARCHIVE/Archive.org" :maxlevel . 1)
@@ -1716,7 +1888,7 @@
             ("oo" "Task" entry (file+olp "~/orgfiles/work_diary.org" "Inbox")
              "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
             ("oj" "Journal" entry
-             (file+olp+datetree "~/orgfiles/Work-Journal.org")
+             (file+olp+datetree "~/orgfiles/Work-Journal.org.gpg")
              "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
              :clock-in :clock-resume
              :empty-lines 1)))
@@ -1728,6 +1900,9 @@
     (define-key global-map (kbd "C-c a") 'org-agenda)
 
     (mz/org-font-setup))
+  ;;Cleanup org archive files
+  (when (fboundp 'mz/org-archive-cleanup)
+    (mz/org-archive-cleanup))
 #+end_src
 ** Enhancements
 #+begin_src emacs-lisp
@@ -1774,15 +1949,12 @@
 
   ;; Use org-roam
   (use-package org-roam
-    :straight (:host github :repo "org-roam/org-roam"
-                     :files (:defaults "extensions/*"))
-    :ensure t
+    :straight t
     :init
     (setq org-roam-v2-ack t)
     :custom
     (org-roam-directory (mz--get-first-valid-path "~/RoamNotes"
                                                   "~/Org-roam_files/"))
-    (org-roam-completion-everywhere t)
     (org-roam-capture-templates
      '(("d" "default" plain
         "%?"
@@ -1825,10 +1997,18 @@
      ("C-c t !" . org-transclusion-add-all)
      ("C-c t l" . org-transclusion-add-link)))
 #+end_src
+** Git flavoured markdown
+#+begin_src emacs-lisp
+  (use-package ox-gfm :defer t)
+#+end_src
 * History config
 #+begin_src emacs-lisp
   (use-package undo-tree
-    :ensure t
+    :straight t
+                                          ;:ensure t
+    :custom
+    (undo-tree-visualizer-diff t)
+    (undo-tree-visualizer-diff t)
     :config
     (global-undo-tree-mode))
 #+end_src
@@ -1848,7 +2028,8 @@
 ** PDF tools
 #+begin_src emacs-lisp
   (use-package pdf-tools
-    :ensure t
+    :straight t
+                                          ;:ensure t
     :config
     (pdf-tools-install)
     (setq pdf-view-display-size 'fit-width))
@@ -1869,9 +2050,9 @@
 * Git
 ** Git-gutter
 #+begin_src emacs-lisp
-  
+
   (use-package git-timemachine
-    :ensure t)
+    :straight t)
 
   (use-package git-gutter
     :straight git-gutter-fringe
@@ -1974,7 +2155,9 @@
 * Emacs statistics
 ** Save the frequency of keys pressed in emacs
 #+begin_src emacs-lisp
-  (keyfreq-mode 1)
+  (use-package keyfreq
+    :config
+    (keyfreq-mode))
 #+end_src
 
 * Session management
@@ -1982,7 +2165,8 @@
   ;;Save minibuffer history
 
   (use-package savehist
-    :ensure nil
+    :straight t
+                                          ;:ensure nil
     :hook (after-init . savehist-mode)
     :init (setq enable-recursive-minibuffers t ; Allow commands in minibuffers
                 history-length 1000
@@ -1995,11 +2179,13 @@
 
   ;;Save place in files automatically
   (use-package saveplace
-    :ensure nil
+    :straight t
+                                          ;:ensure nil
     :hook (after-init . save-place-mode))
 
   (use-package recentf
-    :ensure nil
+    :straight t
+                                          ;:ensure nil
     :bind (("C-x C-r" . recentf-open-files))
     :hook (after-init . recentf-mode)
     :init (setq recentf-max-saved-items 300
@@ -2020,13 +2206,19 @@
 Perspective el works for separating contexts of problems on which one is working including the ability to save window and buffer layouts
 #+begin_src emacs-lisp
   (use-package perspective
+    :ensure t
     :bind
+    ("C-x k" . persp-kill-buffer*)
     ("C-x C-b" . persp-list-buffers)   ; or use a nicer switcher, see below
-    :config
-    (persp-mode)
+    :init
+    (setq persp-state-default-file "/home/zam4abt/my-emacs-stuff/perspectives")
     (setq persp-sort 'access)
-    :hook
-    (kill-emacs-hook . persp-state-save))
+    (persp-mode))
+  (add-hook 'kill-emacs-hook (lambda ()
+                               (delete-file persp-state-default-file)
+                               (write-region "" nil persp-state-default-file)
+                               (persp-state-save)))
+  (add-hook 'emacs-startup-hook 'persp-state-load)
 #+end_src
 * Text management
 #+begin_src emacs-lisp
@@ -2059,32 +2251,30 @@ Perspective el works for separating contexts of problems on which one is working
 * Planisware config for emacs
 ** TODO Allegro CL/Planisware specific
 #+begin_src emacs-lisp
-  (if (equal (system-name)
-             "ABTZ0NEV")
-      (progn (defvar *opx2-network-folder-work-path* (file-name-as-directory "~/opx/plw-devenv/runtime/dist/"))
-             (load (format "%semacs.el" *opx2-network-folder-work-path*))))
+  (when (equal (system-name)
+               "ABTZ0NEV")
+    (progn (defvar *opx2-network-folder-work-path* (file-name-as-directory "~/opx/plw-devenv/runtime/dist/"))
+           (load (format "%semacs.el" *opx2-network-folder-work-path*))))
+  ;; Disable company mode and enable autocomplete in Planisware buffers
+
+  (add-hook 'opx2-js-mode-hook (lambda ()
+                                 (company-mode 0)))
 #+end_src
-** My personal libraries
+** Keybindings
 #+begin_src emacs-lisp
-  (defvar mz--my-personal-libs-dir (file-name-as-directory "~/emacs-libs/"))
-  (defun mz--get-el-files-from-dir (dir-name)
-    (-filter (lambda (file-name)
-               (equal (file-name-extension file-name)
-                      "el"))
-             (directory-files "~/emacs-libs/")))
-  (dolist (file-name (mz--get-el-files-from-dir mz--my-personal-libs-dir))
-    (load (format "%s%s"
-                  mz--my-personal-libs-dir
-                  file-name)))
+  (define-key *ojs-mode-map* (kbd "C-c m e") 'opx2-exec-region-in-repl)
+  (define-key *ojs-mode-map* (kbd "C-c m c") 'opx2-clear-repl-buffer)
+  (define-key *pjs-mode-map* (kbd "C-c m e") 'opx2-exec-region-in-repl)
+  (define-key *pjs-mode-map* (kbd "C-c m c") 'opx2-clear-repl-buffer)
 #+end_src
 ** Planisware script font locking
 This code exists in the common-plw.el file which has been ported here to prevent overwriting in case the git repo changes
 #+begin_src emacs-lisp
-  (custom-set-faces
-   '(font-lock-string-face ((((class color) (background light)) (:foreground "turquoise3"))))
-   '(font-lock-preprocessor-face ((((class color) (background light)) (:foreground "blue"))))
-   '(font-lock-keyword-face ((((class color) (background light)) (:foreground "maroon"))))
-   '(font-lock-comment-face ((((class color) (background light)) (:foreground "SteelBlue3"))))
-   '(font-lock-function-name-face ((((class color) (background light)) (:foreground "SeaGreen"))))
-   '(font-lock-variable-name-face ((((class color) (background light)) (:foreground "magenta2")))))
+  ;(custom-set-faces
+  ; '(font-lock-string-face ((((class color) (background light)) (:foreground "turquoise3"))))
+  ; '(font-lock-preprocessor-face ((((class color) (background light)) (:foreground "blue"))))
+  ; '(font-lock-keyword-face ((((class color) (background light)) (:foreground "maroon"))))
+  ; '(font-lock-comment-face ((((class color) (background light)) (:foreground "SteelBlue3"))))
+  ; '(font-lock-function-name-face ((((class color) (background light)) (:foreground "SeaGreen"))))
+  ; '(font-lock-variable-name-face ((((class color) (background light)) (:foreground "magenta2")))))
 #+end_src
