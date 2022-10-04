@@ -1421,24 +1421,26 @@ https://github.com/TommyX12/company-tabnine
 * Development related
 ** lsp-mode
 #+begin_src emacs-lisp
-     ;(eval-after-load "~/Brain-dump/opx-db-conns.el.gpg"
-    ;   '(require opx-creds "~/Brain-dump/opx-db-conns.el.gpg"))
+  (when (file-exists-p  "~/Brain-dump/opx-db-conns.el.gpg")
+        (load-file "~/Brain-dump/opx-db-conns.el.gpg"))
   (use-package lsp-mode
-       :straight t
-       :init
-       (setq lsp-keymap-prefix "C-c l")
-       (setq lsp-clojure-server-command '("/usr/local/bin/clojure-lsp"))
-       (setq lsp-sqls-workspace-config-path nil)
-       (setq lsp-sqls-connections
-	     '(((driver . "oracle") (dataSourceName . "OPX_DEV_BEG/Welcome$123@rb0orarac28.de.bosch.com:38000/OPXDEV_rb0orarac28.de.bosch.com"))))
-       :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-	      (sql-mode . lsp)
-	      (clojure-mode . lsp)
-	      (clojurec-mode . lsp)
-	      (clojurescript-mode . lsp)
-	      ;; if you want which-key integration
-	      (lsp-mode . lsp-enable-which-key-integration))
-       :commands lsp)
+    :straight t
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    (setq lsp-clojure-server-command '("/usr/local/bin/clojure-lsp"))
+    (setq lsp-sqls-workspace-config-path nil)
+    (setq lsp-sqls-connections
+          (and (boundp 'opx-conn-credentials)
+               opx-conn-credentials))     ;opx-conn-details comes from
+                                          ;opx-db-conns.el.gpg file
+    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+           (sql-mode . lsp)
+           (clojure-mode . lsp)
+           (clojurec-mode . lsp)
+           (clojurescript-mode . lsp)
+           ;; if you want which-key integration
+           (lsp-mode . lsp-enable-which-key-integration))
+    :commands lsp)
 
      ;; optionally
      (use-package lsp-ui :commands lsp-ui-mode)
