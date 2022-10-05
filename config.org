@@ -89,18 +89,18 @@
   (require 's)
   (defun mz--get-el-files-from-dir (dir-name)
     (seq-filter (lambda (file)
-		  (and (equal (file-name-extension file)
-			      "el")
-		       (not (s-ends-with-p "~undo-tree~" file)))) ;Somehow undo-tree
-					  ;now adds a suffix
-					  ;to all files
-		(directory-files dir-name)))
+          (and (equal (file-name-extension file)
+                  "el")
+               (not (s-ends-with-p "~undo-tree~" file)))) ;Somehow undo-tree
+                      ;now adds a suffix
+                      ;to all files
+        (directory-files dir-name)))
 
   (dolist (file-name (mz--get-el-files-from-dir mz--my-personal-libs-dir))
     (load (format "%s%s"
-		  mz--my-personal-libs-dir
-		  file-name)
-	  t))
+          mz--my-personal-libs-dir
+          file-name)
+      t))
 
 #+end_src
 * Constants
@@ -353,35 +353,35 @@
 #+begin_src emacs-lisp
   ;;Set default font
   (set-face-attribute 'default nil
-		      ;;:family "Fira Code"
-		      ;;:family "Hack"
-		      ;;:family "JetBrains Mono"
-		      ;;:family "Source Code Pro"
-		      ;;:family "Cascadia Code PL"
-		      ;;:family "Noto Mono"
-		      ;;:family "Roboto Mono"
-		      ;;:family "Consolas"
-		      ;;:family "Inconsolata"
-		      :family "Ubuntu Mono"
-		      :weight 'normal
-		      :height 110)
+              ;;:family "Fira Code"
+              ;;:family "Hack"
+              ;;:family "JetBrains Mono"
+              ;;:family "Source Code Pro"
+              ;;:family "Cascadia Code PL"
+              ;;:family "Noto Mono"
+              ;;:family "Roboto Mono"
+              ;;:family "Consolas"
+              ;;:family "Inconsolata"
+              :family "Ubuntu Mono"
+              :weight 'normal
+              :height 110)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
-		      ;;:family "Fira Code"
-		      ;;:family "Consolas"
-		      :family "JetBrains Mono"
-		      ;;:family "Source Code Pro"
-		      ;;:family "Cascadia Code PL"
-		      ;;:family "Roboto Mono"
-		      ;;:family "Inconsolata"
-		      :height 1.0)
+              ;;:family "Fira Code"
+              ;;:family "Consolas"
+              :family "JetBrains Mono"
+              ;;:family "Source Code Pro"
+              ;;:family "Cascadia Code PL"
+              ;;:family "Roboto Mono"
+              ;;:family "Inconsolata"
+              :height 1.0)
 
   ;;Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
-		      :font "Roboto Mono"
-		      :weight 'light
-		      :height 0.95)
+              :font "Roboto Mono"
+              :weight 'light
+              :height 0.95)
 #+end_src
 
 * Key bindings
@@ -569,18 +569,18 @@
     :init
     (setq ivy-use-virtual-buffers nil)
     :bind (("C-s" . swiper)
-	   :map ivy-minibuffer-map
-	   ("TAB" . ivy-alt-done)
-	   ("C-l" . ivy-alt-done)
-	   ("C-j" . ivy-next-line)
-	   ("C-k" . ivy-previous-line)
-	   :map ivy-switch-buffer-map
-	   ("C-k" . ivy-previous-line)
-	   ("C-l" . ivy-done)
-	   ("C-d" . ivy-switch-buffer-kill)
-	   :map ivy-reverse-i-search-map
-	   ("C-k" . ivy-previous-line)
-	   ("C-d" . ivy-reverse-i-search-kill))
+       :map ivy-minibuffer-map
+       ("TAB" . ivy-alt-done)
+       ("C-l" . ivy-alt-done)
+       ("C-j" . ivy-next-line)
+       ("C-k" . ivy-previous-line)
+       :map ivy-switch-buffer-map
+       ("C-k" . ivy-previous-line)
+       ("C-l" . ivy-done)
+       ("C-d" . ivy-switch-buffer-kill)
+       :map ivy-reverse-i-search-map
+       ("C-k" . ivy-previous-line)
+       ("C-d" . ivy-reverse-i-search-kill))
     :config
     (setq ivy-display-style 'fancy)
     (ivy-mode 1))
@@ -613,13 +613,13 @@
   ;; Counsel
   (use-package counsel
     :bind (("M-x" . counsel-M-x)
-	   ("C-x b" . persp-counsel-switch-buffer)
-	   ("C-x C-f" . counsel-find-file)
-	   ("C-c C-f" . counsel-fzf)
-	   ("C-x C-r" . counsel-recentf)
-	   ("C-c g" . counsel-git-grep)
-	   :map minibuffer-local-map
-	   ("C-r" . 'counsel-minibuffer-history))
+       ("C-x b" . persp-counsel-switch-buffer)
+       ("C-x C-f" . counsel-find-file)
+       ("C-c C-f" . counsel-fzf)
+       ("C-x C-r" . counsel-recentf)
+       ("C-c g" . counsel-git-grep)
+       :map minibuffer-local-map
+       ("C-r" . 'counsel-minibuffer-history))
     :config
     (setq ivy-initial-inputs-alist nil)) ;;Don't start searches with ^
 
@@ -634,36 +634,36 @@
     :init
     (defun ivy-prescient-non-fuzzy (str)
       "Generate an Ivy-formatted non-fuzzy regexp list for the given STR.
-	  This is for use in `ivy-re-builders-alist'."
+      This is for use in `ivy-re-builders-alist'."
       (let ((prescient-filter-method '(literal regexp)))
-	(ivy-prescient-re-builder str)))
+    (ivy-prescient-re-builder str)))
 
     (setq ivy-prescient-retain-classic-highlighting t
-	  ivy-re-builders-alist
-	  '((counsel-ag . ivy-prescient-non-fuzzy)
-	    (counsel-rg . ivy-prescient-non-fuzzy)
-	    (counsel-pt . ivy-prescient-non-fuzzy)
-	    (counsel-grep . ivy-prescient-non-fuzzy)
-	    (counsel-fzf . ivy-prescient-non-fuzzy)
-	    (counsel-imenu . ivy-prescient-non-fuzzy)
-	    (counsel-yank-pop . ivy-prescient-non-fuzzy)
-	    (swiper . ivy-prescient-non-fuzzy)
-	    (swiper-isearch . ivy-prescient-non-fuzzy)
-	    (swiper-all . ivy-prescient-non-fuzzy)
-	    (lsp-ivy-workspace-symbol . ivy-prescient-non-fuzzy)
-	    (lsp-ivy-global-workspace-symbol . ivy-prescient-non-fuzzy)
-	    (insert-char . ivy-prescient-non-fuzzy)
-	    (counsel-unicode-char . ivy-prescient-non-fuzzy)
-	    (t . ivy-prescient-re-builder))
-	  ivy-prescient-sort-commands
-	  '(:not swiper swiper-isearch ivy-switch-buffer
-		 lsp-ivy-workspace-symbol ivy-resume ivy--restore-session
-		 counsel-grep counsel-git-grep counsel-rg counsel-ag
-		 counsel-ack counsel-fzf counsel-pt counsel-imenu
-		 counsel-org-capture counsel-outline counsel-org-goto
-		 counsel-load-theme counsel-yank-pop
-		 counsel-recentf counsel-buffer-or-recentf
-		 centaur-load-theme))
+      ivy-re-builders-alist
+      '((counsel-ag . ivy-prescient-non-fuzzy)
+        (counsel-rg . ivy-prescient-non-fuzzy)
+        (counsel-pt . ivy-prescient-non-fuzzy)
+        (counsel-grep . ivy-prescient-non-fuzzy)
+        (counsel-fzf . ivy-prescient-non-fuzzy)
+        (counsel-imenu . ivy-prescient-non-fuzzy)
+        (counsel-yank-pop . ivy-prescient-non-fuzzy)
+        (swiper . ivy-prescient-non-fuzzy)
+        (swiper-isearch . ivy-prescient-non-fuzzy)
+        (swiper-all . ivy-prescient-non-fuzzy)
+        (lsp-ivy-workspace-symbol . ivy-prescient-non-fuzzy)
+        (lsp-ivy-global-workspace-symbol . ivy-prescient-non-fuzzy)
+        (insert-char . ivy-prescient-non-fuzzy)
+        (counsel-unicode-char . ivy-prescient-non-fuzzy)
+        (t . ivy-prescient-re-builder))
+      ivy-prescient-sort-commands
+      '(:not swiper swiper-isearch ivy-switch-buffer
+         lsp-ivy-workspace-symbol ivy-resume ivy--restore-session
+         counsel-grep counsel-git-grep counsel-rg counsel-ag
+         counsel-ack counsel-fzf counsel-pt counsel-imenu
+         counsel-org-capture counsel-outline counsel-org-goto
+         counsel-load-theme counsel-yank-pop
+         counsel-recentf counsel-buffer-or-recentf
+         centaur-load-theme))
 
     (ivy-prescient-mode 1))
 
@@ -785,66 +785,68 @@
     :init (setq doom-fairy-floss-brighter-comments t
                 doom-fairy-floss-brighter-modeline t
                 doom-fairy-floss-comment-bg t)
-    :config 
-    (load-theme 'doom-fairy-floss t))
-  (use-package modus-themes
-  :disabled t
-    :init
-    ;; Add all your customizations prior to loading the themes
-    (setq modus-themes-italic-constructs t
-          modus-themes-bold-constructs t
-          modus-themes-org-blocks 'tinted-background
-          modus-themes-hl-line '(intense)
-          modus-themes-mode-line '(3d borderless accented)
-          modus-themes-prompts '(background bold italic)
-          modus-themes-region '(bg-only no-extend)
-          modus-themes-headings '((1 . (background overline variable-pitch 1.4))
-                                  (2 . (background overline 1.3))
-                                  (3 . (background overline 1.2))
-                                  (4 . (background 1.2))
-                                  (5 . (background 1.2))
-                                  (6 . (background 1.2))
-                                  (7 . (background 1.2))
-                                  (8 . (background 1.2))))
-    ;; Load the theme files before enabling a theme (else you get an error).
+    :config
+    (load-theme 'doom-fairy-floss t)
+    (enable-theme 'doom-fairy-floss))
+
+    (use-package modus-themes
+      :disabled t
+      :init
+      ;; Add all your customizations prior to loading the themes
+      (setq modus-themes-italic-constructs t
+            modus-themes-bold-constructs t
+            modus-themes-org-blocks 'tinted-background
+            modus-themes-hl-line '(intense)
+            modus-themes-mode-line '(3d borderless accented)
+            modus-themes-prompts '(background bold italic)
+            modus-themes-region '(bg-only no-extend)
+            modus-themes-headings '((1 . (background overline variable-pitch 1.4))
+                                    (2 . (background overline 1.3))
+                                    (3 . (background overline 1.2))
+                                    (4 . (background 1.2))
+                                    (5 . (background 1.2))
+                                    (6 . (background 1.2))
+                                    (7 . (background 1.2))
+                                    (8 . (background 1.2))))
+      ;; Load the theme files before enabling a theme (else you get an error).
                                           ;(modus-themes-load-themes)
 
-    ;; :config
-    ;; Load the theme of your choice:
-    ;; (modus-themes-load-operandi)
-    )
+      ;; :config
+      ;; Load the theme of your choice:
+      ;; (modus-themes-load-operandi)
+      )
 
-  (define-minor-mode my-modus-themes-tinted
-    "Tweak some Modus themes colors."
-    :init-value nil
-    :global nil
-    (if my-modus-themes-tinted
-        (setq modus-themes-operandi-color-overrides
-              '((bg-main . "#fefcf4")
-                (bg-dim . "#faf6ef")
-                (bg-alt . "#f7efe5")
-                (bg-hl-line . "#f4f0e3")
-                (bg-active . "#e8dfd1")
-                (bg-inactive . "#f6ece5")
-                (bg-region . "#c6bab1")
-                (bg-header . "#ede3e0")
-                (bg-tab-bar . "#dcd3d3")
-                (bg-tab-active . "#fdf6eb")
-                (bg-tab-inactive . "#c8bab8"))
-              modus-themes-vivendi-color-overrides
-              '((bg-main . "#100b17")
-                (bg-dim . "#161129")
-                (bg-alt . "#181732")
-                (bg-hl-line . "#191628")
-                (bg-active . "#282e46")
-                (bg-inactive . "#1a1e39")
-                (bg-region . "#393a53")
-                (bg-header . "#202037")
-                (bg-tab-bar . "#262b41")
-                (bg-tab-active . "#120f18")
-                (bg-tab-inactive . "#3a3a5a")))
-      (setq modus-themes-operandi-color-overrides nil
-            modus-themes-vivendi-color-overrides nil)))
+    (define-minor-mode my-modus-themes-tinted
+      "Tweak some Modus themes colors."
+      :init-value nil
+      :global nil
+      (if my-modus-themes-tinted
+          (setq modus-themes-operandi-color-overrides
+                '((bg-main . "#fefcf4")
+                  (bg-dim . "#faf6ef")
+                  (bg-alt . "#f7efe5")
+                  (bg-hl-line . "#f4f0e3")
+                  (bg-active . "#e8dfd1")
+                  (bg-inactive . "#f6ece5")
+                  (bg-region . "#c6bab1")
+                  (bg-header . "#ede3e0")
+                  (bg-tab-bar . "#dcd3d3")
+                  (bg-tab-active . "#fdf6eb")
+                  (bg-tab-inactive . "#c8bab8"))
+                modus-themes-vivendi-color-overrides
+                '((bg-main . "#100b17")
+                  (bg-dim . "#161129")
+                  (bg-alt . "#181732")
+                  (bg-hl-line . "#191628")
+                  (bg-active . "#282e46")
+                  (bg-inactive . "#1a1e39")
+                  (bg-region . "#393a53")
+                  (bg-header . "#202037")
+                  (bg-tab-bar . "#262b41")
+                  (bg-tab-active . "#120f18")
+                  (bg-tab-inactive . "#3a3a5a")))
+        (setq modus-themes-operandi-color-overrides nil
+              modus-themes-vivendi-color-overrides nil)))
 #+end_src
 ** Rainbow delimiters
 
@@ -860,7 +862,7 @@
 #+begin_src emacs-lisp
 
   (use-package which-key
-    :straight 
+    :straight
     :init (which-key-mode)
     :diminish which-key-mode
     :config
@@ -1307,7 +1309,7 @@ https://github.com/TommyX12/company-tabnine
 #+begin_src emacs-lisp
   (use-package company-tabnine
     :disabled t
-    :ensure t 
+    :ensure t
     :custom
     (company-tabnine-max-num-results 9)
     :init
