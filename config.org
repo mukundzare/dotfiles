@@ -47,6 +47,15 @@
     (load bootstrap-file nil 'nomessage))
   (setq package-enable-at-startup nil)
   #+end_src
+** Autoupdate packages
+#+begin_src emacs-lisp
+  (use-package auto-package-update
+    :init
+    (setq auto-package-update-interval 5
+          auto-package-update-delete-old-versions t)
+    :config
+    (auto-package-update-maybe))
+#+end_src
 * Enable/Disable debug on error
 #+begin_src emacs-lisp
   (toggle-debug-on-error)
@@ -375,7 +384,7 @@
               ;;:family "Cascadia Code PL"
               ;;:family "Roboto Mono"
               ;;:family "Inconsolata"
-              :height 1.0)
+              :height 0.95)
 
   ;;Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
@@ -786,8 +795,7 @@
                 doom-fairy-floss-brighter-modeline t
                 doom-fairy-floss-comment-bg t)
     :config
-    (load-theme 'doom-fairy-floss t)
-    (enable-theme 'doom-fairy-floss))
+    (load-theme 'doom-fairy-floss t))
 
     (use-package modus-themes
       :disabled t
@@ -2058,7 +2066,11 @@ See also: [[info:emacs#Scrolling][emacs#Scrolling]]
                       (org-level-6 . 1.1)
                       (org-level-7 . 1.1)
                       (org-level-8 . 1.1)))
-        (set-face-attribute (car face) nil :font "Roboto Mono" :weight 'regular :height (cdr face)))
+        (set-face-attribute (car face) nil
+                            :font "Jetbrains Mono"
+                            :inherit 'fixed-pitch
+                            :weight 'regular
+                            :height (cdr face)))
 
       ;; Ensure that anything that should be fixed-pitch in Org files appears that way
       (set-face-attribute 'org-block nil :foreground nil :inherit 'fixed-pitch)
@@ -2418,6 +2430,7 @@ Perspective el works for separating contexts of problems on which one is working
     :init
     (setq persp-state-default-file "/home/zam4abt/my-emacs-stuff/perspectives"
           persp-sort 'access
+          persp-show-modestring t
           persp-modestring-short nil
           persp-mode-prefix-key (kbd "C-x x"))
     (persp-mode)
