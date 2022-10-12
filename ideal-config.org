@@ -1,0 +1,515 @@
+#+TITLE: Emacs config
+##+SETUPFILE: https:/e/fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
+#+STARTUP: overview
+#+PROPERTY: header-args:emacs-lisp :tangle ./ideal-init.el :mkdirp yes
+#+HTML_HEAD: <style>pre.src{background:#343131;color:white;} </style>
+
+* Mandatory lexical binding
+#+begin_src emacs-lisp
+  ;;; -*- lexical-binding: t; -*-
+#+end_src
+
+* Temporary settings (to be deleted after this config becomes my standard)
+#+begin_src emacs-lisp
+;;  (setq package-user-dir (expand-file-name (concat user-emacs-directory "elpa"))
+  ;;      package-quickstart-file (expand-file-name (concat user-emacs-directory "elpa")))
+#+end_src
+* ~~~~~Performance marker~~~~~~
+#+begin_src emacs-lisp
+  (message "At performance marker 0")
+  (defvar perf-init-time (float-time))
+  #+end_src
+* Package system config
+** General config
+#+begin_src emacs-lisp
+  ;;Initialize packages sources
+  (require 'package)
+
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+			   ("elpa" . "https://elpa.gnu.org/packages/")
+			   ("melpa-stable" . "https://stable.melpa.org/packages/")))
+
+  (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
+  (add-to-list 'package-pinned-packages '(magit . "melpa-stable") t)
+
+  (unless (package-installed-p 'use-package)
+    (package-install 'use-package))
+
+  (require 'use-package)
+
+  (setq use-package-always-ensure t)
+  ;;Straight.el
+  (defvar bootstrap-version)
+  (let ((bootstrap-file
+	 (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+	(bootstrap-version 5))
+    (unless (file-exists-p bootstrap-file)
+      (with-current-buffer
+	  (url-retrieve-synchronously
+	   "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+	   'silent 'inhibit-cookies)
+	(goto-char (point-max))
+	(eval-print-last-sexp)))
+    (load bootstrap-file nil 'nomessage))
+  (setq package-enable-at-startup nil)
+#+end_src
+** Autoupdate packages
+#+begin_src emacs-lisp
+  (use-package auto-package-update
+    :init
+    (setq auto-package-update-interval 5
+	  auto-package-update-delete-old-versions t)
+    :config
+    (auto-package-update-maybe))
+#+end_src
+* Enable/Disable debug on error
+#+begin_src emacs-lisp
+  (toggle-debug-on-error)
+#+end_src
+* Basic UI Configuration
+#+begin_src emacs-lisp
+  (setq inhibit-startup-message t) ;Disable initial splash screen
+  (setq initial-scratch-message nil)
+
+  (scroll-bar-mode -1)    ;Disable visible scrollbar
+  (tool-bar-mode -1)      ;Disable the toolbar
+  (tooltip-mode -1)       ;Disable tooltips
+  (set-fringe-mode 10)    ;More breathing room
+
+  (menu-bar-mode -1)      ;Disable menubar
+
+  (setq use-short-answers t)		;Use y-or-n-p instead of yes-or-no-p
+  ;;Enable visible bell
+  (setq visible-bell t)
+
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
+  (prefer-coding-system 'utf-8)
+
+  ;;Indicate empty lines
+  (setq-default indicate-empty-lines t)
+
+  ;;Disable line numbers for some modes
+  (dolist (mode '(org-mode-hook
+		  term-mode-hook
+		  shell-mode-hook
+		  eshell-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+  ;; Start emacs in fullscreen mode
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+  ;; Enable fill-column indicator in all programming modes
+  ;;(setq-default display-fill-column-indicator-character ?\u254e)
+  (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
+
+  ;;Confirm if I want to exit emacs
+  (setq confirm-kill-emacs 'y-or-n-p)
+
+  (winner-mode 1)
+
+  (blink-cursor-mode -1)
+
+  ;; Sentences should end after single space.
+  (setq-default major-mode 'text-mode
+		fill-column 80
+		tab-width 4
+		indent-tabs-mode nil)     ; Permanently indent with spaces, never with TABs
+
+  (setq inhibit-compacting-font-caches t  ; Don’t compact font caches during GC.
+	default-directory "/home/zam4abt/"
+	trash-directory "./system_trash/"
+	delete-by-moving-to-trash t       ; Deleting files go to OS's trash folder
+	make-backup-files nil             ; Forbid to make backup files
+	auto-save-default nil             ; Disable auto save
+
+	uniquify-buffer-name-style 'post-forward-angle-brackets ; Show path if names are same
+	adaptive-fill-regexp "[ t]+|[ t]*([0-9]+.|*+)[ t]*"
+	adaptive-fill-first-line-regexp "^* *$"
+	sentence-end "\\([。！？]\\|……\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]*"
+	sentence-end-double-space nil
+	native-comp-async-report-warnings-errors nil
+	highlight-nonselected-windows t
+	word-wrap-by-category t)
+#+end_src
+
+** Fancy battery
+#+begin_src emacs-lisp
+  (use-package fancy-battery
+    :hook (after-init . fancy-battery-mode))
+#+end_src
+* Constants
+#+begin_src emacs-lisp
+
+  (defconst sys/win32p
+    (eq system-type 'windows-nt)
+    "Are we running on a WinTel system?")
+
+  (defconst sys/linuxp
+    (eq system-type 'gnu/linux)
+    "Are we running on a GNU/Linux system?")
+
+  (defconst sys/macp
+    (eq system-type 'darwin)
+    "Are we running on a Mac system?")
+
+  (defconst sys/mac-x-p
+    (and (display-graphic-p) sys/macp)
+    "Are we running under X on a Mac system?")
+
+  (defconst sys/mac-ns-p
+    (eq window-system 'ns)
+    "Are we running on a GNUstep or Macintosh Cocoa display?")
+
+  (defconst sys/mac-cocoa-p
+    (featurep 'cocoa)
+    "Are we running with Cocoa on a Mac system?")
+
+  (defconst sys/mac-port-p
+    (eq window-system 'mac)
+    "Are we running a macport build on a Mac system?")
+
+  (defconst sys/linux-x-p
+    (and (display-graphic-p) sys/linuxp)
+    "Are we running under X on a GNU/Linux system?")
+
+  (defconst sys/cygwinp
+    (eq system-type 'cygwin)
+    "Are we running on a Cygwin system?")
+
+  (defconst sys/rootp
+    (string-equal "root" (getenv "USER"))
+    "Are you using ROOT user?")
+
+  (defconst emacs/>=25p
+    (>= emacs-major-version 25)
+    "Emacs is 25 or above.")
+
+  (defconst emacs/>=26p
+    (>= emacs-major-version 26)
+    "Emacs is 26 or above.")
+
+  (defconst emacs/>=25.3p
+    (or emacs/>=26p
+        (and (= emacs-major-version 25)
+             (>= emacs-minor-version 3)))
+    "Emacs is 25.3 or above.")
+
+  (defconst emacs/>=25.2p
+    (or emacs/>=26p
+        (and (= emacs-major-version 25)
+             (>= emacs-minor-version 2)))
+    "Emacs is 25.2 or above.")
+
+  (defconst emacs/>=27p
+    (>= emacs-major-version 27)
+    "Emacs is 27 or above.")
+
+  (defconst emacs/>=28p
+    (>= emacs-major-version 28)
+    "Emacs is 28 or above.")
+
+  (defconst emacs/>=29p
+    (>= emacs-major-version 29)
+    "Emacs is 29 or above.")
+#+end_src
+* Centaur functions
+#+begin_src emacs-lisp
+  (defun icons-displayable-p ()
+    "Return non-nil if `all-the-icons' is displayable."
+    (and (display-graphic-p)
+         (require 'all-the-icons nil t)))
+#+end_src
+* Font configuration
+#+begin_src emacs-lisp
+  ;;Set default font
+  (set-face-attribute 'default nil
+          :family "Ubuntu Mono"
+          :weight 'normal
+          :height 110)
+
+  ;; Set the fixed pitch face
+  (set-face-attribute 'fixed-pitch nil
+          :family "JetBrains Mono"
+          :weight 'normal
+          :height 0.95)
+
+  ;;Set the variable pitch face
+  (set-face-attribute 'variable-pitch nil
+          :font "Roboto Mono"
+          :weight 'light
+          :height 0.95)
+#+end_src
+* Org-mode
+
+** Layout
+#+begin_src emacs-lisp
+  (defun mz/org-mode-setup ()
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (global-visual-line-mode 1)
+    (setq evil-auto-indent nil))
+
+  (defun mz/org-mode-visual-fill ()
+    (setq visual-fill-column-width 80
+          visual-fill-column-center-text t)
+    (visual-fill-column-mode 1))
+  (use-package visual-fill-column
+    :hook (org-mode . mz/org-mode-visual-fill))
+  (use-package org
+    :straight t
+    :hook (org-mode . mz/org-mode-setup)
+    :custom
+    ;;
+    (org-hierarchical-todo-statistics nil)
+    :config
+    (setq org-startup-with-inline-images t
+          org-ellipsis " ▾"
+          org-todo-keywords
+          '((sequence "TODO(t!)" "NEXT(n)" "ON_HOLD(h!)" "|" "DONE(d!)")
+            (sequence "BACKLOG(b)" "PLAN(p)" "ACTIVE(a!)" "REVIEW(v!)" "WAIT(w@/!)" "HOLD(h)" "|" "RBEI(r!)" "COMPLETED(c!)" "CANC(k@)"))))'
+#+end_src
+** Languages to load for evaluating the results in org-mode
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t )
+     (clojure . t)
+     (js . t)))
+#+end_src
+** Files
+#+begin_src emacs-lisp
+  
+#+end_src
+** Agenda
+#+begin_src emacs-lisp
+
+  (setq org-agenda-files
+        '("~/orgfiles/myorg.org"
+          "~/orgfiles/work_diary.org"
+          "~/orgfiles/someday.org"
+          "~/orgfiles/emacs-todo.org")
+        org-agenda-start-with-log-mode t)
+#+end_src
+* Session management
+#+begin_src emacs-lisp
+
+  ;;Save minibuffer history
+  (use-package savehist
+    :straight t
+    :hook (after-init . savehist-mode)
+    :init (setq enable-recursive-minibuffers t ; Allow commands in minibuffers
+
+                savehist-additional-variables '(mark-ring
+                                                global-mark-ring
+                                                search-ring
+                                                regexp-search-ring
+                                                extended-command-history)
+                savehist-autosave-interval 300))
+
+  ;;Save place in files automatically
+  (use-package saveplace
+    :straight t
+    :hook (after-init . save-place-mode))
+
+  (use-package recentf
+    :straight t
+    :bind (("C-x C-r" . recentf-open-files))
+    :hook (after-init . recentf-mode)
+    :init (setq recentf-max-saved-items 300
+                recentf-exclude
+                '("\\.?cache" ".cask" "url" "COMMIT_EDITMSG\\'" "bookmarks"
+                  "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
+                  "\\.?ido\\.last$" "\\.revive$" "/G?TAGS$" "/.elfeed/"
+                  "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/"
+                  (lambda (file) (file-in-directory-p file package-user-dir))))
+    :config
+    (setq recentf-max-menu-items 25)
+    (setq recentf-max-saved-items 25)
+    (push (expand-file-name recentf-save-file) recentf-exclude)
+    (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
+#+end_src
+
+* UI config
+** Rainbow delimiters
+
+#+begin_src emacs-lisp
+  ;;Parentheses are color-coded
+  (use-package rainbow-delimiters
+    :straight t
+    :commands rainbow-delimiters-mode
+    :hook (prog-mode . rainbow-delimiters-mode))
+#+end_src
+** Window management
+#+begin_src emacs-lisp
+  ;;Switch windows numbered from 1 to n depending on number of windows
+  ;;Doesn't work with treemacs. To switch to treemacs buffer, press <M-0>
+  (use-package ace-window)
+  (global-set-key (kbd "M-o") 'ace-window)
+
+  ;;aw-keys - the list of initial characters used in window labels:
+  (setq aw-keys '(?a ?s ?d ?f ?g ?h ?j ?k ?l))
+#+end_src
+** Highlighting
+#+begin_src emacs-lisp
+  (use-package hl-line
+    :straight t
+    :hook ((after-init . global-hl-line-mode)
+           ((dashboard-mode eshell-mode shell-mode term-mode vterm-mode) .
+            (lambda () (setq-local global-hl-line-mode nil)))))
+
+  ;; Highlight matching parens
+  (use-package paren
+                                          ;:ensure nil
+    :straight t
+    :hook (after-init . show-paren-mode)
+    :init (setq show-paren-when-point-inside-paren t
+                show-paren-when-point-in-periphery t))
+  ;; Highlight indentations
+  (use-package highlight-indent-guides
+    :straight t
+    :diminish
+    :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)
+    :init (setq highlight-indent-guides-method 'character
+                highlight-indent-guides-responsive 'top
+                highlight-indent-guides-suppress-auto-error t)
+    :config
+    (with-no-warnings
+      ;; Don't display first level of indentation
+      (defun my-indent-guides-for-all-but-first-column (level responsive display)
+        (unless (< level 1)
+          (highlight-indent-guides--highlighter-default level responsive display)))
+      (setq highlight-indent-guides-highlighter-function
+            #'my-indent-guides-for-all-but-first-column)
+
+      ;; Disable in `macrostep' expanding
+      (with-eval-after-load 'macrostep
+        (advice-add #'macrostep-expand
+                    :after (lambda (&rest _)
+                             (when highlight-indent-guides-mode
+                               (highlight-indent-guides-mode -1))))
+        (advice-add #'macrostep-collapse
+                    :after (lambda (&rest _)
+                             (when (derived-mode-p 'prog-mode 'yaml-mode)
+                               (highlight-indent-guides-mode 1)))))))
+
+#+end_src
+* Completion
+** Minibuffer Completion
+*** Vertico
+- Note taken on [2022-10-09 Sun 20:43] \\
+  Vertico is just like selectrum. Marginalia gives extra information in the margins of the minibuffer for files, buffers, etc..
+  
+  Consult is good for quick completion commands in the minibuffer and fits well with vertico. Embark is so cool. 
+
+#+begin_src emacs-lisp
+    ;; Enable vertico
+  (use-package vertico
+    :init
+    (vertico-mode)
+    (setq vertico-scroll-margin 0)
+    (setq vertico-count 15)
+    ;; Grow and shrink the Vertico minibuffer
+    (setq vertico-resize 'grow-only))
+
+  ;; A few more useful configurations...
+  (use-package emacs
+    :init
+    ;; Add prompt indicator to `completing-read-multiple'.
+    ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+    (defun crm-indicator (args)
+      (cons (format "[CRM%s] %s"
+                    (replace-regexp-in-string
+                     "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                     crm-separator)
+                    (car args))
+            (cdr args)))
+    (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+
+    ;; Do not allow the cursor in the minibuffer prompt
+    (setq minibuffer-prompt-properties
+          '(read-only t cursor-intangible t face minibuffer-prompt))
+    (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+
+    ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+    ;; Vertico commands are hidden in normal buffers.
+    ;; (setq read-extended-command-predicate
+    ;;       #'command-completion-default-include-p)
+
+    ;; Enable recursive minibuffers
+    (setq enable-recursive-minibuffers t))
+#+end_src
+*** Marginalia
+#+begin_src emacs-lisp
+  (use-package marginalia
+    :straight t
+    :config
+    (marginalia-mode))
+#+end_src
+*** Orderless
+#+begin_src emacs-lisp
+  (use-package orderless
+    :ensure t
+    :custom
+    (completion-styles '(orderless basic))
+    (completion-category-overrides '((file (styles basic partial-completion)))))
+#+end_src
+*** Consult
+#+begin_src emacs-lisp
+  (use-package consult
+    :bind (("C-s" . consult-line)
+           ("C-x b" . consult-buffer)
+           ("C-c g g" . consult-git-grep)
+           ("C-c g r" . consult-ripgrep)))
+
+#+end_src
+** Text completion
+*** YASnippet
+#+begin_src emacs-lisp
+  ;; Enable yasnippet
+  (use-package yasnippet
+    :straight t
+    :config
+    (setq yas-snippet-dirs '("~/Brain-dump/yasnippets"))
+    (yas-global-mode 1))
+#+end_src
+* Hinting
+** Which-key
+#+begin_src emacs-lisp
+
+  (use-package which-key
+    :straight
+    :init 
+    :diminish which-key-mode
+    :config
+    (which-key-mode)
+    (setq which-key-idle-delay 0.5))
+#+end_src
+
+** Helpful help
+
+#+begin_src emacs-lisp
+
+  (use-package helpful
+    :straight t
+    :custom
+    (counsel-describe-function-function #'helpful-callable)
+    (counsel-describe-variable-function #'helpful-variable)
+    :bind
+    ([remap describe-function] . counsel-describe-function)
+    ([remap describe-command] . helpful-command)
+    ([remap describe-variable] . counsel-describe-variable)
+    ([remap describe-key] . helpful-key))
+#+end_src
+** Info colours
+#+begin_src emacs-lisp
+  (use-package info-colors
+    :straight t
+    :hook
+    (Info-selection . info-colors-fontify-node))
+#+end_src
+* Navigation
+#+begin_src emacs-lisp
+  (use-package avy
+    :bind ("C-<dead-acute>" . avy-goto-char-timer))
+#+end_src

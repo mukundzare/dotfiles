@@ -339,6 +339,9 @@
                 indent-tabs-mode nil)     ; Permanently indent with spaces, never with TABs
 
   (setq inhibit-compacting-font-caches t  ; Don’t compact font caches during GC.
+        default-directory "/home/zam4abt/"
+        trash-directory "system_trash"
+        delete-by-moving-to-trash t       ; Deleting files go to OS's trash folder
         delete-by-moving-to-trash t       ; Deleting files go to OS's trash folder
         make-backup-files nil             ; Forbide to make backup files
         auto-save-default nil             ; Disable auto save
@@ -356,7 +359,7 @@
 ** Fancy battery
 #+begin_src emacs-lisp
   (use-package fancy-battery
-    :custom (fancy-battery-mode))
+    :hook (after-init . fancy-battery-mode))
 #+end_src
 * Font configuration
 #+begin_src emacs-lisp
