@@ -66,6 +66,69 @@
 #+begin_src emacs-lisp
   (toggle-debug-on-error)
 #+end_src
+* Key bindings
+** General key bindings
+#+begin_src emacs-lisp
+    ;;Make ESC quit prompts
+  ;  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+    ;;Electric return key
+    (define-key global-map (kbd "RET") 'newline-and-indent)
+
+    (use-package general
+      :straight t
+      :config
+      (general-create-definer mz/leader-keys
+        :keymaps '(normal insert visual emacs)
+        :prefix "SPC"
+        :global-prefix "C-SPC")
+
+      (mz/leader-keys
+        "t" '(:ignore t :which-key "toggles")
+        "o" '(:ignore t :which-key "opx")
+        "e" '(:ignore t :which-key "emacs")
+        "og" '(:ignore t :which-key "git grep")
+        "ow" '(mz/find-work-diary :which-key "Work diary")
+        "tt" '(consult-theme :which-key "choose theme")
+        "tm" '(modus-themes-toggle :which-key "toggle modus themes")
+        "db" '(ediff-buffers :which-key "ediff-buffers")
+        "df" '(ediff-files :which-key "ediff-files")
+        "ogg" '(mz/consult-git-grep-opx :which-key "Search OPX BEG repo")
+        "ogs" '(mz/consult-git-grep-std :which-key "Search OPX Std. repo")
+        "ec" '(mz/find-emacs-config-org :which-key "Open emacs config.org")
+        "ei" '(mz/reload-init-el :which-key "Reload init.el")
+        "p" '(switch-to-prev-buffer :which-key "switch-to-prev-buffer")
+        "n" '(switch-to-next-buffer :which-key "switch-to-next-buffer")
+        "s" '(ace-swap-window :which-key "swap windows")))
+
+    ;;Download Evil
+    (use-package evil
+      :straight t
+      :init
+      (setq evil-want-integration t)
+      (setq evil-want-keybinding nil)
+      (setq evil-want-C-u-scroll t)
+      (setq evil-want-C-i-jump t)
+      :config
+      (evil-mode 1)
+      :hook (after-change-major-mode . (lambda ()
+                                         (when (memq major-mode mz/lisp-modes)
+                                           turn-off-evil-mode))))
+    (use-package evil-collection
+      :after evil
+      :config
+      (evil-collection-init))
+    ;; Use evil keybindings in org-mode
+    (use-package evil-org
+      :straight t
+      :after org
+      :hook (org-mode . (lambda () evil-org-mode))
+      :config
+      (require 'evil-org-agenda)
+      (evil-org-agenda-set-keys))
+
+    (use-package hydra)
+#+end_src
 * Basic UI Configuration
 #+begin_src emacs-lisp
   (setq inhibit-startup-message t) ;Disable initial splash screen
@@ -91,9 +154,9 @@
 
   ;;Disable line numbers for some modes
   (dolist (mode '(org-mode-hook
-		  term-mode-hook
-		  shell-mode-hook
-		  eshell-mode-hook))
+                  term-mode-hook
+                  shell-mode-hook
+                  eshell-mode-hook))
     (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
   ;; Start emacs in fullscreen mode
@@ -212,6 +275,9 @@
   (defconst emacs/>=29p
     (>= emacs-major-version 29)
     "Emacs is 29 or above.")
+
+  (defconst mz/lisp-modes
+    '(clojure-mode emacs-lisp-mode common-lisp-mode))
 #+end_src
 * Centaur functions
 #+begin_src emacs-lisp
@@ -556,7 +622,7 @@
 
   (use-package which-key
     :straight
-    :init 
+    :init
     :diminish which-key-mode
     :config
     (which-key-mode)
