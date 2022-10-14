@@ -515,13 +515,146 @@
     :init
     (setq doom-modeline-minor-modes nil))
 #+end_src
+** Ediff
+#+begin_src emacs-lisp
+  ;; A comprehensive visual interface to diff & patch
+  (use-package ediff
+    :straight t
+    :hook(;; show org ediffs unfolded
+          (ediff-prepare-buffer . outline-show-all)
+          ;; restore window layout when done
+          (ediff-quit . winner-undo))
+    :config
+    (setq ediff-window-setup-function 'ediff-setup-windows-plain
+          ediff-split-window-function 'split-window-horizontally
+          ediff-merge-split-window-function 'split-window-horizontally))
+#+end_src
+** Buffer management
+I don't need to keep certain buffers like help mode open when the buffer is buried so kill it.
+#+begin_src emacs-lisp
+  (when (boundp 'evil-mode)
+    (dolist (key-map '(helpful-mode-map
+                       calendar-mode-map
+                       help-mode-map))
+      (evil-collection-define-key 'normal key-map "q" 'kill-this-buffer)))
+#+end_src
+** Colorize color names
+#+begin_src emacs-lisp
+ (use-package rainbow-mode
+    :straight t
+    :diminish
+    :bind (:map special-mode-map
+                ("w" . rainbow-mode))
+    :hook ((html-mode php-mode) . rainbow-mode)
+    :config
+    (with-no-warnings
+      ;; HACK: Use overlay instead of text properties to override `hl-line' faces.
+      ;; @see https://emacs.stackexchange.com/questions/36420
+      (defun my-rainbow-colorize-match (color &optional match)
+        (let* ((match (or match 0))
+               (ov (make-overlay (match-beginning match) (match-end match))))
+          (overlay-put ov 'ovrainbow t)
+          (overlay-put ov 'face `((:foreground ,(if (> 0.5 (rainbow-x-color-luminance color))
+                                                    "white" "black"))
+                                  (:background ,color)))))
+      (advice-add #'rainbow-colorize-match :override #'my-rainbow-colorize-match)
+
+      (defun my-rainbow-clear-overlays ()
+        "Clear all rainbow overlays."
+        (remove-overlays (point-min) (point-max) 'ovrainbow t))
+      (advice-add #'rainbow-turn-off :after #'my-rainbow-clear-overlays))
+#+end_src
+** Pulse
+#+begin_src emacs-lisp
+
+  ;;Pulse current line
+    (use-package pulse
+      :straight t
+      :custom-face
+      (pulse-highlight-start-face ((t (:inherit region))))
+      (pulse-highlight-face ((t (:inherit region))))
+      :hook (((dumb-jump-after-jump
+               imenu-after-jump) . my-recenter-and-pulse)
+             ((bookmark-after-jump
+               magit-diff-visit-file
+               next-error) . my-recenter-and-pulse-line))
+      :init
+      (with-no-warnings
+        (defun my-pulse-momentary-line (&rest _)
+          "Pulse the current line."
+          (pulse-momentary-highlight-one-line (point)))
+
+        (defun my-pulse-momentary (&rest _)
+          "Pulse the region or the current line."
+          (if (fboundp 'xref-pulse-momentarily)
+              (xref-pulse-momentarily)
+            (my-pulse-momentary-line)))
+
+        (defun my-recenter-and-pulse(&rest _)
+          "Recenter and pulse the region or the current line."
+          (recenter)
+          (my-pulse-momentary))
+
+        (defun my-recenter-and-pulse-line (&rest _)
+          "Recenter and pulse the current line."
+          (recenter)
+          (my-pulse-momentary-line))
+
+        ;;TODO Add personal functions
+        (dolist (cmd '(recenter-top-bottom
+                       other-window windmove-do-window-select
+                       ace-window aw--select-window
+                       pager-page-down pager-page-up
+                       treemacs-select-window
+                       symbol-overlay-basic-jump))
+          (advice-add cmd :after #'my-pulse-momentary-line))
+
+        (dolist (cmd '(pop-to-mark-command
+                       pop-global-mark
+                       evil-jump-backward
+                       evil-jump-forward
+                       goto-last-change))
+          (advice-add cmd :after #'my-recenter-and-pulse))))
+#+end_src
+
+** All-the-icons
+#+begin_src emacs-lisp
+  (use-package all-the-icons-ibuffer
+    :straight t
+    :init (all-the-icons-ibuffer-mode 1))
+
+#+end_src
+** Info colours
+#+begin_src emacs-lisp
+  (use-package info-colors
+    :straight t
+    :hook
+    (Info-selection . info-colors-fontify-node))
+#+end_src
+** Prettify symbols
+Prettify symbols mode, a built-in mode for displaying sequences of characters as fancy characters or symbols.
+#+begin_src emacs-lisp
+  (global-prettify-symbols-mode 1)
+  (defun add-pretty-lambda ()
+    "Make some word or string show as pretty Unicode symbols.  See https://unicodelookup.com for more."
+    (setq prettify-symbols-alist
+          '(("lambda" . 955)
+            ("delta" . 120517)
+            ("epsilon" . 120518)
+            ("->" . 8594)
+            ("->>" . 8608)
+            ("<=" . 8804)
+            (">=" . 8805))))
+  (add-hook 'prog-mode-hook 'add-pretty-lambda)
+  (add-hook 'org-mode-hook 'add-pretty-lambda)
+#+end_src
 * Completion
 ** Minibuffer Completion
 *** Vertico
 - Note taken on [2022-10-09 Sun 20:43] \\
   Vertico is just like selectrum. Marginalia gives extra information in the margins of the minibuffer for files, buffers, etc..
-  
-  Consult is good for quick completion commands in the minibuffer and fits well with vertico. Embark is so cool. 
+
+  Consult is good for quick completion commands in the minibuffer and fits well with vertico. Embark is so cool.
 
 #+begin_src emacs-lisp
   ;; Enable vertico
