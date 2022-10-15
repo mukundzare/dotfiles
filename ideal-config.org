@@ -761,6 +761,15 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
            ("C-c g g" . consult-git-grep)
            ("C-c g r" . consult-ripgrep)))
 
+  ;;Consult dir to quickly switch dirs while in
+  ;;the minibuffer prompt
+  (use-package consult-dir
+    :straight t
+    :commands consult-dir
+    :bind (("C-x C-d" . consult-dir)
+           :map minibuffer-local-completion-map
+           ("C-x C-j" . consult-dir-jump-file)))
+
 #+end_src
 *** Embark
 #+begin_src emacs-lisp
