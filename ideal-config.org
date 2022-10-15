@@ -905,3 +905,95 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :config
     (global-set-key (kbd "C-x g") 'magit-status))
 #+end_src
+
+* Development
+** Language modes
+*** HTML
+#+begin_src emacs-lisp
+  ;; edit html tags like sexps
+  (use-package tagedit)
+  (use-package emmet-mode
+    :straight t
+    :hook
+    ((sgml-mode css-mode html-mode))
+    :init
+    (setq emmet-move-cursor-between-quotes t))
+#+end_src
+*** CSV
+#+begin_src emacs-lisp
+  (use-package csv
+    :defer t)
+#+end_src
+*** Clojure
+#+begin_src emacs-lisp
+  (use-package flycheck-clj-kondo
+    :straight t)
+  ;; key bindings and code colorization for Clojure
+  ;; https://github.com/clojure-emacs/clojure-mode
+  ;; then install the checker as soon as `clojure-mode' is loaded
+  (use-package clojure-mode
+                                          ;:ensure t
+    :straight t
+    :config
+    (require 'flycheck-clj-kondo)
+    (setq clojure-align-forms-automatically t))
+
+  ;; extra syntax highlighting for clojure
+  (use-package clojure-mode-extra-font-locking
+    :straight t)
+
+  ;; integration with a Clojure REPL
+  ;; https://github.com/clojure-emacs/cider
+  (use-package cider
+    :straight t
+    :init
+    (setq org-babel-clojure-backend 'cider))
+
+  (use-package clj-refactor
+    :hook
+    (clojure-mode . (lambda ()
+                      (clj-refactor-mode 1)
+                      (yas-minor-mode 1)
+                      (cljr-add-keybindings-with-prefix "C-c C-m"))))
+
+#+end_src
+*** JSON
+#+begin_src emacs-lisp
+  (use-package json-mode
+    :defer t)
+#+end_src
+*** Emacs Lisp
+**** Eldoc
+#+begin_src emacs-lisp
+  ;;Turn on eldoc mode
+  (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+#+end_src
+**** EROS
+See here: https://github.com/xiongtx/eros
+Evaluation Result OverlayS for Emacs Lisp.
+#+begin_src emacs-lisp
+  (use-package eros
+    :straight t
+    :defer t
+    :config (eros-mode 1))
+#+end_src
+**** Macrostep (interactive macro expansion)
+#+begin_src emacs-lisp
+  (use-package macrostep
+    :straight t
+    :commands macrostep-expand
+    :bind ("C-c e m" . macrostep-expand))
+#+end_src
+** Tools
+*** Restclient
+#+begin_src emacs-lisp
+  (use-package restclient
+    :straight t)
+#+end_src
+
+** Usability
+#+begin_src emacs-lisp
+  ;;Aggresive-indent mode
+  (use-package aggressive-indent
+    :hook (emacs-lisp-mode. aggressive-indent-mode))
+#+end_src
