@@ -389,6 +389,47 @@
 
   (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'mz/org-babel-tangle-config)))
 #+end_src
+** Org-roam
+#+begin_src emacs-lisp
+  (defun mz--get-first-valid-path (&rest locations)
+    (car (-filter #'file-exists-p locations)))
+
+  ;; Use org-roam
+  (use-package org-roam
+    :straight t
+    :init
+    (setq org-roam-v2-ack t)
+    :custom
+    (org-roam-directory (mz--get-first-valid-path "~/RoamNotes"
+                                                  "~/Org-roam_files/"))
+    (org-roam-capture-templates
+     '(("d" "default" plain
+        "%?"
+        :if-new (file+head "%<%Y%m%d%H%M%S>-${slug}.org.gpg"
+                           "#+title: ${title}\n")
+        :unnarrowed t)))
+    :bind (("C-c n l" . org-roam-buffer-toggle)
+           ("C-c n f" . org-roam-node-find)
+           ("C-c n i" . org-roam-node-insert)
+           :map org-mode-map
+           ("C-M-i" . completion-at-point))
+    :config
+    (org-roam-setup))
+                                          ;(org-roam-db-autosync-mode)
+                                          ;(org-roam-db-sync 'force))
+
+  ;;Org-roam v2 UI
+  (use-package org-roam-ui
+    :straight
+    (:host github :repo "org-roam/org-roam-ui" :branch "main" :files ("*.el" "out"))
+    :after org-roam
+    ;;:hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start nil))
+#+end_src
 * Session management
 #+begin_src emacs-lisp
 
