@@ -412,7 +412,7 @@
 
   (use-package recentf
     :straight t
-    :bind (("C-x C-r" . recentf-open-files))
+    :bind (("C-x C-r" . consult-recent-file))
     :hook (after-init . recentf-mode)
     :init (setq recentf-max-saved-items 300
                 recentf-exclude
