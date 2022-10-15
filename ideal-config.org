@@ -803,6 +803,39 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     (setq yas-snippet-dirs '("~/Brain-dump/yasnippets"))
     (yas-global-mode 1))
 #+end_src
+*** Autocomplete (For Planisware)
+#+begin_src emacs-lisp
+(use-package auto-complete
+    :straight t
+    :hook (opx2-js-mode . auto-complete-mode))
+#+end_src
+
+
+*** Company mode
+#+begin_src emacs-lisp
+  (use-package company
+    :straight t
+    :init
+    (add-hook 'after-init-hook 'global-company-mode)
+    :config
+    (setq company-tooltip-minimum 5
+          company-tooltip-flip-when-above t)
+    (use-package company-box
+      :hook (company-mode . company-box-mode)))
+
+  ;;Company-quickhelp for popup documentation
+  (use-package company-quickhelp
+    :straight t
+    :config
+    (company-quickhelp-mode))
+
+#+end_src
+
+
+*** Hippie expand
+#+begin_src emacs-lisp
+  (global-set-key (kbd "M-/") 'hippie-expand)
+#+end_src
 * Hinting
 ** Which-key
 #+begin_src emacs-lisp
