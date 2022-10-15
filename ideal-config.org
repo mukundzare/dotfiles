@@ -113,7 +113,7 @@
       (evil-mode 1)
       :hook (after-change-major-mode . (lambda ()
                                          (when (memq major-mode mz/lisp-modes)
-                                           turn-off-evil-mode))))
+                                           (turn-off-evil-mode)))))
     (use-package evil-collection
       :after evil
       :config
