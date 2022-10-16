@@ -1033,12 +1033,25 @@ Evaluation Result OverlayS for Emacs Lisp.
 #+end_src
 
 ** Usability
+*** Aggresive indent
 #+begin_src emacs-lisp
   ;;Aggresive-indent mode
   (use-package aggressive-indent
     :hook ((clojure-mode . aggressive-indent-mode)
                                           ;(opx2-js-mode . aggressive-indent-mode)
            (emacs-lisp-mode . aggressive-indent-mode)))
-  (use-package evil-mc
+#+end_src
+*** Multiple cursors (Evil)
+#+begin_src emacs-lisp
+(use-package evil-mc
     :config (global-evil-mc-mode))
+#+end_src
+*** Auto pairing parens
+#+begin_src emacs-lisp
+  (use-package elec-pair
+      :straight t
+                                            ;:ensure nil
+      :hook (after-init . electric-pair-mode)
+      :init (setq electric-pair-inhibit-predicate
+                  'electric-pair-default-inhibit))
 #+end_src
