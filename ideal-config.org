@@ -324,7 +324,12 @@
     (visual-fill-column-mode 1))
   (use-package visual-fill-column
     :hook (org-mode . mz/org-mode-visual-fill))
-  (use-package org
+
+
+#+end_src
+** Org mode (MAIN)
+#+begin_src emacs-lisp
+(use-package org
     :straight t
     :hook (org-mode . mz/org-mode-setup)
     :custom
@@ -335,14 +340,46 @@
           org-ellipsis " ▾"
           org-todo-keywords
           '((sequence "TODO(t!)" "NEXT(n)" "ON_HOLD(h!)" "|" "DONE(d!)")
-            (sequence "BACKLOG(b)" "PLAN(p)" "ACTIVE(a!)" "REVIEW(v!)" "WAIT(w@/!)" "HOLD(h)" "|" "RBEI(r!)" "COMPLETED(c!)" "CANC(k@)")))
+            (sequence "BACKLOG(b)" "PLAN(p)" "ACTIVE(a!)" "REVIEW(v!)" "WAIT(w@/!)" "HOLD(h)" "|" "RBEI(r!)" "COMPLETED(c!)" "CANC(k@)"))
+
+          org-agenda-start-with-log-mode t
+          org-log-done 'time
+          org-log-into-drawer t)
+    (setq org-agenda-files
+          '("~/orgfiles/personal.org"
+            "~/orgfiles/projects.org"
+            "~/orgfiles/work.org"
+            "~/orgfiles/habits.org"))
     (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
     (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
     (add-to-list 'org-structure-template-alist '("clj" . "src clojure"))
     (add-to-list 'org-structure-template-alist '("js" . "src js"))
     (add-to-list 'org-structure-template-alist '("sql" . "src sql"))
-    (add-to-list 'org-structure-template-alist '("plw" . "src opx2-js")))
-#+end_src
+    (add-to-list 'org-structure-template-alist '("plw" . "src opx2-js"))
+    (setq org-tag-alist
+          '((:startgroup)                 ;Group tags are always mutually
+                                          ;exclusive, i.e. either one of these
+                                          ;tags can be set as a tag
+            ("@home" . ?H)
+            ("@work" . ?W)
+            (:endgroup)
+            (:startgrouptag)
+            ("productivity")
+            (:grouptags)
+            ("emacs" . ?e)
+            ("workflow" . ?w)
+            (:endgrouptag)
+            ("@errand" . ?E)
+            ("phone" . ?c)
+            ("project" . ?P)
+            ("learn" . ?l)
+            ("family" . ?n)
+            ("recurring" . ?r)
+            ("idea" . ?i)))
+    (require 'org-habit)
+    (add-to-list 'org-modules 'org-habit)
+    (setq org-habit-graph-column 60))
+    #+end_src
 ** Languages to load for evaluating the results in org-mode
 #+begin_src emacs-lisp
   (org-babel-do-load-languages
