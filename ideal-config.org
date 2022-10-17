@@ -443,6 +443,20 @@
 ** Files
 #+begin_src emacs-lisp
   (setq org-directory "~/orgfiles")
+  (setq org-refile-targets
+          '(("~/orgfiles/ARCHIVE/Archiv.org" :maxlevel . 1)
+            ("~/orgfiles/someday.org" :maxlevel . 1)
+            ("~/orgfiles/projects.org" :maxlevel . 1)
+            ("~/orgfiles/habits.org" :maxlevel . 1)
+            ("~/orgfiles/work.org" :maxlevel . 1)
+            ("~/orgfiles/personal.org" :maxlevel . 1)
+            ("~/orgfiles/ARCHIVE/Tasks.org" :maxlevel . 1)))
+  (setq org-agenda-files
+        '("~/orgfiles/personal.org"
+          "~/orgfiles/projects.org"
+          "~/orgfiles/Inbox.org"
+          "~/orgfiles/work.org"
+          "~/orgfiles/habits.org"))
 #+end_src
 ** Agenda
 #+begin_src emacs-lisp
@@ -467,6 +481,7 @@
           ("i" "Info" entry (file "Inbox.org")
            "* TODO %?\n %U\n %x\n %i" :empty-lines 1)))
   (define-key global-map (kbd "C-c c") 'org-capture)
+  (define-key global-map (kbd "C-c a") 'org-agenda)
 #+end_src
 ** Autotangle
 #+begin_src emacs-lisp
