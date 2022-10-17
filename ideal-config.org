@@ -66,6 +66,58 @@
 #+begin_src emacs-lisp
   (toggle-debug-on-error)
 #+end_src
+* Emacs libraries
+** HTTP
+*** request.el: Uses curl as its backend or Emacs's native url.el library if curl is not found.
+#+begin_src emacs-lisp
+  (use-package request :defer t)
+#+end_src
+** Hashtable library ht.el
+#+begin_src emacs-lisp
+  (use-package ht
+    :ensure nil)
+#+end_src
+** Dash-el
+#+begin_src emacs-lisp
+  (use-package dash
+    :straight t
+    :defer t)
+#+end_src
+** Emacssql
+#+begin_src emacs-lisp
+  (use-package emacsql-sqlite
+    :defer t)
+#+end_src
+** F-el
+#+begin_src emacs-lisp
+  (use-package f
+    :defer t)
+#+end_src
+** Overlay library
+#+begin_src emacs-lisp
+(use-package ov
+:defer t)
+#+end_src>
+** My personal libraries
+#+begin_src emacs-lisp
+  (defvar mz--my-personal-libs-dir (file-name-as-directory "~/emacs-libs/"))
+  (require 's)
+  (defun mz--get-el-files-from-dir (dir-name)
+    (seq-filter (lambda (file)
+          (and (equal (file-name-extension file)
+                  "el")
+               (not (s-ends-with-p "~undo-tree~" file)))) ;Somehow undo-tree
+                      ;now adds a suffix
+                      ;to all files
+        (directory-files dir-name)))
+
+  (dolist (file-name (mz--get-el-files-from-dir mz--my-personal-libs-dir))
+    (load (format "%s%s"
+          mz--my-personal-libs-dir
+          file-name)
+      t))
+
+#+end_src
 * Key bindings
 ** General key bindings
 #+begin_src emacs-lisp
