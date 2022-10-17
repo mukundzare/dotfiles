@@ -399,11 +399,7 @@
             org-agenda-start-with-log-mode t
             org-log-done 'time
             org-log-into-drawer t)
-      (setq org-agenda-files
-            '("~/orgfiles/personal.org"
-              "~/orgfiles/projects.org"
-              "~/orgfiles/work.org"
-              "~/orgfiles/habits.org"))
+
       (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
       (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
       (add-to-list 'org-structure-template-alist '("clj" . "src clojure"))

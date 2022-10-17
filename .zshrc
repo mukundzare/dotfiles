@@ -139,9 +139,12 @@ export ftp_proxy=http://localhost:3128
 # Check if vpn is connected if not then connect
 # but prevent connecting in a tmux session
 if [[ (-z $TMUX) &&
-	(-z $(vpnstat))]] then
-   echo "VPN not connected...autoconnecting."
-   osd-vpn-connect
+          (-z $(vpnstat))
+    ]] then
+   if [[ (-t 1) ]] then
+      echo "VPN not connected...autoconnecting."
+   fi
+   osd-vpn-connect 1>/dev/null 2&>1
 fi
 
 
@@ -159,8 +162,6 @@ alias alt='ls -alht | head -20'
 alias ll='ls -alht' 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
-
-. "/home/zam4abt/.local/share/lscolors.sh"
 
 GPG_TTY=$(tty)
 export GPG_TTY
