@@ -702,14 +702,15 @@
 #+end_src
 ** Modeline
 #+begin_src emacs-lisp
+  ;; Note to self: you need to run all-the-icons-install-fonts after installing it
+  ;; to make the icons appear
   (use-package all-the-icons
     :straight t)
 
   (use-package doom-modeline
     :straight t
     :hook (after-init . doom-modeline-mode)
-    :init
-    (setq doom-modeline-minor-modes nil))
+    :init (setq doom-modeline-minor-modes nil))
 #+end_src
 ** Ediff
 #+begin_src emacs-lisp
