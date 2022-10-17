@@ -75,7 +75,7 @@
 ** Hashtable library ht.el
 #+begin_src emacs-lisp
   (use-package ht
-    :ensure nil)
+    :straight t)
 #+end_src
 ** Dash-el
 #+begin_src emacs-lisp
@@ -197,7 +197,9 @@
 
   (setq use-short-answers t)		;Use y-or-n-p instead of yes-or-no-p
   ;;Enable visible bell
-  (setq visible-bell t)
+  (setq visible-bell t
+        ;Split windows vertically always
+        visual-fill-column-enable-sensible-window-split t)
 
   (column-number-mode)
   (global-display-line-numbers-mode t)
