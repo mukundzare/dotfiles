@@ -196,56 +196,11 @@
   (defconst mz/lisp-modes
     '(clojure-mode emacs-lisp-mode common-lisp-mode))
 #+end_src
-* Centaur functions
-#+begin_src emacs-lisp
-  (defun icons-displayable-p ()
-    "Return non-nil if `all-the-icons' is displayable."
-    (and (display-graphic-p)
-         (require 'all-the-icons nil t)))
-#+end_src
-* Font configuration
-#+begin_src emacs-lisp
-  ;;Set default font
-  (set-face-attribute 'default nil
-          :family "Ubuntu Mono"
-          :weight 'normal
-          :height 110)
-
-  ;; Set the fixed pitch face
-  (set-face-attribute 'fixed-pitch nil
-          :family "JetBrains Mono"
-          :weight 'normal
-          :height 0.95)
-
-  ;;Set the variable pitch face
-  (set-face-attribute 'variable-pitch nil
-          :font "Roboto Mono"
-          :weight 'light
-          :height 0.95)
-#+end_src
 * Org-mode
-
-** Layout
-#+begin_src emacs-lisp
-  (defun mz/org-mode-setup ()
-    (org-indent-mode)
-    (variable-pitch-mode 1)
-    (global-visual-line-mode 1)
-    (setq evil-auto-indent nil))
-
-  (defun mz/org-mode-visual-fill ()
-    (setq visual-fill-column-width 80
-          visual-fill-column-center-text t)
-    (visual-fill-column-mode 1))
-  (use-package visual-fill-column
-    :hook (org-mode . mz/org-mode-visual-fill))
-
-
-#+end_src
 ** Org mode (MAIN)
 #+begin_src emacs-lisp
   (use-package org
-    :straight t
+    :ensure t
     :hook (org-mode . mz/org-mode-setup)
     :custom
     ;;
