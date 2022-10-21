@@ -393,8 +393,7 @@
     (setq org-startup-with-inline-images t
           org-ellipsis " ▾"
           org-todo-keywords
-          '((sequence "TODO(t!)" "NEXT(n)" "ON_HOLD(h!)" "|" "DONE(d!)")
-            (sequence "BACKLOG(b)" "PLAN(p)" "ACTIVE(a!)" "REVIEW(v!)" "WAIT(w@/!)" "HOLD(h)" "|" "RBEI(r!)" "COMPLETED(c!)" "CANC(k@)"))
+          '((sequence "TODO(t!)" "NEXT(n)" "ON_HOLD(h!)" "|" "DONE(d!)"))
 
           org-agenda-start-with-log-mode t
           org-log-done 'time
