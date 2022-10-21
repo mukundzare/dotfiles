@@ -118,145 +118,6 @@
       t))
 
 #+end_src
-* Key bindings
-** General key bindings
-#+begin_src emacs-lisp
-  ;;Make ESC quit prompts
-                                          ;  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
-
-  ;;Electric return key
-  (define-key global-map (kbd "RET") 'newline-and-indent)
-
-  (use-package general
-    :straight t
-    :config
-    (general-create-definer mz/leader-keys
-      :keymaps '(normal insert visual emacs)
-      :prefix "SPC"
-      :global-prefix "C-SPC")
-
-    (mz/leader-keys
-      "t" '(:ignore t :which-key "toggles")
-      "o" '(:ignore t :which-key "opx")
-      "e" '(:ignore t :which-key "emacs")
-      "og" '(:ignore t :which-key "git grep")
-      "ow" '(mz/find-work-diary :which-key "Work diary")
-      "tt" '(consult-theme :which-key "choose theme")
-      "tm" '(modus-themes-toggle :which-key "toggle modus themes")
-      "db" '(ediff-buffers :which-key "ediff-buffers")
-      "df" '(ediff-files :which-key "ediff-files")
-      "ogg" '(mz/consult-git-grep-opx :which-key "Search OPX BEG repo")
-      "ogs" '(mz/consult-git-grep-std :which-key "Search OPX Std. repo")
-      "ec" '(mz/find-emacs-config-org :which-key "Open emacs config.org")
-      "ei" '(mz/reload-init-el :which-key "Reload init.el")
-      "p" '(switch-to-prev-buffer :which-key "switch-to-prev-buffer")
-      "n" '(switch-to-next-buffer :which-key "switch-to-next-buffer")
-      "s" '(ace-swap-window :which-key "swap windows")))
-
-  ;;Download Evil
-  (use-package evil
-    :straight t
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-C-i-jump t)
-    :config
-    (evil-mode 1)
-    :hook (after-change-major-mode . (lambda ()
-                                       (if (memq major-mode mz/lisp-modes)
-                                           (progn
-                                             (message "Disabling evil mode...")
-                                             (turn-off-evil-mode))))))
-  (use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
-  ;; Use evil keybindings in org-mode
-  (use-package evil-org
-    :straight t
-    :after org
-    :hook (org-mode . (lambda () evil-org-mode))
-    :config
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys))
-
-  (use-package hydra)
-#+end_src
-* Basic UI Configuration
-#+begin_src emacs-lisp
-  (setq inhibit-startup-message t) ;Disable initial splash screen
-  (setq initial-scratch-message nil)
-
-  (scroll-bar-mode -1)    ;Disable visible scrollbar
-  (tool-bar-mode -1)      ;Disable the toolbar
-  (tooltip-mode -1)       ;Disable tooltips
-  (set-fringe-mode 10)    ;More breathing room
-
-  (menu-bar-mode -1)      ;Disable menubar
-
-  (setq use-short-answers t)		;Use y-or-n-p instead of yes-or-no-p
-  ;;Enable visible bell
-  (setq visible-bell t
-                                          ;Split windows vertically always
-        visual-fill-column-enable-sensible-window-split t)
-
-  (column-number-mode)
-  (global-display-line-numbers-mode t)
-  (prefer-coding-system 'utf-8)
-
-  ;;Indicate empty lines
-  (setq-default indicate-empty-lines t)
-
-  ;;Disable line numbers for some modes
-  (dolist (mode '(org-mode-hook
-                  term-mode-hook
-                  shell-mode-hook
-                  eshell-mode-hook))
-    (add-hook mode (lambda () (display-line-numbers-mode 0))))
-
-  ;; Start emacs in fullscreen mode
-  (add-to-list 'default-frame-alist '(fullscreen . maximized))
-
-  ;; Enable fill-column indicator in all programming modes
-  ;;(setq-default display-fill-column-indicator-character ?\u254e)
-  (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
-
-  ;;Confirm if I want to exit emacs
-  (setq confirm-kill-emacs 'y-or-n-p)
-
-  (winner-mode 1)
-
-  (blink-cursor-mode -1)
-
-  ;; Sentences should end after single space.
-  (setq-default major-mode 'text-mode
-                fill-column 80
-                tab-width 4
-                indent-tabs-mode nil)     ; Permanently indent with spaces, never with TABs
-
-  (setq inhibit-compacting-font-caches t  ; Don’t compact font caches during GC.
-        default-directory "/home/zam4abt/"
-        trash-directory "./system_trash/"
-        delete-by-moving-to-trash t       ; Deleting files go to OS's trash folder
-        make-backup-files nil             ; Forbid to make backup files
-        auto-save-default nil             ; Disable auto save
-
-        uniquify-buffer-name-style 'post-forward-angle-brackets ; Show path if names are same
-        adaptive-fill-regexp "[ t]+|[ t]*([0-9]+.|*+)[ t]*"
-        adaptive-fill-first-line-regexp "^* *$"
-        sentence-end "\\([。！？]\\|……\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]*"
-        sentence-end-double-space nil
-        native-comp-async-report-warnings-errors nil
-        highlight-nonselected-windows t
-        word-wrap-by-category t)
-  #+end_src
-
-** Fancy battery
-#+begin_src emacs-lisp
-  (use-package fancy-battery
-    :hook (after-init . fancy-battery-mode))
-#+end_src
 * Constants
 #+begin_src emacs-lisp
 
@@ -431,6 +292,46 @@
     (add-to-list 'org-modules 'org-tempo)
     (setq org-habit-graph-column 60)
 #+end_src
+** Layout
+*** Basic UI
+#+begin_src emacs-lisp
+  (defun mz/org-mode-setup ()
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (global-visual-line-mode 1)
+    (setq evil-auto-indent nil))
+
+  (defun mz/org-mode-visual-fill ()
+    (setq visual-fill-column-width 80
+          visual-fill-column-center-text t)
+    (visual-fill-column-mode 1))
+  (use-package visual-fill-column
+    :hook (org-mode . mz/org-mode-visual-fill))
+
+
+#+end_src
+*** Org bullets
+#+begin_src emacs-lisp
+  (use-package org-bullets
+    :after org
+    :hook (org-mode . org-bullets-mode))
+#+end_src
+*** Prettify
+#+begin_src emacs-lisp
+  ;;org-pretty-entities makes characters like
+  ;;\under appear as _ (underscore).
+  ;;org-emphasis-markers hide markers like the forward slashes in
+  ;; /This is italic/
+  (setq org-pretty-entities nil
+        org-hide-emphasis-markers t)
+#+end_src
+*** SVG Tags
+#+begin_src emacs-lisp
+(use-package svg-lib
+    :after org)
+  (use-package svg-tag-mode)
+
+#+end_src
 ** Languages to load for evaluating the results in org-mode
 #+begin_src emacs-lisp
   (org-babel-do-load-languages
@@ -571,6 +472,214 @@
           org-roam-ui-follow t
           org-roam-ui-update-on-save t
           org-roam-ui-open-on-start nil))
+#+end_src
+** Inbox processing
+
+Taken from: https://blog.jethro.dev/posts/processing_inbox/
+#+begin_src emacs-lisp
+(defun mz/org-agenda-process-inbox-item ()
+  "Process a single item in the org-agenda."
+  (org-with-wide-buffer
+   (org-agenda-set-tags)
+   (org-agenda-priority)
+   (call-interactively 'org-set-effort)
+   (org-agenda-refile nil nil t)))
+
+#+end_src
+* Key bindings
+** General key bindings
+#+begin_src emacs-lisp
+  ;;Make ESC quit prompts
+                                          ;  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+
+  ;;Electric return key
+  (define-key global-map (kbd "RET") 'newline-and-indent)
+
+  (use-package general
+    :straight t
+    :config
+    (general-create-definer mz/leader-keys
+      :keymaps '(normal insert visual emacs)
+      :prefix "SPC"
+      :global-prefix "C-SPC")
+
+    (mz/leader-keys
+      "t" '(:ignore t :which-key "toggles")
+      "o" '(:ignore t :which-key "opx")
+      "e" '(:ignore t :which-key "emacs")
+      "og" '(:ignore t :which-key "git grep")
+      "ow" '(mz/find-work-diary :which-key "Work diary")
+      "tt" '(consult-theme :which-key "choose theme")
+      "tm" '(modus-themes-toggle :which-key "toggle modus themes")
+      "db" '(ediff-buffers :which-key "ediff-buffers")
+      "df" '(ediff-files :which-key "ediff-files")
+      "ogg" '(mz/consult-git-grep-opx :which-key "Search OPX BEG repo")
+      "ogs" '(mz/consult-git-grep-std :which-key "Search OPX Std. repo")
+      "ec" '(mz/find-emacs-config-org :which-key "Open emacs config.org")
+      "ei" '(mz/reload-init-el :which-key "Reload init.el")
+      "p" '(switch-to-prev-buffer :which-key "switch-to-prev-buffer")
+      "n" '(switch-to-next-buffer :which-key "switch-to-next-buffer")
+      "s" '(ace-swap-window :which-key "swap windows")))
+
+  ;;Download Evil
+  (use-package evil
+    :straight t
+    :init
+    (setq evil-want-integration t)
+    (setq evil-want-keybinding nil)
+    (setq evil-want-C-u-scroll t)
+    (setq evil-want-C-i-jump t)
+    :config
+    (evil-mode 1)
+    :hook (after-change-major-mode . (lambda ()
+                                       (if (memq major-mode mz/lisp-modes)
+                                           (progn
+                                             (message "Disabling evil mode...")
+                                             (turn-off-evil-mode))))))
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
+  ;; Use evil keybindings in org-mode
+  (use-package evil-org
+    :after org
+    :hook (org-mode . (lambda () evil-org-mode))
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
+
+  (use-package hydra)
+#+end_src
+* Basic UI Configuration
+#+begin_src emacs-lisp
+  (setq inhibit-startup-message t) ;Disable initial splash screen
+  (setq initial-scratch-message nil)
+
+  (scroll-bar-mode -1)    ;Disable visible scrollbar
+  (tool-bar-mode -1)      ;Disable the toolbar
+  (tooltip-mode -1)       ;Disable tooltips
+  (set-fringe-mode 10)    ;More breathing room
+
+  (menu-bar-mode -1)      ;Disable menubar
+
+  (setq use-short-answers t)		;Use y-or-n-p instead of yes-or-no-p
+  ;;Enable visible bell
+  (setq visible-bell t
+                                          ;Split windows vertically always
+        visual-fill-column-enable-sensible-window-split t)
+
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
+  (prefer-coding-system 'utf-8)
+
+  ;;Indicate empty lines
+  (setq-default indicate-empty-lines t)
+
+  ;;Disable line numbers for some modes
+  (dolist (mode '(org-mode-hook
+                  term-mode-hook
+                  shell-mode-hook
+                  eshell-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
+
+  ;; Start emacs in fullscreen mode
+  (add-to-list 'default-frame-alist '(fullscreen . maximized))
+
+  ;; Enable fill-column indicator in all programming modes
+  ;;(setq-default display-fill-column-indicator-character ?\u254e)
+  (add-hook 'prog-mode-hook 'display-fill-column-indicator-mode)
+
+  ;;Confirm if I want to exit emacs
+  (setq confirm-kill-emacs 'y-or-n-p)
+
+  (winner-mode 1)
+
+  (blink-cursor-mode -1)
+
+  ;; Sentences should end after single space.
+  (setq-default major-mode 'text-mode
+                fill-column 80
+                tab-width 4
+                indent-tabs-mode nil)     ; Permanently indent with spaces, never with TABs
+
+  (setq inhibit-compacting-font-caches t  ; Don’t compact font caches during GC.
+        default-directory "/home/zam4abt/"
+        trash-directory "~/system_trash/"
+        delete-by-moving-to-trash t       ; Deleting files go to OS's trash folder
+        make-backup-files nil             ; Forbid to make backup files
+        auto-save-default nil             ; Disable auto save
+
+        uniquify-buffer-name-style 'post-forward-angle-brackets ; Show path if names are same
+        adaptive-fill-regexp "[ t]+|[ t]*([0-9]+.|*+)[ t]*"
+        adaptive-fill-first-line-regexp "^* *$"
+        sentence-end "\\([。！？]\\|……\\|[.?!][]\"')}]*\\($\\|[ \t]\\)\\)[ \t\n]*"
+        sentence-end-double-space nil
+        native-comp-async-report-warnings-errors nil
+        highlight-nonselected-windows t
+        word-wrap-by-category t)
+  #+end_src
+
+** Fancy battery
+#+begin_src emacs-lisp
+  (use-package fancy-battery
+    :hook (after-init . fancy-battery-mode))
+#+end_src
+* Custom functions
+** Git grep
+#+begin_src emacs-lisp
+  (defun mz/consult-git-grep (dir use-thing-at-point?)
+    (consult-git-grep (expand-file-name dir)
+                      (and use-thing-at-point?
+                                 (thing-at-point 'word t))))
+#+end_src
+** OPX development
+*** Git grep within the development repository
+#+begin_src emacs-lisp
+  (defun mz/opx-buffer-p ()
+    "Returns true if the currently opened buffer's file's extension is either
+    ojs or pjs"
+    (when (buffer-file-name)
+      (let ((buffer-ext (file-name-extension (buffer-file-name))))
+        (cl-some (lambda (ext) (equal ext
+                                   buffer-ext))
+              '("ojs" "pjs")))))
+
+  (defun mz/consult-git-grep-opx  ()
+    (interactive)
+    (mz/consult-git-grep "~/opx/dev" (mz/opx-buffer-p)))
+#+end_src
+*** Git grep within the standard repo
+#+begin_src emacs-lisp
+  (defun mz/consult-git-grep-std  ()
+    (interactive)
+    (mz/consult-git-grep "~/opx/v6_3_6_standard_scripts" (mz/opx-buffer-p)))
+#+end_src
+* Centaur functions
+#+begin_src emacs-lisp
+  (defun icons-displayable-p ()
+    "Return non-nil if `all-the-icons' is displayable."
+    (and (display-graphic-p)
+         (require 'all-the-icons nil t)))
+#+end_src
+* Font configuration
+#+begin_src emacs-lisp
+  ;;Set default font
+  (set-face-attribute 'default nil
+                      :family "Ubuntu Mono"
+                      :weight 'normal
+                      :height 110)
+
+  ;; Set the fixed pitch face
+  (set-face-attribute 'fixed-pitch nil
+                      :family "JetBrains Mono"
+                      :weight 'light
+                      :height 0.95)
+
+  ;;Set the variable pitch face
+  (set-face-attribute 'variable-pitch nil
+                      :font "Roboto Mono"
+                      :weight 'normal
+                      :height 0.95)
 #+end_src
 * Session management
 #+begin_src emacs-lisp
