@@ -425,12 +425,12 @@
             ("learn" . ?l)
             ("family" . ?n)
             ("recurring" . ?r)
-            ("idea" . ?i)))
+            ("idea" . ?i))))
     (require 'org-habit)
     (add-to-list 'org-modules 'org-habit)
     ;;Provides <el style completion to insert blocks
     (add-to-list 'org-modules 'org-tempo)
-    (setq org-habit-graph-column 60))
+    (setq org-habit-graph-column 60)
 #+end_src
 ** Languages to load for evaluating the results in org-mode
 #+begin_src emacs-lisp
@@ -458,16 +458,6 @@
           "~/orgfiles/work.org"
           "~/orgfiles/habits.org"))
 #+end_src
-** Agenda
-#+begin_src emacs-lisp
-
-  (setq org-agenda-files
-        '("~/orgfiles/myorg.org"
-          "~/orgfiles/work_diary.org"
-          "~/orgfiles/someday.org"
-          "~/orgfiles/emacs-todo.org")
-        org-agenda-start-with-log-mode t)
-#+end_src
 ** Org capture
 #+begin_src emacs-lisp
   (setq org-capture-templates
@@ -482,6 +472,59 @@
            "* TODO %?\n %U\n %x\n %i" :empty-lines 1)))
   (define-key global-map (kbd "C-c c") 'org-capture)
   (define-key global-map (kbd "C-c a") 'org-agenda)
+#+end_src
+** Org Agenda
+#+begin_src emacs-lisp
+  (setq org-agenda-files
+        '("~/orgfiles/myorg.org"
+          "~/orgfiles/work_diary.org"
+          "~/orgfiles/someday.org"
+          "~/orgfiles/emacs-todo.org")
+        org-agenda-start-with-log-mode t)
+  (setq org-agenda-custom-commands
+        '(("d" "Dashboard"
+           ((agenda "" ((org-deadline-warning-days 7)))
+            (todo "NEXT"
+                  ((org-agenda-overriding-header "Next Tasks")))
+            (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+          ("n" "Next Tasks"
+           ((todo "NEXT"
+                  ((org-agenda-overriding-header "Next Tasks")))))
+          ("W" "Work Tasks" tags-todo "+work-email")
+          ;; Low-effort next actions
+          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+           ((org-agenda-overriding-header "Low Effort Tasks")
+            (org-agenda-max-todos 20)
+            (org-agenda-files org-agenda-files)))
+
+          ("w" "Workflow Status"
+           ((todo "WAIT"
+                  ((org-agenda-overriding-header "Waiting on External")
+                   (org-agenda-files org-agenda-files)))
+            (todo "REVIEW"
+                  ((org-agenda-overriding-header "In Review")
+                   (org-agenda-files org-agenda-files)))
+            (todo "PLAN"
+                  ((org-agenda-overriding-header "In Planning")
+                   (org-agenda-todo-list-sublevels nil)
+                   (org-agenda-files org-agenda-files)))
+            (todo "BACKLOG"
+                  ((org-agenda-overriding-header "Project Backlog")
+                   (org-agenda-todo-list-sublevels nil)
+                   (org-agenda-files org-agenda-files)))
+
+            (todo "READY"
+                  ((org-agenda-overriding-header "Ready for Work")
+                   (org-agenda-files org-agenda-files)))
+            (todo "ACTIVE"
+                  ((org-agenda-overriding-header "Active Projects")
+                   (org-agenda-files org-agenda-files)))
+            (todo "COMPLETED"
+                  ((org-agenda-overriding-header "Completed Projects")
+                   (org-agenda-files org-agenda-files)))
+            (todo "CANC"
+                  ((org-agenda-overriding-header "Cancelled Projects")
+                   (org-agenda-files org-agenda-files)))))))
 #+end_src
 ** Autotangle
 #+begin_src emacs-lisp
@@ -575,7 +618,7 @@
     (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
 #+end_src
 
-* Undo-tree
+** Undo-tree
 #+begin_src emacs-lisp
   (use-package undo-tree
     :straight t
@@ -583,6 +626,7 @@
     (undo-tree-visualizer-diff t)
     (undo-tree-enable-undo-in-region t)
     (undo-tree-visualizer-timestamps t)
+    (undo-tree-auto-save-history nil)     ;Don't save everything to file
     :config
     (global-undo-tree-mode))
 #+end_src
@@ -635,7 +679,7 @@
           ef-themes-variable-pitch-ui t)
     (mapc #'disable-theme custom-enabled-themes)
     ;; use this to load the theme which also calls `ef-themes-post-load-hook':
-    (ef-themes-select 'ef-duo-dark))
+    (ef-themes-select 'ef-day))
 #+end_src
 ** Rainbow delimiters
 
@@ -915,6 +959,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :bind (("C-s" . consult-line)
            ("C-x b" . consult-buffer)
            ("C-c g g" . consult-git-grep)
+           ("C-x 4 b" . consult-buffer-other-window)
            ("C-c g r" . consult-ripgrep)))
 
   ;;Consult dir to quickly switch dirs while in
@@ -1169,4 +1214,209 @@ Evaluation Result OverlayS for Emacs Lisp.
       :hook (after-init . electric-pair-mode)
       :init (setq electric-pair-inhibit-predicate
                   'electric-pair-default-inhibit))
+#+end_src
+* Dired
+#+begin_src emacs-lisp
+  (use-package dired
+    :ensure nil
+    :commands (dired dired-jump)
+    :bind (("C-x C-j" . dired-jump))
+    :custom
+    (dired-listing-switches "-agho --group-directories-first")
+    (auto-revert-interval 3)
+    (dired-recursive-copies 'always)
+    (global-auto-revert-non-file-buffers t)
+    (dired-dwim-target t)
+    (delete-by-moving-to-trash t)
+    (load-prefer-newer t)
+    (auto-revert-use-notify nil)
+    :config
+    (and (boundp 'evil-mode)
+         (evil-collection-define-key 'normal 'dired-mode-map
+           "h" 'dired-single-up-directory
+           "l" 'dired-single-buffer))
+    (setq dired-recursive-deletes 'always
+          dired-kill-when-opening-new-dired-buffer t
+          dired-recursive-copies 'always)
+
+    (global-auto-revert-mode t)
+    ;; Show git info in dired
+    (use-package dired-git-info
+      :bind (:map dired-mode-map
+                  ("C-c g" . dired-git-info-mode)))
+    (when sys/macp
+      ;; Suppress the warning: `ls does not support --dired'.
+      (setq dired-use-ls-dired nil)
+
+      (when (executable-find "gls")
+        ;; Use GNU ls as `gls' from `coreutils' if available.
+        (setq insert-directory-program "gls")))
+
+    (when (or (and sys/macp (executable-find "gls"))
+              (and (not sys/macp) (executable-find "ls")))
+      ;; Using `insert-directory-program'
+      (setq ls-lisp-use-insert-directory-program t)
+
+      ;; Show directory first
+      (setq dired-listing-switches "-alh --group-directories-first")
+
+      ;; Quick sort dired buffers via hydra
+      (use-package dired-quick-sort
+        :bind (:map dired-mode-map
+                    ("S" . hydra-dired-quick-sort/body)))))
+
+
+
+  ;; Allow rsync from dired buffers
+  (use-package dired-rsync
+    :bind (:map dired-mode-map
+                ("C-c C-r" . dired-rsync)))
+
+  (use-package dired-single)
+
+  (use-package all-the-icons-dired
+    :diminish
+    :init (setq all-the-icons-dired-monochrome nil)
+    :hook (dired-mode . all-the-icons-dired-mode))
+
+  (use-package dired-open
+    :config
+    ;; Doesn't work as expected!
+    ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
+    (setq dired-open-extensions '(("png" . "feh")
+                                  ("mkv" . "mpv"))))
+
+  (use-package dired-hide-dotfiles
+    :hook (dired-mode . dired-hide-dotfiles-mode)
+    :config
+    (and (boundp evil-mode)
+         (evil-collection-define-key 'normal 'dired-mode-map
+           "H" 'dired-hide-dotfiles-mode)))
+
+  ;;Colourful dired
+  (use-package diredfl
+    :init (diredfl-global-mode 1))
+
+  ;; Extra Dired functionality
+  (use-package dired-x
+    :ensure nil
+    :demand
+    :config
+    (let ((cmd (cond (sys/mac-x-p "open")
+                     (sys/linux-x-p "xdg-open")
+                     (sys/win32p "start")
+                     (t ""))))
+      (setq dired-guess-shell-alist-user
+            `(("\\.pdf\\'" ,cmd)
+              ("\\.docx\\'" ,cmd)
+              ("\\.\\(?:djvu\\|eps\\)\\'" ,cmd)
+              ("\\.\\(?:jpg\\|jpeg\\|png\\|gif\\|xpm\\)\\'" ,cmd)
+              ("\\.\\(?:xcf\\)\\'" ,cmd)
+              ("\\.csv\\'" ,cmd)
+              ("\\.tex\\'" ,cmd)
+              ("\\.\\(?:mp4\\|mkv\\|avi\\|flv\\|rm\\|rmvb\\|ogv\\)\\(?:\\.part\\)?\\'" ,cmd)
+              ("\\.\\(?:mp3\\|flac\\)\\'" ,cmd)
+              ("\\.html?\\'" ,cmd)
+              ("\\.md\\'" ,cmd))))
+
+    (setq dired-omit-files
+          (concat dired-omit-files
+                  "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*")))
+  ;; `find-dired' alternative using `fd'
+  (when (executable-find "fdfind")
+    (use-package fd-dired))
+#+end_src
+* Performace
+** Gabage collection
+#+begin_src emacs-lisp
+  (with-no-warnings
+      ;; Optimization
+      (when sys/win32p
+        (setq w32-get-true-file-attributes nil   ; decrease file IO workload
+              w32-pipe-read-delay 0              ; faster IPC
+              w32-pipe-buffer-size (* 64 1024))) ; read more at a time (was 4K)
+      (unless sys/macp
+        (setq command-line-ns-option-alist nil))
+      (unless sys/linuxp
+        (setq command-line-x-option-alist nil))
+
+      ;; Increase how much is read from processes in a single chunk (default is 4kb)
+      (setq read-process-output-max #x10000)  ; 64kb
+
+      ;; Don't ping things that look like domain names.
+      (setq ffap-machine-p-known 'reject)
+
+      ;; Garbage Collector Magic Hack
+      (use-package gcmh
+        :diminish
+        :init
+        (setq gcmh-idle-delay 5
+              gcmh-high-cons-threshold #x1000000) ; 16MB
+        (gcmh-mode 1)))
+
+  
+  (setq fast-but-imprecise-scrolling t)
+#+end_src
+** So-long
+#+begin_src emacs-lisp
+  (when emacs/>=27p
+      (use-package so-long
+                                            ;:ensure nil
+        :hook (after-init . global-so-long-mode)
+        :config (setq so-long-threshold 400)))
+#+end_src
+** Tree-sitter
+#+begin_src emacs-lisp
+  (use-package tree-sitter
+    :straight t
+    :config (global-tree-sitter-mode))
+  (use-package tree-sitter-langs
+    :straight t
+    :after tree-sitter)
+
+#+end_src
+* Planisware config for emacs
+** TODO Allegro CL/Planisware specific
+#+begin_src emacs-lisp
+  (when (equal (system-name)
+               "ABT1-C-001GT")
+    (progn (defvar *opx2-network-folder-work-path* (file-name-as-directory "~/opx/plw-devenv-experimental/runtime/dist/"))
+           (load (format "%semacs.el" *opx2-network-folder-work-path*))))
+  ;; Disable company mode and enable autocomplete in Planisware buffers
+
+  (add-hook 'opx2-js-mode-hook (lambda ()
+                                 (company-mode 0)))
+#+end_src
+** Keybindings
+#+begin_src emacs-lisp
+  (general-define-key
+   :states '(normal insert)
+   :keymaps '(*ojs-mode-map* *pjs-mode-map*)
+   "C-c m c" 'opx2-connect-to-env
+   "C-c m r" 'opx2-reconnect-last
+   "C-c m e" 'opx2-exec-thing-in-repl
+   "C-c m f" 'opx2-exec-fn-in-repl
+   "C-c m l" 'opx2-exec-line-in-repl
+   "C-c m k" 'opx2-kill-existing-connection-confirm-p
+   "C-c m o" 'opx2-clear-repl-buffer
+   "C-c m 1" 'opx2-switch-to-v1
+   "C-c m 2" 'opx2-switch-to-v2
+   "C-c m i" 'opx2-inspect-last-result)
+#+end_src
+** REPL customizations
+Add an overlay for the prompts:
+#+begin_src emacs-lisp
+    (font-lock-add-keywords 'fi:lisp-listener-mode
+                            '(("\\(^[PO]JS([0-9]*).*\\\):" . font-lock-type-face)))
+    (font-lock-add-keywords 'fi:subprocess-mode
+                            '(("\\(^[PO]JS([0-9]*).*\\\):"  . font-lock-type-face)))
+  (font-lock-add-keywords 'js-evaluator-mode
+                            '(("\\(^[PO]JS([0-9]*).*\\\):"  . font-lock-type-face)))
+#+end_src
+** Mode override
+Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
+#+begin_src emacs-lisp
+  ;;Set major mode for OJS and PJS files to javascript mode
+  ;;(add-to-list 'auto-mode-alist '("\\.ojs" . javascript-mode))
+  (add-to-list 'auto-mode-alist '("\\.pjs" . opx2-js-mode))
 #+end_src
