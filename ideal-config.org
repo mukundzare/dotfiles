@@ -450,18 +450,13 @@
           ("~/orgfiles/work.org" :maxlevel . 1)
           ("~/orgfiles/personal.org" :maxlevel . 1)
           ("~/orgfiles/ARCHIVE/Tasks.org" :maxlevel . 1)))
-  (setq org-agenda-files
-        '("~/orgfiles/personal.org"
-          "~/orgfiles/projects.org"
-          "~/orgfiles/Inbox.org"
-          "~/orgfiles/work.org"
-          "~/orgfiles/habits.org"))
+
 #+end_src
-** Org capture
+** Org Capture
 #+begin_src emacs-lisp
   (setq org-capture-templates
         `(("t" "Task" entry (file "Inbox.org")
-           "* TODO %?\n  %U\n  %a\n  %i" :empty-lines 1)
+           "* TODO %?\n  %i" :empty-lines 1)
           ("j" "Journal" entry
            (file+olp+datetree "Journal.org.gpg")
            "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
