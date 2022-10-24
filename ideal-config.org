@@ -227,6 +227,7 @@
                                           ;tags can be set as a tag
             ("@home" . ?H)
             ("@work" . ?W)
+            ("@outside" . ?o)
             (:endgroup)
             (:startgrouptag)
             ("productivity")
@@ -234,7 +235,7 @@
             ("emacs" . ?e)
             ("workflow" . ?w)
             (:endgrouptag)
-            ("@errand" . ?E)
+            ("errand" . ?E)
             ("phone" . ?c)
             ("project" . ?P)
             ("learn" . ?l)
@@ -299,13 +300,13 @@
 #+begin_src emacs-lisp
   (setq org-directory "~/orgfiles")
   (setq org-refile-targets
-        '(("~/orgfiles/ARCHIVE/Archiv.org" :maxlevel . 1)
+        '(("~/orgfiles/ARCHIVE/ARCHIVE-Personal.org" :maxlevel . 1)
           ("~/orgfiles/someday.org" :maxlevel . 1)
           ("~/orgfiles/projects.org" :maxlevel . 1)
           ("~/orgfiles/habits.org" :maxlevel . 1)
           ("~/orgfiles/work.org" :maxlevel . 1)
           ("~/orgfiles/personal.org" :maxlevel . 1)
-          ("~/orgfiles/ARCHIVE/Tasks.org" :maxlevel . 1)))
+          ("~/orgfiles/ARCHIVE/ARCHIVE-Work.org" :maxlevel . 1)))
 
 #+end_src
 ** Org Capture
