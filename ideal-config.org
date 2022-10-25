@@ -442,6 +442,10 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
    (org-agenda-refile nil nil t)))
 
 #+end_src
+** Notifications
+#+begin_src emacs-lisp
+(use-package org-wild-notifier)
+#+end_src
 * Key bindings
 ** General key bindings
 #+begin_src emacs-lisp
