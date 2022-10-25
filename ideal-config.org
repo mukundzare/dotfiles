@@ -326,77 +326,82 @@
 #+end_src
 ** Org Agenda
 #+begin_src emacs-lisp
-  (setq org-agenda-files
-        '("~/orgfiles/myorg.org"
-          "~/orgfiles/work_diary.org"
-          "~/orgfiles/someday.org"
-          "~/orgfiles/emacs-todo.org")
-        org-agenda-start-with-log-mode t)
-  (setq org-agenda-custom-commands
-        '(("d" "Dashboard"
-           ((agenda "" ((org-deadline-warning-days 7)))
-            (todo "NEXT"
-                  ((org-agenda-overriding-header "Next Tasks")))
-            (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
-          ("n" "Next Tasks"
-           ((todo "NEXT"
-                  ((org-agenda-overriding-header "Next Tasks")))))
-          ("W" "Work Tasks" tags-todo "+work-email")
-          ;; Low-effort next actions
-          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
-           ((org-agenda-overriding-header "Low Effort Tasks")
-            (org-agenda-max-todos 20)
-            (org-agenda-files org-agenda-files)))
+    (setq org-agenda-files
+          '("~/orgfiles/personal.org"
+            "~/orgfiles/projects.org"
+            "~/orgfiles/Inbox.org"
+            "~/orgfiles/work.org"
+            "~/orgfiles/habits.org")
+          org-agenda-start-with-log-mode t)
+    (define-key global-map (kbd "C-c a") 'org-agenda)
+    (setq org-agenda-custom-commands
+          '(("d" "Dashboard"
+             ((agenda "" ((org-deadline-warning-days 7)))
+              (todo "NEXT"
+                    ((org-agenda-overriding-header "Next Tasks")))
+              (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+            ("n" "Next Tasks"
+             ((todo "NEXT"
+                    ((org-agenda-overriding-header "Next Tasks")))))
+            ("W" "Work Tasks" tags-todo "+work-email")
+            ;; Low-effort next actions
+            ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+             ((org-agenda-overriding-header "Low Effort Tasks")
+              (org-agenda-max-todos 20)
+              (org-agenda-files org-agenda-files)))
 
-          ("w" "Workflow Status"
-           ((todo "WAIT"
-                  ((org-agenda-overriding-header "Waiting on External")
-                   (org-agenda-files org-agenda-files)))
-            (todo "REVIEW"
-                  ((org-agenda-overriding-header "In Review")
-                   (org-agenda-files org-agenda-files)))
-            (todo "PLAN"
-                  ((org-agenda-overriding-header "In Planning")
-                   (org-agenda-todo-list-sublevels nil)
-                   (org-agenda-files org-agenda-files)))
-            (todo "BACKLOG"
-                  ((org-agenda-overriding-header "Project Backlog")
-                   (org-agenda-todo-list-sublevels nil)
-                   (org-agenda-files org-agenda-files)))
+            ("w" "Workflow Status"
+             ((todo "WAIT"
+                    ((org-agenda-overriding-header "Waiting on External")
+                     (org-agenda-files org-agenda-files)))
+              (todo "REVIEW"
+                    ((org-agenda-overriding-header "In Review")
+                     (org-agenda-files org-agenda-files)))
+              (todo "PLAN"
+                    ((org-agenda-overriding-header "In Planning")
+                     (org-agenda-todo-list-sublevels nil)
+                     (org-agenda-files org-agenda-files)))
+              (todo "BACKLOG"
+                    ((org-agenda-overriding-header "Project Backlog")
+                     (org-agenda-todo-list-sublevels nil)
+                     (org-agenda-files org-agenda-files)))
 
-            (todo "READY"
-                  ((org-agenda-overriding-header "Ready for Work")
-                   (org-agenda-files org-agenda-files)))
-            (todo "ACTIVE"
-                  ((org-agenda-overriding-header "Active Projects")
-                   (org-agenda-files org-agenda-files)))
-            (todo "COMPLETED"
-                  ((org-agenda-overriding-header "Completed Projects")
-                   (org-agenda-files org-agenda-files)))
-            (todo "CANC"
-                  ((org-agenda-overriding-header "Cancelled Projects")
-                   (org-agenda-files org-agenda-files)))))))
+              (todo "READY"
+                    ((org-agenda-overriding-header "Ready for Work")
+                     (org-agenda-files org-agenda-files)))
+              (todo "ACTIVE"
+                    ((org-agenda-overriding-header "Active Projects")
+                     (org-agenda-files org-agenda-files)))
+              (todo "COMPLETED"
+                    ((org-agenda-overriding-header "Completed Projects")
+                     (org-agenda-files org-agenda-files)))
+              (todo "CANC"
+                    ((org-agenda-overriding-header "Cancelled Projects")
+                     (org-agenda-files org-agenda-files)))))))
+
 #+end_src
 ** Autotangle
 #+begin_src emacs-lisp
 
-  ;;Automatically tangle the config.org file when we save it
-  (defun mz/org-babel-tangle-config ()
-    ;; Dynamic scoping to the rescue
-    (when (equal major-mode #'org-mode)
-      (let ((org-confirm-babel-evaluate nil))
-        (org-babel-tangle))))
+    ;;Automatically tangle the config.org file when we save it
+    (defun mz/org-babel-tangle-config ()
+      ;; Dynamic scoping to the rescue
+      (when (and (equal major-mode #'org-mode)
+                 (string= (f-dirname (buffer-file-name))
+                        (expand-file-name "~/dotfiles")))
+                 (let ((org-confirm-babel-evaluate nil))
+          (org-babel-tangle))))
 
-  (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'mz/org-babel-tangle-config)))
+    (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'mz/org-babel-tangle-config)))
 #+end_src
-** Org-roam
+** Org-Roam
 #+begin_src emacs-lisp
   (defun mz--get-first-valid-path (&rest locations)
     (car (-filter #'file-exists-p locations)))
 
   ;; Use org-roam
   (use-package org-roam
-    :straight t
+    :ensure t
     :init
     (setq org-roam-v2-ack t)
     :custom
@@ -960,45 +965,60 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   Consult is good for quick completion commands in the minibuffer and fits well with vertico. Embark is so cool.
 
 #+begin_src emacs-lisp
-    ;; Enable vertico
-    (use-package vertico
-      :init
-      (vertico-mode)
-      (setq vertico-scroll-margin 0)
-      (setq vertico-count 15)
-      ;; Grow and shrink the Vertico minibuffer
-      (setq vertico-resize 'grow-only)
-      :bind  (:map vertico-map
-                   ("C-j" . vertico-next)
-                   ("C-k" . vertico-previous)
-                   ("TAB" . vertico-insert)))
+  ;; Enable vertico
+  (use-package vertico
+    :init
+    (vertico-mode)
+    (setq vertico-scroll-margin 0)
+    (setq vertico-count 15)
+    ;; Grow and shrink the Vertico minibuffer
+    (setq vertico-resize 'grow-only)
+    :custom
+    (vertico-cycle t)
+    (vertico-multiform-categories
+     '((file grid reverse)
+       (consult-grep buffer)
+       (consult-ripgrep buffer)))
+    (vertico-multiform-commands
+     '((consult-imenu buffer indexed)))
+    :bind  (:map vertico-map
+                 ("C-j" . vertico-next)
+                 ("C-k" . vertico-previous)
+                 ("TAB" . vertico-insert)
+                 ("?" . minibuffer-completion-help)
+                 ("C-'" . vertico-quick-jump))
+    :hook
+    (minibuffer-setup . vertico-repeat-save)
+    :config
+    (vertico-multiform-mode)
+    (global-set-key (kbd "M-s s") #'vertico-repeat))
 
-    ;; A few more useful configurations...
-    (use-package emacs
-      :init
-      ;; Add prompt indicator to `completing-read-multiple'.
-      ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
-      (defun crm-indicator (args)
-        (cons (format "[CRM%s] %s"
-                      (replace-regexp-in-string
-                       "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
-                       crm-separator)
-                      (car args))
-              (cdr args)))
-      (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
+  ;; A few more useful configurations...
+  (use-package emacs
+    :init
+    ;; Add prompt indicator to `completing-read-multiple'.
+    ;; We display [CRM<separator>], e.g., [CRM,] if the separator is a comma.
+    (defun crm-indicator (args)
+      (cons (format "[CRM%s] %s"
+                    (replace-regexp-in-string
+                     "\\`\\[.*?]\\*\\|\\[.*?]\\*\\'" ""
+                     crm-separator)
+                    (car args))
+            (cdr args)))
+    (advice-add #'completing-read-multiple :filter-args #'crm-indicator)
 
-      ;; Do not allow the cursor in the minibuffer prompt
-      (setq minibuffer-prompt-properties
-            '(read-only t cursor-intangible t face minibuffer-prompt))
-      (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
+    ;; Do not allow the cursor in the minibuffer prompt
+    (setq minibuffer-prompt-properties
+          '(read-only t cursor-intangible t face minibuffer-prompt))
+    (add-hook 'minibuffer-setup-hook #'cursor-intangible-mode)
 
-      ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
-      ;; Vertico commands are hidden in normal buffers.
-      ;; (setq read-extended-command-predicate
-      ;;       #'command-completion-default-include-p)
+    ;; Emacs 28: Hide commands in M-x which do not work in the current mode.
+    ;; Vertico commands are hidden in normal buffers.
+    ;; (setq read-extended-command-predicate
+    ;;       #'command-completion-default-include-p)
 
-      ;; Enable recursive minibuffers
-      (setq enable-recursive-minibuffers t))
+    ;; Enable recursive minibuffers
+    (setq enable-recursive-minibuffers t))
 #+end_src
 *** Marginalia
 #+begin_src emacs-lisp
@@ -1280,114 +1300,117 @@ Evaluation Result OverlayS for Emacs Lisp.
 #+end_src
 * Dired
 #+begin_src emacs-lisp
-  (use-package dired
-    :ensure nil
-    :commands (dired dired-jump)
-    :bind (("C-x C-j" . dired-jump))
-    :custom
-    (dired-listing-switches "-agho --group-directories-first")
-    (auto-revert-interval 3)
-    (dired-recursive-copies 'always)
-    (global-auto-revert-non-file-buffers t)
-    (dired-dwim-target t)
-    (delete-by-moving-to-trash t)
-    (load-prefer-newer t)
-    (auto-revert-use-notify nil)
-    :config
-    (and (boundp 'evil-mode)
-         (evil-collection-define-key 'normal 'dired-mode-map
-           "h" 'dired-single-up-directory
-           "l" 'dired-single-buffer))
-    (setq dired-recursive-deletes 'always
-          dired-kill-when-opening-new-dired-buffer t
-          dired-recursive-copies 'always)
+    (use-package dired
+      :ensure nil
+      :commands (dired dired-jump)
+      :bind (("C-x C-j" . dired-jump))
+      :custom
+      (dired-listing-switches "-agho --group-directories-first")
+      (auto-revert-interval 3)
+      (dired-recursive-copies 'always)
+      (global-auto-revert-non-file-buffers t)
+      (dired-dwim-target t)
+      (delete-by-moving-to-trash t)
+      (load-prefer-newer t)
+      (auto-revert-use-notify nil)
+      :config
+      (and (boundp 'evil-mode)
+           (evil-collection-define-key 'normal 'dired-mode-map
+             "h" 'dired-single-up-directory
+             "l" 'dired-single-buffer))
+      (setq dired-recursive-deletes 'always
+            dired-kill-when-opening-new-dired-buffer t
+            dired-recursive-copies 'always)
 
-    (global-auto-revert-mode t)
-    ;; Show git info in dired
-    (use-package dired-git-info
-      :bind (:map dired-mode-map
-                  ("C-c g" . dired-git-info-mode)))
-    (when sys/macp
-      ;; Suppress the warning: `ls does not support --dired'.
-      (setq dired-use-ls-dired nil)
-
-      (when (executable-find "gls")
-        ;; Use GNU ls as `gls' from `coreutils' if available.
-        (setq insert-directory-program "gls")))
-
-    (when (or (and sys/macp (executable-find "gls"))
-              (and (not sys/macp) (executable-find "ls")))
-      ;; Using `insert-directory-program'
-      (setq ls-lisp-use-insert-directory-program t)
-
-      ;; Show directory first
-      (setq dired-listing-switches "-alh --group-directories-first")
-
-      ;; Quick sort dired buffers via hydra
-      (use-package dired-quick-sort
+      (global-auto-revert-mode t)
+      ;; Show git info in dired
+      (use-package dired-git-info
         :bind (:map dired-mode-map
-                    ("S" . hydra-dired-quick-sort/body)))))
+                    ("C-c g" . dired-git-info-mode)))
+      (when sys/macp
+        ;; Suppress the warning: `ls does not support --dired'.
+        (setq dired-use-ls-dired nil)
+
+        (when (executable-find "gls")
+          ;; Use GNU ls as `gls' from `coreutils' if available.
+          (setq insert-directory-program "gls")))
+
+      (when (or (and sys/macp (executable-find "gls"))
+                (and (not sys/macp) (executable-find "ls")))
+        ;; Using `insert-directory-program'
+        (setq ls-lisp-use-insert-directory-program t)
+
+        ;; Show directory first
+        (setq dired-listing-switches "-alh --group-directories-first")
+
+        ;; Quick sort dired buffers via hydra
+        (use-package dired-quick-sort
+          :bind (:map dired-mode-map
+                      ("S" . hydra-dired-quick-sort/body)))))
 
 
 
-  ;; Allow rsync from dired buffers
-  (use-package dired-rsync
-    :bind (:map dired-mode-map
-                ("C-c C-r" . dired-rsync)))
+    ;; Allow rsync from dired buffers
+    (use-package dired-rsync
+      :bind (:map dired-mode-map
+                  ("C-c C-r" . dired-rsync)))
 
-  (use-package dired-single)
+    (use-package dired-single)
 
-  (use-package all-the-icons-dired
-    :diminish
-    :init (setq all-the-icons-dired-monochrome nil)
-    :hook (dired-mode . all-the-icons-dired-mode))
+    (use-package all-the-icons-dired
+      :diminish
+      :init (setq all-the-icons-dired-monochrome nil)
+      :hook (dired-mode . all-the-icons-dired-mode))
 
-  (use-package dired-open
-    :config
-    ;; Doesn't work as expected!
-    ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
-    (setq dired-open-extensions '(("png" . "feh")
-                                  ("mkv" . "mpv"))))
+    (use-package dired-open
+      :config
+      ;; Doesn't work as expected!
+      ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
+      (setq dired-open-extensions '(("png" . "feh")
+                                    ("mkv" . "mpv"))))
 
-  (use-package dired-hide-dotfiles
-    :hook (dired-mode . dired-hide-dotfiles-mode)
-    :config
-    (and (boundp evil-mode)
-         (evil-collection-define-key 'normal 'dired-mode-map
-           "H" 'dired-hide-dotfiles-mode)))
+    (use-package dired-hide-dotfiles
+      :hook (dired-mode . dired-hide-dotfiles-mode)
+      :config
+      (and (boundp evil-mode)
+           (evil-collection-define-key 'normal 'dired-mode-map
+             "H" 'dired-hide-dotfiles-mode)))
 
-  ;;Colourful dired
-  (use-package diredfl
-    :init (diredfl-global-mode 1))
+    ;;Colourful dired
+    (use-package diredfl
+      :init (diredfl-global-mode 1))
 
-  ;; Extra Dired functionality
-  (use-package dired-x
-    :ensure nil
-    :demand
-    :config
-    (let ((cmd (cond (sys/mac-x-p "open")
-                     (sys/linux-x-p "xdg-open")
-                     (sys/win32p "start")
-                     (t ""))))
-      (setq dired-guess-shell-alist-user
-            `(("\\.pdf\\'" ,cmd)
-              ("\\.docx\\'" ,cmd)
-              ("\\.\\(?:djvu\\|eps\\)\\'" ,cmd)
-              ("\\.\\(?:jpg\\|jpeg\\|png\\|gif\\|xpm\\)\\'" ,cmd)
-              ("\\.\\(?:xcf\\)\\'" ,cmd)
-              ("\\.csv\\'" ,cmd)
-              ("\\.tex\\'" ,cmd)
-              ("\\.\\(?:mp4\\|mkv\\|avi\\|flv\\|rm\\|rmvb\\|ogv\\)\\(?:\\.part\\)?\\'" ,cmd)
-              ("\\.\\(?:mp3\\|flac\\)\\'" ,cmd)
-              ("\\.html?\\'" ,cmd)
-              ("\\.md\\'" ,cmd))))
+    ;; Extra Dired functionality
+    (use-package dired-x
+      :ensure nil
+      :demand
+      :config
+      (let ((cmd (cond (sys/mac-x-p "open")
+                       (sys/linux-x-p "xdg-open")
+                       (sys/win32p "start")
+                       (t ""))))
+        (setq dired-guess-shell-alist-user
+              `(("\\.pdf\\'" ,cmd)
+                ("\\.docx\\'" ,cmd)
+                ("\\.\\(?:djvu\\|eps\\)\\'" ,cmd)
+                ("\\.\\(?:jpg\\|jpeg\\|png\\|gif\\|xpm\\)\\'" ,cmd)
+                ("\\.\\(?:xcf\\)\\'" ,cmd)
+                ("\\.csv\\'" ,cmd)
+                ("\\.tex\\'" ,cmd)
+                ("\\.\\(?:mp4\\|mkv\\|avi\\|flv\\|rm\\|rmvb\\|ogv\\)\\(?:\\.part\\)?\\'" ,cmd)
+                ("\\.\\(?:mp3\\|flac\\)\\'" ,cmd)
+                ("\\.html?\\'" ,cmd)
+                ("\\.md\\'" ,cmd))))
 
-    (setq dired-omit-files
-          (concat dired-omit-files
-                  "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*")))
-  ;; `find-dired' alternative using `fd'
-  (when (executable-find "fdfind")
-    (use-package fd-dired))
+      (setq dired-omit-files
+            (concat dired-omit-files
+                    "\\|^.DS_Store$\\|^.projectile$\\|^.git*\\|^.svn$\\|^.vscode$\\|\\.js\\.meta$\\|\\.meta$\\|\\.elc$\\|^.emacs.*")))
+    ;; `find-dired' alternative using `fd'
+    (when (executable-find "fdfind")
+      (use-package fd-dired))
+
+    (use-package dired-hacks
+      :straight t)
 #+end_src
 * Performace
 ** Gabage collection
