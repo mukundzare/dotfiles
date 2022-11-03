@@ -301,7 +301,7 @@
   (setq org-directory "~/orgfiles")
   (setq org-refile-targets
         '(("~/orgfiles/ARCHIVE/ARCHIVE-Personal.org" :maxlevel . 1)
-          ("~/orgfiles/someday.org" :maxlevel . 1)
+          ("~/orgfiles/emacs.org" :maxlevel . 1)
           ("~/orgfiles/projects.org" :maxlevel . 1)
           ("~/orgfiles/habits.org" :maxlevel . 1)
           ("~/orgfiles/work.org" :maxlevel . 1)
