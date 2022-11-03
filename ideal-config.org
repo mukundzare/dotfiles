@@ -489,42 +489,43 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   #+end_src
 ** Evil
 #+begin_src emacs-lisp
-        (use-package evil
-            :straight t
-            :init
-            (setq evil-want-integration t)
-            (setq evil-want-keybinding nil)
-            (setq evil-want-C-u-scroll t)
-            (setq evil-want-C-i-jump t)
-            :config
-            (evil-mode 1)
-            :hook (after-change-major-mode . (lambda ()
-                                               (if (memq major-mode mz/lisp-modes)
-                                                   (progn
-                                                     (message "Disabling evil mode...")
-                                                     (turn-off-evil-mode))))))
-          (use-package evil-collection
-            :after evil
-            :config
-            (evil-collection-init))
-          ;; Use evil keybindings in org-mode
-          (use-package evil-org
-            :after org
-            :hook (org-mode . (lambda () evil-org-mode))
-            :config
-            (require 'evil-org-agenda)
-            (evil-org-agenda-set-keys))
+  (use-package evil
+    :straight t
+    :init
+    (setq evil-want-integration t
+          evil-want-keybinding nil
+          evil-want-C-u-scroll t
+          evil-want-fine-undo t
+          evil-want-C-i-jump t)
+    :config
+    (evil-mode 1)
+    :hook (after-change-major-mode . (lambda ()
+                                       (if (memq major-mode mz/lisp-modes)
+                                           (progn
+                                             (message "Disabling evil mode...")
+                                             (turn-off-evil-mode))))))
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
+  ;; Use evil keybindings in org-mode
+  (use-package evil-org
+    :after org
+    :hook (org-mode . (lambda () evil-org-mode))
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
 
-          (use-package hydra)
+  (use-package hydra)
 
-          (use-package evil-smartparens
-            :after smartparens
-            :init
-            (dolist (mode '(clojure-mode
-                            emacs-lisp-mode
-                            common-lisp-mode
-                            lisp-mode))
-          (add-hook mode (lambda () (evil-smartparens-mode 1)))))
+  (use-package evil-smartparens
+    :after smartparens
+    :init
+    (dolist (mode '(clojure-mode
+                    emacs-lisp-mode
+                    common-lisp-mode
+                    lisp-mode))
+      (add-hook mode (lambda () (evil-smartparens-mode 1)))))
 
 #+end_src
 * Basic UI Configuration
