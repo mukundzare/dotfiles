@@ -486,34 +486,46 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
       "n" '(switch-to-next-buffer :which-key "switch-to-next-buffer")
       "s" '(ace-swap-window :which-key "swap windows")))
 
-  ;;Download Evil
-  (use-package evil
-    :straight t
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-C-i-jump t)
-    :config
-    (evil-mode 1)
-    :hook (after-change-major-mode . (lambda ()
-                                       (if (memq major-mode mz/lisp-modes)
-                                           (progn
-                                             (message "Disabling evil mode...")
-                                             (turn-off-evil-mode))))))
-  (use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
-  ;; Use evil keybindings in org-mode
-  (use-package evil-org
-    :after org
-    :hook (org-mode . (lambda () evil-org-mode))
-    :config
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys))
+  #+end_src
+** Evil
+#+begin_src emacs-lisp
+        (use-package evil
+            :straight t
+            :init
+            (setq evil-want-integration t)
+            (setq evil-want-keybinding nil)
+            (setq evil-want-C-u-scroll t)
+            (setq evil-want-C-i-jump t)
+            :config
+            (evil-mode 1)
+            :hook (after-change-major-mode . (lambda ()
+                                               (if (memq major-mode mz/lisp-modes)
+                                                   (progn
+                                                     (message "Disabling evil mode...")
+                                                     (turn-off-evil-mode))))))
+          (use-package evil-collection
+            :after evil
+            :config
+            (evil-collection-init))
+          ;; Use evil keybindings in org-mode
+          (use-package evil-org
+            :after org
+            :hook (org-mode . (lambda () evil-org-mode))
+            :config
+            (require 'evil-org-agenda)
+            (evil-org-agenda-set-keys))
 
-  (use-package hydra)
+          (use-package hydra)
+
+          (use-package evil-smartparens
+            :after smartparens
+            :init
+            (dolist (mode '(clojure-mode
+                            emacs-lisp-mode
+                            common-lisp-mode
+                            lisp-mode))
+          (add-hook mode (lambda () (evil-smartparens-mode 1)))))
+
 #+end_src
 * Basic UI Configuration
 #+begin_src emacs-lisp
@@ -963,6 +975,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     (vertico-multiform-categories
      '((file grid reverse)
        (consult-grep buffer)
+       (imenu buffer)
        (consult-ripgrep buffer)))
     (vertico-multiform-commands
      '((consult-imenu buffer indexed)))
@@ -1026,6 +1039,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (use-package consult
     :bind (("C-s" . consult-line)
            ("C-x b" . consult-buffer)
+           ("C-c i" . consult-imenu)
            ("C-c g g" . consult-git-grep)
            ("C-x 4 b" . consult-buffer-other-window)
            ("C-c g r" . consult-ripgrep)))
