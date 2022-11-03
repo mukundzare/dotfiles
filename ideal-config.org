@@ -667,22 +667,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     :straight t
     :hook (after-init . save-place-mode))
 
-  (use-package recentf
-    :straight t
-    :bind (("C-x C-r" . consult-recent-file))
-    :hook (after-init . recentf-mode)
-    :init (setq recentf-max-saved-items 300
-                recentf-exclude
-                '("\\.?cache" ".cask" "url" "COMMIT_EDITMSG\\'" "bookmarks"
-                  "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
-                  "\\.?ido\\.last$" "\\.revive$" "/G?TAGS$" "/.elfeed/"
-                  "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/"
-                  (lambda (file) (file-in-directory-p file package-user-dir))))
-    :config
-    (setq recentf-max-menu-items 25)
-    (setq recentf-max-saved-items 25)
-    (push (expand-file-name recentf-save-file) recentf-exclude)
-    (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
+
 #+end_src
 
 ** Undo-tree
@@ -1094,7 +1079,6 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :hook (opx2-js-mode . auto-complete-mode))
 #+end_src
 
-
 *** Company mode
 #+begin_src emacs-lisp
   (use-package company
@@ -1298,7 +1282,15 @@ Evaluation Result OverlayS for Emacs Lisp.
       :init (setq electric-pair-inhibit-predicate
                   'electric-pair-default-inhibit))
 #+end_src
-* Dired
+* File management
+** ZTree
+See: https://github.com/fourier/ztree
+#+begin_src emacs-lisp
+  (use-package ztree
+    :custom
+    (ztree-draw-unicode-lines t))
+#+end_src
+** Dired
 #+begin_src emacs-lisp
     (use-package dired
       :ensure nil
@@ -1409,8 +1401,25 @@ Evaluation Result OverlayS for Emacs Lisp.
     (when (executable-find "fdfind")
       (use-package fd-dired))
 
-    (use-package dired-hacks
-      :straight t)
+#+end_src
+** Recentf
+#+begin_src emacs-lisp
+(use-package recentf
+    :straight t
+    :bind (("C-x C-r" . consult-recent-file))
+    :hook (after-init . recentf-mode)
+    :init (setq recentf-max-saved-items 300
+                recentf-exclude
+                '("\\.?cache" ".cask" "url" "COMMIT_EDITMSG\\'" "bookmarks"
+                  "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
+                  "\\.?ido\\.last$" "\\.revive$" "/G?TAGS$" "/.elfeed/"
+                  "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/"
+                  (lambda (file) (file-in-directory-p file package-user-dir))))
+    :config
+    (setq recentf-max-menu-items 25)
+    (setq recentf-max-saved-items 25)
+    (push (expand-file-name recentf-save-file) recentf-exclude)
+    (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
 #+end_src
 * Performace
 ** Gabage collection
@@ -1440,7 +1449,7 @@ Evaluation Result OverlayS for Emacs Lisp.
               gcmh-high-cons-threshold #x1000000) ; 16MB
         (gcmh-mode 1)))
 
-  
+
   (setq fast-but-imprecise-scrolling t)
 #+end_src
 ** So-long
