@@ -258,7 +258,7 @@
     (setq evil-auto-indent nil))
 
   (defun mz/org-mode-visual-fill ()
-    (setq visual-fill-column-width 80
+    (setq visual-fill-column-width 90
           visual-fill-column-center-text t)
     (visual-fill-column-mode 1))
   (use-package visual-fill-column
