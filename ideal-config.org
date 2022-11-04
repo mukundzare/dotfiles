@@ -140,6 +140,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (use-package auto-package-update
     :init
     (setq auto-package-update-interval 5
+          auto-package-update-hide-results t
           auto-package-update-delete-old-versions t)
     :config
     (auto-package-update-maybe))
@@ -283,7 +284,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 (use-package markdown-mode
   :ensure t
   :mode ("README\\.md\\'" . gfm-mode)
-  :init (setq markdown-command "multimarkdown"))
+  :init (setq markdown-command "pandoc"))
 #+end_src
 * Org-mode
 ** Org mode (MAIN)
