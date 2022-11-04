@@ -1245,12 +1245,13 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+begin_src emacs-lisp
   (use-package helpful
     :straight t
-    :custom
-    (counsel-describe-function-function #'helpful-callable)
-    (counsel-describe-variable-function #'helpful-variable)
     :bind
-    ([remap describe-command] . helpful-command)
-    ([remap describe-key] . helpful-key))
+    (([remap describe-function] . helpful-callable)
+     ([remap describe-variable] . helpful-variable)
+     ([remap describe-command] . helpful-command)
+     ([remap describe-key] . helpful-key)
+     ("C-c C-d" . helpful-at-point)
+     ("C-h F" . helpful-function)))
 #+end_src
 ** Info colours
 #+begin_src emacs-lisp
@@ -1529,16 +1530,27 @@ See: https://github.com/fourier/ztree
 #+end_src
 ** Recentf
 #+begin_src emacs-lisp
-(use-package recentf
+  (use-package recentf
     :straight t
     :bind (("C-x C-r" . consult-recent-file))
     :hook (after-init . recentf-mode)
     :init (setq recentf-max-saved-items 300
                 recentf-exclude
-                '("\\.?cache" ".cask" "url" "COMMIT_EDITMSG\\'" "bookmarks"
+                '("\\.?cache"
+                  ".cask"
+                  "url"
+                  "COMMIT_EDITMSG\\'"
+                  "bookmarks"
                   "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
-                  "\\.?ido\\.last$" "\\.revive$" "/G?TAGS$" "/.elfeed/"
-                  "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/"
+                  "\\.?ido\\.last$"
+                  "\\.revive$"
+                  "/G?TAGS$"
+                  "/.elfeed/"
+                  "^/tmp/"
+                  "^/home/zam4abt/RoamNotes"
+                  "^/var/folders/.+$"
+                  "^/ssh:"
+                  "/persp-confs/"
                   (lambda (file) (file-in-directory-p file package-user-dir))))
     :config
     (setq recentf-max-menu-items 25)
