@@ -660,7 +660,6 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   ;;Confirm if I want to exit emacs
   (setq confirm-kill-emacs 'y-or-n-p)
 
-  (winner-mode 1)
 
   (blink-cursor-mode -1)
 
@@ -750,6 +749,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
                       :height 0.95)
 #+end_src
 * Session management
+** Savehist and saveplace
 #+begin_src emacs-lisp
 
   ;;Save minibuffer history
@@ -772,7 +772,26 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
 
 #+end_src
+** Winner
+#+begin_src emacs-lisp
 
+  (use-package winner
+  :ensure nil
+  :custom
+  (winner-boring-buffers
+   '("*Completions*"
+     "*Compile-Log*"
+     "*inferior-lisp*"
+     "*Fuzzy Completions*"
+     "*Apropos*"
+     "*Help*"
+     "*cvs*"
+     "*Buffer List*"
+     "*Ibuffer*"
+     "*esh command on file*"))
+  :config
+  (winner-mode 1))
+#+end_src
 ** Undo-tree
 #+begin_src emacs-lisp
   (use-package undo-tree
