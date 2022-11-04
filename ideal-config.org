@@ -111,9 +111,15 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (unless (package-installed-p 'use-package)
     (package-install 'use-package))
 
-  (require 'use-package)
+  (eval-and-compile
+    (setq use-package-always-ensure t)
+    (setq use-package-expand-minimally t)
+    (setq use-package-compute-statistics t)
+    (setq use-package-enable-imenu-support t))
 
-  (setq use-package-always-ensure t)
+  (eval-when-compile
+    (require 'use-package))
+
   ;;Straight.el
   (defvar bootstrap-version)
   (let ((bootstrap-file
