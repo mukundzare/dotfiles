@@ -196,6 +196,13 @@
   (defconst mz/lisp-modes
     '(clojure-mode emacs-lisp-mode common-lisp-mode))
 #+end_src
+* Markdown mode
+#+begin_src emacs-lisp
+(use-package markdown-mode
+  :ensure t
+  :mode ("README\\.md\\'" . gfm-mode)
+  :init (setq markdown-command "multimarkdown"))
+#+end_src
 * Org-mode
 ** Org mode (MAIN)
 #+begin_src emacs-lisp
