@@ -9,6 +9,82 @@
   ;;; -*- lexical-binding: t; -*-
 #+end_src
 
+* Garbage collection
+** General
+#+begin_src emacs-lisp
+  (with-no-warnings
+      ;; Optimization
+      (when sys/win32p
+        (setq w32-get-true-file-attributes nil   ; decrease file IO workload
+              w32-pipe-read-delay 0              ; faster IPC
+              w32-pipe-buffer-size (* 64 1024))) ; read more at a time (was 4K)
+      (unless sys/macp
+        (setq command-line-ns-option-alist nil))
+      (unless sys/linuxp
+        (setq command-line-x-option-alist nil))
+
+      ;; Increase how much is read from processes in a single chunk (default is 4kb)
+      (setq read-process-output-max #x10000)  ; 64kb
+
+      ;; Don't ping things that look like domain names.
+      (setq ffap-machine-p-known 'reject)
+
+      ;; Garbage Collector Magic Hack
+      (use-package gcmh
+        :diminish
+        :init
+        (setq gcmh-idle-delay 5
+              gcmh-high-cons-threshold #x1000000) ; 16MB
+        (gcmh-mode 1)))
+
+
+  (setq fast-but-imprecise-scrolling t)
+#+end_src
+** Thresholds
+Set gc-cons-threshold Smaller for Interactive Use
+
+A large gc-cons-threshold may cause freezing and stuttering during long-term interactive use.
+
+If you experience freezing, decrease this amount, if you experience stuttering, increase this amount.
+#+begin_src emacs-lisp
+(defvar better-gc-cons-threshold 134217728 ; 128mb
+  "The default value to use for `gc-cons-threshold'.
+
+If you experience freezing, decrease this.  If you experience stuttering, increase this.")
+
+(add-hook 'emacs-startup-hook
+          (lambda ()
+            (setq gc-cons-threshold better-gc-cons-threshold)
+            (setq file-name-handler-alist file-name-handler-alist-original)
+            (makunbound 'file-name-handler-alist-original)))
+#+end_src
+** Garbage collect when out of focus
+Garbage Collect when Emacs is out of focus and avoid garbage collection when using minibuffer.
+#+begin_src emacs-lisp
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (if (boundp 'after-focus-change-function)
+                  (add-function :after after-focus-change-function
+                                (lambda ()
+                                  (unless (frame-focus-state)
+                                    (garbage-collect))))
+                (add-hook 'after-focus-change-function 'garbage-collect))
+              (defun gc-minibuffer-setup-hook ()
+                (setq gc-cons-threshold (* better-gc-cons-threshold 2)))
+
+              (defun gc-minibuffer-exit-hook ()
+                (garbage-collect)
+                (setq gc-cons-threshold better-gc-cons-threshold))
+
+              (add-hook 'minibuffer-setup-hook #'gc-minibuffer-setup-hook)
+              (add-hook 'minibuffer-exit-hook #'gc-minibuffer-exit-hook)))
+#+end_src
+* Private data
+#+begin_src emacs-lisp
+;; Load init-private.el if it exists
+(when (file-exists-p (expand-file-name "init-private.el" user-emacs-directory))
+  (load-file (expand-file-name "init-private.el" user-emacs-directory)))
+#+end_src
 * Temporary settings (to be deleted after this config becomes my standard)
 #+begin_src emacs-lisp
   ;;  (setq package-user-dir (expand-file-name (concat user-emacs-directory "elpa"))
@@ -1444,36 +1520,6 @@ See: https://github.com/fourier/ztree
     (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
 #+end_src
 * Performace
-** Gabage collection
-#+begin_src emacs-lisp
-  (with-no-warnings
-      ;; Optimization
-      (when sys/win32p
-        (setq w32-get-true-file-attributes nil   ; decrease file IO workload
-              w32-pipe-read-delay 0              ; faster IPC
-              w32-pipe-buffer-size (* 64 1024))) ; read more at a time (was 4K)
-      (unless sys/macp
-        (setq command-line-ns-option-alist nil))
-      (unless sys/linuxp
-        (setq command-line-x-option-alist nil))
-
-      ;; Increase how much is read from processes in a single chunk (default is 4kb)
-      (setq read-process-output-max #x10000)  ; 64kb
-
-      ;; Don't ping things that look like domain names.
-      (setq ffap-machine-p-known 'reject)
-
-      ;; Garbage Collector Magic Hack
-      (use-package gcmh
-        :diminish
-        :init
-        (setq gcmh-idle-delay 5
-              gcmh-high-cons-threshold #x1000000) ; 16MB
-        (gcmh-mode 1)))
-
-
-  (setq fast-but-imprecise-scrolling t)
-#+end_src
 ** So-long
 #+begin_src emacs-lisp
   (when emacs/>=27p
