@@ -139,7 +139,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 #+begin_src emacs-lisp
   (use-package auto-package-update
     :init
-    (setq auto-package-update-interval 5
+    (setq auto-package-update-interval 7
           auto-package-update-hide-results t
           auto-package-update-delete-old-versions t)
     :config
