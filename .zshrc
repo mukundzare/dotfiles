@@ -188,3 +188,5 @@ vterm_prompt_end() {
 setopt PROMPT_SUBST
 PROMPT=$PROMPT'%{$(vterm_prompt_end)%}'
 fpath+=${ZDOTDIR:-~}/.zsh_functions
+
+export MOBIFY_TARGETS="~/share/:~/Downloads/:~/books"
