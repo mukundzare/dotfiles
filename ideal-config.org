@@ -392,6 +392,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (setq org-refile-targets
         '(("~/orgfiles/ARCHIVE/ARCHIVE-Personal.org" :maxlevel . 1)
           ("~/orgfiles/emacs.org" :maxlevel . 1)
+          ("~/orgfiles/homeserver.org" :maxlevel . 1)
           ("~/orgfiles/projects.org" :maxlevel . 1)
           ("~/orgfiles/habits.org" :maxlevel . 1)
           ("~/orgfiles/work.org" :maxlevel . 1)
