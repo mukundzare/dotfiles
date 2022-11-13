@@ -588,12 +588,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
           evil-want-fine-undo t
           evil-want-C-i-jump t)
     :config
-    (evil-mode 1)
-    :hook (after-change-major-mode . (lambda ()
-                                       (if (memq major-mode mz/lisp-modes)
-                                           (progn
-                                             (message "Disabling evil mode...")
-                                             (turn-off-evil-mode))))))
+    (evil-mode 1))
   (use-package evil-collection
     :after evil
     :config
@@ -1407,6 +1402,11 @@ Evaluation Result OverlayS for Emacs Lisp.
       :init (setq electric-pair-inhibit-predicate
                   'electric-pair-default-inhibit))
 #+end_src
+*** Expand region
+#+begin_src emacs-lisp
+  (use-package expand-region
+    :bind ("C-=" . er/expand-region))
+#+end_src
 * File management
 ** ZTree
 See: https://github.com/fourier/ztree
@@ -1547,7 +1547,7 @@ See: https://github.com/fourier/ztree
                   "/G?TAGS$"
                   "/.elfeed/"
                   "^/tmp/"
-                  "^/home/zam4abt/RoamNotes"
+                  "\\.gpg$"
                   "^/var/folders/.+$"
                   "^/ssh:"
                   "/persp-confs/"
