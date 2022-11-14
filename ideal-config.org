@@ -610,12 +610,8 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
   (use-package evil-smartparens
     :after smartparens
-    :init
-    (dolist (mode '(clojure-mode
-                    emacs-lisp-mode
-                    common-lisp-mode
-                    lisp-mode))
-      (add-hook mode (lambda () (evil-smartparens-mode 1)))))
+    :config
+    :hook (smartparens-enabled . evil-smartparens-mode))
 
 #+end_src
 * Basic UI Configuration
@@ -1223,10 +1219,15 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 
 #+end_src
 
-
 *** Hippie expand
 #+begin_src emacs-lisp
   (global-set-key (kbd "M-/") 'hippie-expand)
+#+end_src
+*** Parens completions
+#+begin_src emacs-lisp
+  (use-package smartparens
+    :init
+    :hook (prog-mode . smartparens-mode))
 #+end_src
 * Hinting
 ** Which-key
