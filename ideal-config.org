@@ -599,13 +599,6 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     :config
     (evil-collection-init))
   ;; Use evil keybindings in org-mode
-  (use-package evil-org
-    :after org
-    :hook (org-mode . (lambda () evil-org-mode))
-    :config
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys))
-
   (use-package hydra)
 
   (use-package evil-smartparens
@@ -1227,6 +1220,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+begin_src emacs-lisp
   (use-package smartparens
     :init
+    (setq smartparens-strict-mode t)
     :hook (prog-mode . smartparens-mode))
 #+end_src
 * Hinting
