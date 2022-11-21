@@ -842,7 +842,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
           ef-themes-variable-pitch-ui t)
     (mapc #'disable-theme custom-enabled-themes)
     ;; use this to load the theme which also calls `ef-themes-post-load-hook':
-    (ef-themes-select 'ef-day))
+    (ef-themes-select 'ef-autumn))
 #+end_src
 ** Rainbow delimiters
 
