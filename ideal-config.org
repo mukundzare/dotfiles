@@ -598,6 +598,13 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     :after evil
     :config
     (evil-collection-init))
+  (use-package evil-org
+    :ensure t
+    :after (evil evil-collection org)
+    :hook (org-mode . (lambda () evil-org-mode))
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
   ;; Use evil keybindings in org-mode
   (use-package hydra)
 
@@ -1406,6 +1413,32 @@ Evaluation Result OverlayS for Emacs Lisp.
 #+begin_src emacs-lisp
   (use-package expand-region
     :bind ("C-=" . er/expand-region))
+#+end_src
+*** lsp-mode
+#+begin_src emacs-lisp
+  (when (file-exists-p  "~/Brain-dump/opx-db-conns.el.gpg")
+        (load-file "~/Brain-dump/opx-db-conns.el.gpg"))
+  (use-package lsp-mode
+    :straight t
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    (setq lsp-clojure-server-command '("/usr/local/bin/clojure-lsp"))
+    (setq lsp-sqls-workspace-config-path nil)
+    (setq lsp-sqls-connections
+          (and (boundp 'opx-conn-credentials)
+               opx-conn-credentials))     ;opx-conn-details comes from
+                                          ;opx-db-conns.el.gpg file
+    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+           (sql-mode . lsp)
+           (clojure-mode . lsp)
+           (clojurec-mode . lsp)
+           (clojurescript-mode . lsp)
+           ;; if you want which-key integration
+           (lsp-mode . lsp-enable-which-key-integration))
+    :commands lsp)
+
+     ;; optionally
+     (use-package lsp-ui :commands lsp-ui-mode)
 #+end_src
 * File management
 ** ZTree
