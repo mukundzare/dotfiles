@@ -1273,14 +1273,6 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   ;;instead of an external pin entry program.
   (setenv "GPG_AGENT_INFO" nil)
 #+end_src
-* Visual reg-exp
-#+begin_src emacs-lisp
-  ;; Assign keyboard shortcut to query replace
-  (use-package visual-regexp
-    :commands vr/query-replace
-    :bind
-    ("C-c r" . vr/query-replace))
-#+end_src
 * Document management
 ** PDF tools
 #+begin_src emacs-lisp
@@ -1416,8 +1408,6 @@ Evaluation Result OverlayS for Emacs Lisp.
 #+end_src
 *** lsp-mode
 #+begin_src emacs-lisp
-  (when (file-exists-p  "~/Brain-dump/opx-db-conns.el.gpg")
-        (load-file "~/Brain-dump/opx-db-conns.el.gpg"))
   (use-package lsp-mode
     :straight t
     :init
@@ -1439,6 +1429,35 @@ Evaluation Result OverlayS for Emacs Lisp.
 
      ;; optionally
      (use-package lsp-ui :commands lsp-ui-mode)
+#+end_src
+* Visual tools
+** Mermaid mode
+#+begin_src emacs-lisp
+  (defun mz/mermaid-auto-compile ()
+    (when (equal major-mode #'mermaid-mode)
+      (mermaid-compile)))
+  (use-package mermaid-mode
+    :init
+    (setq mermaid-mmdc-location "~/node_modules/.bin/mmdc"
+          mermaid-tmp-dir "~/temp/")
+    :bind (:map mermaid-mode-map
+                ("C-c m c" . mermaid-compile)
+                ("C-c m f" . mermaid-compile-file)
+                ("C-c m b" . mermaid-compile-buffer)
+                ("C-c m r" . mermaid-compile-region)
+                ("C-c m o" . mermaid-open-browser)
+                ("C-c m d" . mermaid-open-doc))
+    :hook (after-save . mz/mermaid-auto-compile)
+    :config (add-to-list 'auto-mode-alist '("\\.mmd" . mermaid-mode)))
+
+#+end_src
+** Visual reg-exp
+#+begin_src emacs-lisp
+  ;; Assign keyboard shortcut to query replace
+  (use-package visual-regexp
+    :commands vr/query-replace
+    :bind
+    ("C-c r" . vr/query-replace))
 #+end_src
 * File management
 ** ZTree
@@ -1586,8 +1605,7 @@ See: https://github.com/fourier/ztree
                   "/persp-confs/"
                   (lambda (file) (file-in-directory-p file package-user-dir))))
     :config
-    (setq recentf-max-menu-items 25)
-    (setq recentf-max-saved-items 25)
+    (setq recentf-max-menu-items 100)
     (push (expand-file-name recentf-save-file) recentf-exclude)
     (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
 #+end_src
