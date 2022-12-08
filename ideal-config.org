@@ -157,6 +157,22 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
               (add-hook 'minibuffer-setup-hook #'gc-minibuffer-setup-hook)
               (add-hook 'minibuffer-exit-hook #'gc-minibuffer-exit-hook)))
 #+end_src
+* Shell related
+** Ubuntu
+*** Shell variables
+#+begin_src emacs-lisp
+
+  (when (or sys/mac-x-p sys/linux-x-p (daemonp))
+    (use-package exec-path-from-shell
+      :init
+      (exec-path-from-shell-initialize)))
+#+end_src
+** Mac/Windows/X
+#+begin_src emacs-lisp
+
+  (when (memq window-system '(mac ns x))
+    (exec-path-from-shell-initialize))
+#+end_src
 * Private data
 #+begin_src emacs-lisp
 ;; Load init-private.el if it exists
