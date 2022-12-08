@@ -1396,6 +1396,11 @@ Evaluation Result OverlayS for Emacs Lisp.
     :commands macrostep-expand
     :bind ("C-c e m" . macrostep-expand))
 #+end_src
+*** SQL mode
+#+begin_src emacs-lisp
+  (use-package sql
+    :hook (sql-interactive-mode . (lambda () (toggle-truncate-lines t))))
+#+end_src
 ** Tools
 *** Restclient
 #+begin_src emacs-lisp
@@ -1439,12 +1444,13 @@ Evaluation Result OverlayS for Emacs Lisp.
     (setq lsp-keymap-prefix "C-c l")
     (setq lsp-clojure-server-command '("/usr/local/bin/clojure-lsp"))
     (setq lsp-sqls-workspace-config-path nil)
+    (setq lsp-sqls-server "/home/zam4abt/go/bin/sqls")
     (setq lsp-sqls-connections
           (and (boundp 'opx-conn-credentials)
                opx-conn-credentials))     ;opx-conn-details comes from
                                           ;opx-db-conns.el.gpg file
     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-           (sql-mode . lsp)
+           ;(sql-mode . lsp)
            (clojure-mode . lsp)
            (clojurec-mode . lsp)
            (clojurescript-mode . lsp)
@@ -1454,6 +1460,12 @@ Evaluation Result OverlayS for Emacs Lisp.
 
      ;; optionally
      (use-package lsp-ui :commands lsp-ui-mode)
+#+end_src
+*** Eglot
+#+begin_src emacs-lisp
+  (use-package eglot
+    :config
+    (cl-pushnew '(sql-mode . ("sqls")) eglot-server-programs))
 #+end_src
 * Visual tools
 ** Mermaid mode
