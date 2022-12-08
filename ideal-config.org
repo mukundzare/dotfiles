@@ -625,6 +625,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   (use-package hydra)
 
   (use-package evil-smartparens
+    :disabled t
     :after smartparens
     :config
     :hook (smartparens-enabled . evil-smartparens-mode))
@@ -1248,10 +1249,11 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+end_src
 *** Parens completions
 #+begin_src emacs-lisp
-  (use-package smartparens
-    :init
-    (setq smartparens-strict-mode t)
-    :hook (prog-mode . smartparens-mode))
+    (use-package smartparens
+      :disabled t
+  :init
+      (setq smartparens-strict-mode t)
+      :hook (prog-mode . smartparens-mode))
 #+end_src
 * Hinting
 ** Which-key
