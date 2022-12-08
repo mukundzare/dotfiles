@@ -1076,6 +1076,12 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (add-hook 'prog-mode-hook 'add-pretty-lambda)
   (add-hook 'org-mode-hook 'add-pretty-lambda)
 #+end_src
+** Move mouse away
+#+begin_src emacs-lisp
+  (use-package avoid
+    :ensure nil
+    :config (mouse-avoidance-mode 'animate))
+#+end_src
 * Completion
 ** Minibuffer Completion
 *** Vertico
