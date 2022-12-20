@@ -159,12 +159,29 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 #+end_src
 * Shell related
 ** Ubuntu
+*** Shell mode settings
+#+begin_src emacs-lisp
+(use-package shell
+  :ensure nil
+  :hook (shell-mode . my-shell-mode-hook-func)
+  :config
+  (defun my-shell-mode-hook-func ()
+    (set-process-sentinel (get-buffer-process (current-buffer))
+                          'my-shell-mode-kill-buffer-on-exit))
+  (defun my-shell-mode-kill-buffer-on-exit (process state)
+    (message "%s" state)
+    (if (or
+         (string-match "exited abnormally with code.*" state)
+         (string-match "finished" state))
+        (kill-buffer (current-buffer)))))
+#+end_src
 *** Shell variables
 #+begin_src emacs-lisp
 
   (when (or sys/mac-x-p sys/linux-x-p (daemonp))
     (use-package exec-path-from-shell
       :init
+      (setq exec-path-from-shell-arguments '("-l" "-i"))
       (exec-path-from-shell-initialize)))
 #+end_src
 ** Mac/Windows/X
@@ -549,19 +566,27 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 
 Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+begin_src emacs-lisp
-(defun mz/org-agenda-process-inbox-item ()
-  "Process a single item in the org-agenda."
-  (org-with-wide-buffer
-   (org-agenda-set-tags)
-   (org-agenda-priority)
-   (call-interactively 'org-set-effort)
-   (org-agenda-refile nil nil t)))
+  (defun mz/org-agenda-process-inbox-item ()
+    "Process a single item in the org-agenda."
+    (org-with-wide-buffer
+     (org-agenda-set-tags)
+     (org-agenda-priority)
+     (call-interactively 'org-set-effort)
+     (org-agenda-refile nil nil t)))
 
+  ;;Autosave org mode buffers on refiling
+  (advice-add 'org-refile :after 'org-save-all-org-buffers)
+  (advice-add 'org-agenda-refile :after 'org-save-all-org-buffers)
 #+end_src
 ** Notifications
 #+begin_src emacs-lisp
 (use-package org-wild-notifier)
 #+end_src
+** Org gcal (disabled)
+#+begin_src emacs-lisp
+(use-package org-gcal
+:disabled t)
+#+end_src>
 * Key bindings
 ** General key bindings
 #+begin_src emacs-lisp
@@ -605,6 +630,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     :init
     (setq evil-want-integration t
           evil-want-keybinding nil
+          evil-want-minibuffer nil
           evil-want-C-u-scroll t
           evil-want-fine-undo t
           evil-want-C-i-jump t)
@@ -623,12 +649,6 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     (evil-org-agenda-set-keys))
   ;; Use evil keybindings in org-mode
   (use-package hydra)
-
-  (use-package evil-smartparens
-    :disabled t
-    :after smartparens
-    :config
-    :hook (smartparens-enabled . evil-smartparens-mode))
 
 #+end_src
 * Basic UI Configuration
@@ -1234,10 +1254,17 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (use-package company
     :straight t
     :init
-    (add-hook 'after-init-hook 'global-company-mode)
-    :config
     (setq company-tooltip-minimum 5
-          company-tooltip-flip-when-above t)
+          company-tooltip-flip-when-above t
+          company-backends '(company-capf company-files
+                                          company-dabbrev
+                                          (company-dabbrev-code
+                                           company-gtags
+                                           company-etags
+                                           company-keywords)))
+    :hook
+    (after-init . global-company-mode)
+    :config
     (use-package company-box
       :hook (company-mode . company-box-mode)))
 
@@ -1255,11 +1282,11 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+end_src
 *** Parens completions
 #+begin_src emacs-lisp
-    (use-package smartparens
-      :disabled t
-  :init
-      (setq smartparens-strict-mode t)
-      :hook (prog-mode . smartparens-mode))
+  (use-package paredit
+    :hook ((clojure-mode . paredit-mode)
+           (emacs-lisp-mode . paredit-mode)
+           (lisp-mode . paredit-mode)))
+
 #+end_src
 * Hinting
 ** Which-key
@@ -1354,7 +1381,20 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :straight t
     :config
     (require 'flycheck-clj-kondo)
-    (setq clojure-align-forms-automatically t))
+    (setq clojure-align-forms-automatically t)
+    (define-clojure-indent
+      (defroutes 'defun)
+      (GET 2)
+      (POST 2)
+      (PUT 2)
+      (DELETE 2)
+      (HEAD 2)
+      (ANY 2)
+      (OPTIONS 2)
+      (PATCH 2)
+      (rfn 2)
+      (let-routes 1)
+      (context 2)))
 
   ;; extra syntax highlighting for clojure
   (use-package clojure-mode-extra-font-locking
@@ -1419,6 +1459,7 @@ Evaluation Result OverlayS for Emacs Lisp.
 #+begin_src emacs-lisp
   ;;Aggresive-indent mode
   (use-package aggressive-indent
+    :disabled
     :hook ((clojure-mode . aggressive-indent-mode)
                                           ;(opx2-js-mode . aggressive-indent-mode)
            (emacs-lisp-mode . aggressive-indent-mode)))
@@ -1628,8 +1669,10 @@ See: https://github.com/fourier/ztree
   (use-package recentf
     :straight t
     :bind (("C-x C-r" . consult-recent-file))
-    :hook (after-init . recentf-mode)
+    :hook ((after-init . recentf-mode)
+           (buffer-list-update . recentf-track-opened-file))
     :init (setq recentf-max-saved-items 300
+                recentf-case-fold-search t
                 recentf-exclude
                 '("\\.?cache"
                   ".cask"
@@ -1649,8 +1692,7 @@ See: https://github.com/fourier/ztree
                   (lambda (file) (file-in-directory-p file package-user-dir))))
     :config
     (setq recentf-max-menu-items 100)
-    (push (expand-file-name recentf-save-file) recentf-exclude)
-    (add-to-list 'recentf-filename-handlers #'abbreviate-file-name))
+    (push (expand-file-name recentf-save-file) recentf-exclude))
 #+end_src
 * Performace
 ** So-long
