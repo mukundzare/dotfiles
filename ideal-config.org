@@ -1779,7 +1779,6 @@ See: https://github.com/fourier/ztree
                 recentf-exclude
                 '("\\.?cache"
                   ".cask"
-                  "url"
                   "COMMIT_EDITMSG\\'"
                   "bookmarks"
                   "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
@@ -1794,6 +1793,7 @@ See: https://github.com/fourier/ztree
                   "/persp-confs/"
                   (lambda (file) (file-in-directory-p file package-user-dir))))
     :config
+    (run-at-time nil (* 5 60) 'recentf-save-list)
     (setq recentf-max-menu-items 100)
     (push (expand-file-name recentf-save-file) recentf-exclude))
 #+end_src
