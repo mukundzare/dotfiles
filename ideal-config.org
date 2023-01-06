@@ -765,9 +765,9 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+begin_src emacs-lisp
   ;;Set default font
   (set-face-attribute 'default nil
-                      :family "Ubuntu Mono"
+                      :family "JetBrains Mono"
                       :weight 'normal
-                      :height 110)
+                      :height 100)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
@@ -886,7 +886,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
           ef-themes-variable-pitch-ui t)
     (mapc #'disable-theme custom-enabled-themes)
     ;; use this to load the theme which also calls `ef-themes-post-load-hook':
-    (ef-themes-select 'ef-autumn))
+    (ef-themes-select 'ef-tritanopia-dark))
 #+end_src
 ** Rainbow delimiters
 
@@ -985,6 +985,11 @@ I don't need to keep certain buffers like help mode open when the buffer is buri
                        calendar-mode-map
                        help-mode-map))
       (evil-collection-define-key 'normal key-map "q" 'kill-this-buffer)))
+#+end_src
+*** Ibuffer
+#+begin_src emacs-lisp
+  (use-package ibuffer
+    :bind ("C-x C-b" . ibuffer))
 #+end_src
 ** Colorize color names
 #+begin_src emacs-lisp
