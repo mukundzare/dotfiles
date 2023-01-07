@@ -381,8 +381,8 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
     (setq evil-auto-indent nil))
 
   (defun mz/org-mode-visual-fill ()
-    (setq visual-fill-column-width 90
-          visual-fill-column-center-text t)
+    (setq-local visual-fill-column-width 90
+                visual-fill-column-center-text t)
     (visual-fill-column-mode 1))
   (use-package visual-fill-column
     :hook (org-mode . mz/org-mode-visual-fill))
@@ -1860,4 +1860,12 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
   ;;Set major mode for OJS and PJS files to javascript mode
   ;;(add-to-list 'auto-mode-alist '("\\.ojs" . javascript-mode))
   (add-to-list 'auto-mode-alist '("\\.pjs" . opx2-js-mode))
+#+end_src
+* EWW
+#+begin_src emacs-lisp
+  (use-package eww
+    :hook (eww-mode . (lambda ()
+                        (visual-line-mode)
+                        (visual-fill-column-mode))))
+
 #+end_src
