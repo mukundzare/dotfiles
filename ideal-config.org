@@ -435,18 +435,23 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 #+end_src
 ** Org Capture
 #+begin_src emacs-lisp
-  (setq org-capture-templates
-        `(("t" "Task" entry (file "Inbox.org")
-           "* TODO %?\n  %i" :empty-lines 1)
-          ("j" "Journal" entry
-           (file+olp+datetree "Journal.org.gpg")
-           "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
-           :clock-in :clock-resume
-           :empty-lines 1)
-          ("i" "Info" entry (file "Inbox.org")
-           "* TODO %?\n %U\n %x\n %i" :empty-lines 1)))
-  (define-key global-map (kbd "C-c c") 'org-capture)
-  (define-key global-map (kbd "C-c a") 'org-agenda)
+    (setq org-capture-templates
+          `(("t" "Task" entry (file "Inbox.org")
+             "* TODO %?\n  %i" :empty-lines 1)
+            ("j" "Journal" entry
+             (file+olp+datetree "Journal.org.gpg")
+             "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+             :clock-in :clock-resume
+             :empty-lines 1)
+            ("i" "Info" entry (file "Inbox.org")
+             "* TODO %?\n %U\n %x\n %i" :empty-lines 1)
+            ("m" "Metrics Capture")
+            ("mw" "Weight" table-line (file+headline "weight.org" "Weight")
+             "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
+            ("mm" "Measurements" table-line (file+headline "measurements.org" "Weight")
+             "| %U | %^{Abdomen} | %^{Left thigh} | %^{Right thigh}|" :kill-buffer t)))
+    (define-key global-map (kbd "C-c c") 'org-capture)
+    (define-key global-map (kbd "C-c a") 'org-agenda)
 #+end_src
 ** Org Agenda
 #+begin_src emacs-lisp
