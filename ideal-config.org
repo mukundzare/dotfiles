@@ -300,7 +300,8 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
     (seq-filter (lambda (file)
           (and (equal (file-name-extension file)
                   "el")
-               (not (s-ends-with-p "~undo-tree~" file)))) ;Somehow undo-tree
+               (not (or (equal "sandbox.el" file)
+                        (s-ends-with-p "~undo-tree~" file))))) ;Somehow undo-tree
                       ;now adds a suffix
                       ;to all files
         (directory-files dir-name)))
@@ -1869,8 +1870,6 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
 * EWW
 #+begin_src emacs-lisp
   (use-package eww
-    :hook (eww-mode . (lambda ()
-                        (visual-line-mode)
-                        (visual-fill-column-mode))))
+    :init (setq shr-max-width 80))
 
 #+end_src
