@@ -196,11 +196,6 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 (when (file-exists-p (expand-file-name "init-private.el" user-emacs-directory))
   (load-file (expand-file-name "init-private.el" user-emacs-directory)))
 #+end_src
-* Temporary settings (to be deleted after this config becomes my standard)
-#+begin_src emacs-lisp
-  ;;  (setq package-user-dir (expand-file-name (concat user-emacs-directory "elpa"))
-  ;;      package-quickstart-file (expand-file-name (concat user-emacs-directory "elpa")))
-#+end_src
 * ~~~~~Performance marker~~~~~~
 #+begin_src emacs-lisp
   (message "At performance marker 0")
@@ -259,6 +254,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 * Enable/Disable debug on error
 #+begin_src emacs-lisp
   (toggle-debug-on-error)
+  (setq byte-compile-warnings nil)
 #+end_src
 * Emacs libraries
 ** HTTP
@@ -1526,7 +1522,7 @@ Evaluation Result OverlayS for Emacs Lisp.
                opx-conn-credentials))     ;opx-conn-details comes from
                                           ;opx-db-conns.el.gpg file
     :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-           ;(sql-mode . lsp)
+                                          ;(sql-mode . lsp)
            (clojure-mode . lsp)
            (clojurec-mode . lsp)
            (clojurescript-mode . lsp)
@@ -1534,10 +1530,14 @@ Evaluation Result OverlayS for Emacs Lisp.
            (lsp-mode . lsp-enable-which-key-integration))
     :commands lsp)
 
-     ;; optionally
-  (use-package lsp-ui :commands lsp-ui-mode)
+  ;; optionally
+  (use-package lsp-ui
+    :straight t
+    :commands lsp-ui-mode)
 
-  (use-package lsp-treemacs :commands lsp-treemacs-errors-list)
+  (use-package lsp-treemacs
+    :straight t
+    :commands lsp-treemacs-errors-list)
 #+end_src
 *** Eglot
 #+begin_src emacs-lisp
