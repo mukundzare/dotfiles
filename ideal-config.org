@@ -1375,6 +1375,19 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :init
     (setq emmet-move-cursor-between-quotes t))
 #+end_src
+*** CSS
+#+begin_src emacs-lisp
+  (use-package lsp-tailwindcss
+    :straight (lsp-tailwindcss
+               :type git
+               :host github
+               :repo "merrickluo/lsp-tailwindcss")
+    :after lsp-mode
+    :init
+    (setq lsp-tailwindcss-experimental-class-regex ":[\\w-.#>]+\\.([\\w-]*)")
+    :config
+    (add-to-list 'lsp-tailwindcss-major-modes 'clojure-mode))
+#+end_src
 *** CSV
 #+begin_src emacs-lisp
   (use-package csv
