@@ -1645,7 +1645,8 @@ Evaluation Result OverlayS for Emacs Lisp.
         (`(t . t)
          (treemacs-git-mode 'deferred))
         (`(t . _)
-         (treemacs-git-mode 'simple))))
+         (treemacs-git-mode 'simple)))
+      (treemacs))
     :bind
     (:map global-map
           ("M-0"       . treemacs-select-window)
@@ -1871,12 +1872,22 @@ See: https://github.com/fourier/ztree
 ** REPL customizations
 Add an overlay for the prompts:
 #+begin_src emacs-lisp
-    (font-lock-add-keywords 'fi:lisp-listener-mode
-                            '(("\\(^[PO]JS([0-9]*).*\\\):" . font-lock-type-face)))
-    (font-lock-add-keywords 'fi:subprocess-mode
-                            '(("\\(^[PO]JS([0-9]*).*\\\):"  . font-lock-type-face)))
+  (font-lock-add-keywords 'fi:lisp-listener-mode
+                          '(("^[PO]JS\([0-9]*\)\[?[A-Za-z_0-9-]*\]?:" 
+    . font-lock-type-face)))
+  (font-lock-add-keywords 'fi:subprocess-mode
+                          '(("^[PO]JS\([0-9]*\)\[?[A-Za-z_0-9-]*\]?:" . font-lock-type-face)))
   (font-lock-add-keywords 'js-evaluator-mode
-                            '(("\\(^[PO]JS([0-9]*).*\\\):"  . font-lock-type-face)))
+                          '(("^[PO]JS\([0-9]*\)\[?[A-Za-z_0-9-]*\]?:" . font-lock-type-face)))
+
+  (defun opx2-js-evaluator-mode-switch ()
+    "Switch to js-evaluator-mode if in lisp-listener-mode."
+    (when (string-equal
+           (buffer-name (current-buffer))
+           "*javascript-evaluator*")
+      (js-evaluator-mode)))
+
+  (add-to-list  'fi:lisp-listener-mode-hook #'opx2-js-evaluator-mode-switch t)
 #+end_src
 ** Mode override
 Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
