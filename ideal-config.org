@@ -1477,7 +1477,10 @@ Evaluation Result OverlayS for Emacs Lisp.
     :init
     (add-to-list 'auto-mode-alist '("\\.restclient" . restclient-mode)))
 #+end_src
-
+** Debugging
+#+begin_src emacs-lisp
+  (use-package bug-hunter)
+#+end_src
 ** Usability
 *** Aggressive indent
 #+begin_src emacs-lisp
