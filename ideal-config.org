@@ -1373,18 +1373,15 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 *** CSS
 #+begin_src emacs-lisp
   (use-package lsp-tailwindcss
-    :straight (lsp-tailwindcss
-               :type git
-               :host github
-               :repo "merrickluo/lsp-tailwindcss")
     :after lsp-mode
     :init
     (setq lsp-tailwindcss-add-on-mode t
           lsp-tailwindcss-experimental-class-regex ":[\\w-.#>]+\\.([\\w-]*)")
     :config
+    ;(add-to-list 'lsp-language-id-configuration '(".*\\.clj$" . "html"))
     (add-to-list 'lsp-tailwindcss-major-modes 'clojure-mode))
 
-  (setq lsp-tailwindcss-major-modes '(clojure-mode rjsx-mode web-mode html-mode css-mode typescript-mode))
+
 #+end_src
 *** CSV
 #+begin_src emacs-lisp
