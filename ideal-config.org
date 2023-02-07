@@ -109,8 +109,8 @@
 
       ;; Garbage Collector Magic Hack
       (progn
-        (unless (package-installed-p gcmh)
-          (package-install gcmh))
+        (unless (package-installed-p 'gcmh)
+          (package-install 'gcmh))
         (setq gcmh-idle-delay 5
               gcmh-high-cons-threshold #x1000000) ; 16MB
         (gcmh-mode 1)))
