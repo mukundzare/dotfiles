@@ -584,11 +584,10 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+begin_src emacs-lisp
 (use-package org-wild-notifier)
 #+end_src
-** Org gcal (disabled)
+** Org-plot
 #+begin_src emacs-lisp
-(use-package org-gcal
-:disabled t)
-#+end_src>
+(use-package gnuplot)
+#+end_src
 * Key bindings
 ** General key bindings
 #+begin_src emacs-lisp
