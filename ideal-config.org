@@ -454,7 +454,6 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           ("mm" "Measurements" table-line (file+headline "measurements.org" "Weight")
            "| %U | %^{Abdomen} | %^{Left thigh} | %^{Right thigh}|" :kill-buffer t)))
   (define-key global-map (kbd "C-c c") 'org-capture)
-  (define-key global-map (kbd "C-c a") 'org-agenda)
 #+end_src
 ** Org Agenda
 #+begin_src emacs-lisp
