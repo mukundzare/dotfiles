@@ -143,8 +143,8 @@ if [[ (-z $TMUX) &&
     ]] then
    if [[ (-t 1) ]] then
       echo "VPN not connected...autoconnecting."
+      osd-vpn-connect 1>/dev/null 2&>1
    fi
-   osd-vpn-connect 1>/dev/null 2&>1
 fi
 
 

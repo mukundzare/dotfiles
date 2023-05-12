@@ -615,6 +615,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 ** Google calendar
 #+begin_src emacs-lisp
   (use-package org-gcal
+    :after (org org-agenda evil-org)
     :straight (org-gcal :type git :host github :repo "kidd/org-gcal.el")
     :init
     (setq org-gcal-file-alist '(("mukundzare@gmail.com" .  "~/orgfiles/schedule.org"))
