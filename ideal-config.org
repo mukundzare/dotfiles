@@ -91,29 +91,29 @@
 ** General
 #+begin_src emacs-lisp
   (with-no-warnings
-      ;; Optimization
-      (when sys/win32p
-        (setq w32-get-true-file-attributes nil   ; decrease file IO workload
-              w32-pipe-read-delay 0              ; faster IPC
-              w32-pipe-buffer-size (* 64 1024))) ; read more at a time (was 4K)
-      (unless sys/macp
-        (setq command-line-ns-option-alist nil))
-      (unless sys/linuxp
-        (setq command-line-x-option-alist nil))
+    ;; Optimization
+    (when sys/win32p
+      (setq w32-get-true-file-attributes nil   ; decrease file IO workload
+            w32-pipe-read-delay 0              ; faster IPC
+            w32-pipe-buffer-size (* 64 1024))) ; read more at a time (was 4K)
+    (unless sys/macp
+      (setq command-line-ns-option-alist nil))
+    (unless sys/linuxp
+      (setq command-line-x-option-alist nil))
 
-      ;; Increase how much is read from processes in a single chunk (default is 4kb)
-      (setq read-process-output-max #x10000)  ; 64kb
+    ;; Increase how much is read from processes in a single chunk (default is 4kb)
+    (setq read-process-output-max #x10000)  ; 64kb
 
-      ;; Don't ping things that look like domain names.
-      (setq ffap-machine-p-known 'reject)
+    ;; Don't ping things that look like domain names.
+    (setq ffap-machine-p-known 'reject)
 
-      ;; Garbage Collector Magic Hack
-      (progn
-        (unless (package-installed-p 'gcmh)
-          (package-install 'gcmh))
-        (setq gcmh-idle-delay 5
-              gcmh-high-cons-threshold #x1000000) ; 16MB
-        (gcmh-mode 1)))
+    ;; Garbage Collector Magic Hack
+    (progn
+      (unless (package-installed-p 'gcmh)
+        (package-install 'gcmh))
+      (setq gcmh-idle-delay 5
+            gcmh-high-cons-threshold #x1000000) ; 16MB
+      (gcmh-mode 1)))
 
 
   (setq fast-but-imprecise-scrolling t)
@@ -125,16 +125,16 @@ A large gc-cons-threshold may cause freezing and stuttering during long-term int
 
 If you experience freezing, decrease this amount, if you experience stuttering, increase this amount.
 #+begin_src emacs-lisp
-(defvar better-gc-cons-threshold 134217728 ; 128mb
-  "The default value to use for `gc-cons-threshold'.
+  (defvar better-gc-cons-threshold 134217728 ; 128mb
+    "The default value to use for `gc-cons-threshold'.
 
-If you experience freezing, decrease this.  If you experience stuttering, increase this.")
+  If you experience freezing, decrease this.  If you experience stuttering, increase this.")
 
-(add-hook 'emacs-startup-hook
-          (lambda ()
-            (setq gc-cons-threshold better-gc-cons-threshold)
-            (setq file-name-handler-alist file-name-handler-alist-original)
-            (makunbound 'file-name-handler-alist-original)))
+  (add-hook 'emacs-startup-hook
+            (lambda ()
+              (setq gc-cons-threshold better-gc-cons-threshold)
+              (setq file-name-handler-alist file-name-handler-alist-original)
+              (makunbound 'file-name-handler-alist-original)))
 #+end_src
 ** Garbage collect when out of focus
 Garbage Collect when Emacs is out of focus and avoid garbage collection when using minibuffer.
@@ -161,19 +161,19 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 ** Ubuntu
 *** Shell mode settings
 #+begin_src emacs-lisp
-(use-package shell
-  :ensure nil
-  :hook (shell-mode . my-shell-mode-hook-func)
-  :config
-  (defun my-shell-mode-hook-func ()
-    (set-process-sentinel (get-buffer-process (current-buffer))
-                          'my-shell-mode-kill-buffer-on-exit))
-  (defun my-shell-mode-kill-buffer-on-exit (process state)
-    (message "%s" state)
-    (if (or
-         (string-match "exited abnormally with code.*" state)
-         (string-match "finished" state))
-        (kill-buffer (current-buffer)))))
+  (use-package shell
+    :ensure nil
+    :hook (shell-mode . my-shell-mode-hook-func)
+    :config
+    (defun my-shell-mode-hook-func ()
+      (set-process-sentinel (get-buffer-process (current-buffer))
+                            'my-shell-mode-kill-buffer-on-exit))
+    (defun my-shell-mode-kill-buffer-on-exit (process state)
+      (message "%s" state)
+      (if (or
+           (string-match "exited abnormally with code.*" state)
+           (string-match "finished" state))
+          (kill-buffer (current-buffer)))))
 #+end_src
 *** Shell variables
 #+begin_src emacs-lisp
@@ -192,9 +192,9 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 #+end_src
 * Private data
 #+begin_src emacs-lisp
-;; Load init-private.el if it exists
-(when (file-exists-p (expand-file-name "init-private.el" user-emacs-directory))
-  (load-file (expand-file-name "init-private.el" user-emacs-directory)))
+  ;; Load init-private.el if it exists
+  (when (file-exists-p (expand-file-name "init-private.el" user-emacs-directory))
+    (load-file (expand-file-name "init-private.el" user-emacs-directory)))
 #+end_src
 * ~~~~~Performance marker~~~~~~
 #+begin_src emacs-lisp
@@ -294,33 +294,34 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (require 's)
   (defun mz--get-el-files-from-dir (dir-name)
     (seq-filter (lambda (file)
-          (and (equal (file-name-extension file)
-                  "el")
-               (not (or (equal "sandbox.el" file)
-                        (s-ends-with-p "~undo-tree~" file))))) ;Somehow undo-tree
-                      ;now adds a suffix
-                      ;to all files
-        (directory-files dir-name)))
+                  (and (equal (file-name-extension file)
+                              "el")
+                       (not (or (equal "sandbox.el" file)
+                                (s-ends-with-p "~undo-tree~" file))))) ;Somehow undo-tree
+                                          ;now adds a suffix
+                                          ;to all files
+                (directory-files dir-name)))
 
   (dolist (file-name (mz--get-el-files-from-dir mz--my-personal-libs-dir))
     (load (format "%s%s"
-          mz--my-personal-libs-dir
-          file-name)
-      t))
+                  mz--my-personal-libs-dir
+                  file-name)
+          t))
 
 #+end_src
 * Markdown mode
 #+begin_src emacs-lisp
-(use-package markdown-mode
-  :ensure t
-  :mode ("README\\.md\\'" . gfm-mode)
-  :init (setq markdown-command "pandoc"))
+  (use-package markdown-mode
+    :ensure t
+    :mode ("README\\.md\\'" . gfm-mode)
+    :init (setq markdown-command "pandoc"))
 #+end_src
 * Org-mode
 ** Org mode (MAIN)
 #+begin_src emacs-lisp
   (use-package org
     :ensure t
+    :init (setq org-clock-sound "~/Downloads/mixkit-uplifting-bells-notification-938.wav")
     :hook (org-mode . mz/org-mode-setup)
     :custom
     ;;
@@ -341,6 +342,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
     (add-to-list 'org-structure-template-alist '("js" . "src js"))
     (add-to-list 'org-structure-template-alist '("sql" . "src sql"))
     (add-to-list 'org-structure-template-alist '("plw" . "src opx2-js"))
+    (add-to-list 'org-structure-template-alist '("pu" . "src plantuml"))
     (setq org-tag-alist
           '((:startgroup)                 ;Group tags are always mutually
                                           ;exclusive, i.e. either one of these
@@ -362,11 +364,11 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
             ("family" . ?n)
             ("recurring" . ?r)
             ("idea" . ?i))))
-    (require 'org-habit)
-    (add-to-list 'org-modules 'org-habit)
-    ;;Provides <el style completion to insert blocks
-    (add-to-list 'org-modules 'org-tempo)
-    (setq org-habit-graph-column 60)
+  (require 'org-habit)
+  (add-to-list 'org-modules 'org-habit)
+  ;;Provides <el style completion to insert blocks
+  (add-to-list 'org-modules 'org-tempo)
+  (setq org-habit-graph-column 60)
 #+end_src
 ** Layout
 *** Basic UI
@@ -403,7 +405,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 #+end_src
 *** SVG Tags
 #+begin_src emacs-lisp
-(use-package svg-lib
+  (use-package svg-lib
     :after org)
   (use-package svg-tag-mode)
 
@@ -414,7 +416,8 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
    'org-babel-load-languages
    '((emacs-lisp . t )
      (clojure . t)
-     (js . t)))
+     (js . t)
+     (plantuml . t)))
 #+end_src
 ** Files
 #+begin_src emacs-lisp
@@ -426,29 +429,32 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           ("~/orgfiles/projects.org" :maxlevel . 1)
           ("~/orgfiles/habits.org" :maxlevel . 1)
           ("~/orgfiles/work.org" :maxlevel . 1)
+          ("~/orgfiles/trash.org" :maxlevel . 1)
           ("~/orgfiles/personal.org" :maxlevel . 1)
           ("~/orgfiles/ARCHIVE/ARCHIVE-Work.org" :maxlevel . 1)))
 
 #+end_src
 ** Org Capture
 #+begin_src emacs-lisp
-    (setq org-capture-templates
-          `(("t" "Task" entry (file "Inbox.org")
-             "* TODO %?\n  %i" :empty-lines 1)
-            ("j" "Journal" entry
-             (file+olp+datetree "Journal.org.gpg")
-             "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
-             :clock-in :clock-resume
-             :empty-lines 1)
-            ("i" "Info" entry (file "Inbox.org")
-             "* TODO %?\n %U\n %x\n %i" :empty-lines 1)
-            ("m" "Metrics Capture")
-            ("mw" "Weight" table-line (file+headline "weight.org" "Weight")
-             "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
-            ("mm" "Measurements" table-line (file+headline "measurements.org" "Weight")
-             "| %U | %^{Abdomen} | %^{Left thigh} | %^{Right thigh}|" :kill-buffer t)))
-    (define-key global-map (kbd "C-c c") 'org-capture)
-    (define-key global-map (kbd "C-c a") 'org-agenda)
+  (setq org-capture-templates
+        `(("t" "Task" entry (file "Inbox.org")
+           "* TODO %?\n  %i" :empty-lines 1)
+          ("j" "Journal" entry
+           (file+olp+datetree "Journal.org.gpg")
+           "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+           :clock-in :clock-resume
+           :empty-lines 1)
+          ("i" "Info" entry (file "Inbox.org")
+           "* TODO %?\n %U\n %x\n %i" :empty-lines 1)
+          ("g" "Gratitude" entry (file "gratitude.org")
+           "* %?\n" :empty-lines 1)
+          ("m" "Metrics Capture")
+          ("mw" "Weight" table-line (file+headline "weight.org" "Weight")
+           "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
+          ("mm" "Measurements" table-line (file+headline "measurements.org" "Weight")
+           "| %U | %^{Abdomen} | %^{Left thigh} | %^{Right thigh}|" :kill-buffer t)))
+  (define-key global-map (kbd "C-c c") 'org-capture)
+  (define-key global-map (kbd "C-c a") 'org-agenda)
 #+end_src
 ** Org Agenda
 #+begin_src emacs-lisp
@@ -456,6 +462,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (setq org-agenda-files
         '("~/orgfiles/personal.org"
           "~/orgfiles/projects.org"
+          "~/orgfiles/schedule.org"
           "~/orgfiles/emacs.org"
           "~/orgfiles/Inbox.org"
           "~/orgfiles/work.org"
@@ -464,65 +471,78 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (define-key global-map (kbd "C-c a") 'org-agenda)
   (setq org-agenda-todo-ignore-scheduled t)
   (setq org-agenda-custom-commands
-        '(("d" "Dashboard"
+        '(("d" "DASHBOARD"
            ((agenda "" ((org-agenda-span 'day)
                         (org-deadline-warning-days 365)))
             (todo "NEXT"
                   ((org-agenda-overriding-header "Next Tasks")))
-            (tags-todo "agenda/ACTIVE" ((org-agenda-overriding-header "Active Projects")))))
+            (todo "TODO"
+                  ((org-agenda-overriding-header "Inbox")
+                   (org-agenda-files '("~/orgfiles/Inbox.org"))))
+            (tags-todo "agenda/ACTIVE"
+                       ((org-agenda-overriding-header "Active Projects")))
+            (tags-todo "errand"
+                       ((org-agenda-overriding-header "Home")))))
           ("n" "Next Tasks"
            ((todo "NEXT"
                   ((org-agenda-overriding-header "Next Tasks")))))
-          ("W" "Work Tasks" tags-todo "+work-email")
+          ("W" "Work Tasks"
+           ((todo "NEXT"
+                  ((org-agenda-overriding-header "Do now")
+                   (org-agenda-files '("~/orgfiles/work.org"))))
+            (todo "TODO"
+                  ((org-agenda-overriding-header "To be done")
+                   (org-agenda-files '("~/orgfiles/work.org"))))))
           ;; Low-effort next actions
-          ("e" tags-todo "+TODO=\"NEXT\"+Effort<15&+Effort>0"
+          ("e" todo "Effort<0:15&+Effort>0:00"
            ((org-agenda-overriding-header "Low Effort Tasks")
             (org-agenda-max-todos 20)
             (org-agenda-files org-agenda-files)))
 
-          ("w" "Workflow Status"
-           ((todo "WAIT"
-                  ((org-agenda-overriding-header "Waiting on External")
-                   (org-agenda-files org-agenda-files)))
-            (todo "REVIEW"
-                  ((org-agenda-overriding-header "In Review")
-                   (org-agenda-files org-agenda-files)))
-            (todo "PLAN"
-                  ((org-agenda-overriding-header "In Planning")
-                   (org-agenda-todo-list-sublevels nil)
-                   (org-agenda-files org-agenda-files)))
-            (todo "BACKLOG"
-                  ((org-agenda-overriding-header "Project Backlog")
-                   (org-agenda-todo-list-sublevels nil)
-                   (org-agenda-files org-agenda-files)))
 
-            (todo "READY"
-                  ((org-agenda-overriding-header "Ready for Work")
-                   (org-agenda-files org-agenda-files)))
-            (todo "ACTIVE"
-                  ((org-agenda-overriding-header "Active Projects")
-                   (org-agenda-files org-agenda-files)))
-            (todo "COMPLETED"
-                  ((org-agenda-overriding-header "Completed Projects")
-                   (org-agenda-files org-agenda-files)))
-            (todo "CANC"
-                  ((org-agenda-overriding-header "Cancelled Projects")
-                   (org-agenda-files org-agenda-files)))))))
+            ("w" "Workflow Status"
+            ((todo "WAIT"
+                   ((org-agenda-overriding-header "Waiting on External")
+                    (org-agenda-files org-agenda-files)))
+             (todo "REVIEW"
+                   ((org-agenda-overriding-header "In Review")
+                    (org-agenda-files org-agenda-files)))
+             (todo "PLAN"
+                   ((org-agenda-overriding-header "In Planning")
+                    (org-agenda-todo-list-sublevels nil)
+                    (org-agenda-files org-agenda-files)))
+             (todo "BACKLOG"
+                   ((org-agenda-overriding-header "Project Backlog")
+                    (org-agenda-todo-list-sublevels nil)
+                    (org-agenda-files org-agenda-files)))
+
+             (todo "READY"
+                   ((org-agenda-overriding-header "Ready for Work")
+                    (org-agenda-files org-agenda-files)))
+             (todo "ACTIVE"
+                   ((org-agenda-overriding-header "Active Projects")
+                    (org-agenda-files org-agenda-files)))
+             (todo "COMPLETED"
+                   ((org-agenda-overriding-header "Completed Projects")
+                    (org-agenda-files org-agenda-files)))
+             (todo "CANC"
+                   ((org-agenda-overriding-header "Cancelled Projects")
+                    (org-agenda-files org-agenda-files)))))))
 
 #+end_src
 ** Autotangle
 #+begin_src emacs-lisp
 
-    ;;Automatically tangle the config.org file when we save it
-    (defun mz/org-babel-tangle-config ()
-      ;; Dynamic scoping to the rescue
-      (when (and (equal major-mode #'org-mode)
-                 (string= (f-dirname (buffer-file-name))
+  ;;Automatically tangle the config.org file when we save it
+  (defun mz/org-babel-tangle-config ()
+    ;; Dynamic scoping to the rescue
+    (when (and (equal major-mode #'org-mode)
+               (string= (f-dirname (buffer-file-name))
                         (expand-file-name "~/dotfiles")))
-                 (let ((org-confirm-babel-evaluate nil))
-          (org-babel-tangle))))
+      (let ((org-confirm-babel-evaluate nil))
+        (org-babel-tangle))))
 
-    (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'mz/org-babel-tangle-config)))
+  (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'mz/org-babel-tangle-config)))
 #+end_src
 ** Org-Roam
 #+begin_src emacs-lisp
@@ -582,11 +602,25 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+end_src
 ** Notifications
 #+begin_src emacs-lisp
-(use-package org-wild-notifier)
+  (use-package org-wild-notifier)
 #+end_src
 ** Org-plot
 #+begin_src emacs-lisp
-(use-package gnuplot)
+  (use-package gnuplot)
+#+end_src
+** Org jira
+#+begin_src emacs-lisp
+  (use-package ox-jira
+    :init (setq org-export-copy-to-kill-ring 'if-interactive))
+#+end_src
+** Google calendar
+#+begin_src emacs-lisp
+  (use-package org-gcal
+    :straight (org-gcal :type git :host github :repo "kidd/org-gcal.el")
+    :init
+    (setq org-gcal-file-alist '(("mukundzare@gmail.com" .  "~/orgfiles/schedule.org"))
+          plstore-cache-passphrase-for-symmetric-encryption t)
+    :config (org-gcal-fetch))
 #+end_src
 * Key bindings
 ** General key bindings
@@ -623,7 +657,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
       "n" '(switch-to-next-buffer :which-key "switch-to-next-buffer")
       "s" '(ace-swap-window :which-key "swap windows")))
 
-  #+end_src
+#+end_src
 ** Evil
 #+begin_src emacs-lisp
   (use-package evil
@@ -717,9 +751,12 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
         sentence-end-double-space nil
         native-comp-async-report-warnings-errors nil
         highlight-nonselected-windows t
+        read-file-name-completion-ignore-case t
+        read-buffer-completion-ignore-case t
+        completion-ignore-case t
         word-wrap-by-category t)
-  #+end_src
-
+#+end_src
+  
 ** Fancy battery
 #+begin_src emacs-lisp
   (use-package fancy-battery
@@ -731,7 +768,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   (defun mz/consult-git-grep (dir use-thing-at-point?)
     (consult-git-grep (expand-file-name dir)
                       (and use-thing-at-point?
-                                 (thing-at-point 'word t))))
+                           (thing-at-point 'word t))))
 #+end_src
 ** OPX development
 *** Git grep within the development repository
@@ -742,8 +779,8 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     (when (buffer-file-name)
       (let ((buffer-ext (file-name-extension (buffer-file-name))))
         (cl-some (lambda (ext) (equal ext
-                                   buffer-ext))
-              '("ojs" "pjs")))))
+                                      buffer-ext))
+                 '("ojs" "pjs")))))
 
   (defun mz/consult-git-grep-opx  ()
     (interactive)
@@ -810,21 +847,21 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+begin_src emacs-lisp
 
   (use-package winner
-  :ensure nil
-  :custom
-  (winner-boring-buffers
-   '("*Completions*"
-     "*Compile-Log*"
-     "*inferior-lisp*"
-     "*Fuzzy Completions*"
-     "*Apropos*"
-     "*Help*"
-     "*cvs*"
-     "*Buffer List*"
-     "*Ibuffer*"
-     "*esh command on file*"))
-  :config
-  (winner-mode 1))
+    :ensure nil
+    :custom
+    (winner-boring-buffers
+     '("*Completions*"
+       "*Compile-Log*"
+       "*inferior-lisp*"
+       "*Fuzzy Completions*"
+       "*Apropos*"
+       "*Help*"
+       "*cvs*"
+       "*Buffer List*"
+       "*Ibuffer*"
+       "*esh command on file*"))
+    :config
+    (winner-mode 1))
 #+end_src
 ** Undo-tree
 #+begin_src emacs-lisp
@@ -995,80 +1032,80 @@ I don't need to keep certain buffers like help mode open when the buffer is buri
 ** Colorize color names
 #+begin_src emacs-lisp
   (use-package rainbow-mode
-     :straight t
-     :diminish
-     :bind (:map special-mode-map
-                 ("w" . rainbow-mode))
-     :hook ((html-mode php-mode) . rainbow-mode)
-     :config
-     (with-no-warnings
-       ;; HACK: Use overlay instead of text properties to override `hl-line' faces.
-       ;; @see https://emacs.stackexchange.com/questions/36420
-       (defun my-rainbow-colorize-match (color &optional match)
-         (let* ((match (or match 0))
-                (ov (make-overlay (match-beginning match) (match-end match))))
-           (overlay-put ov 'ovrainbow t)
-           (overlay-put ov 'face `((:foreground ,(if (> 0.5 (rainbow-x-color-luminance color))
-                                                     "white" "black"))
-                                   (:background ,color)))))
-       (advice-add #'rainbow-colorize-match :override #'my-rainbow-colorize-match)
+    :straight t
+    :diminish
+    :bind (:map special-mode-map
+                ("w" . rainbow-mode))
+    :hook ((html-mode php-mode) . rainbow-mode)
+    :config
+    (with-no-warnings
+      ;; HACK: Use overlay instead of text properties to override `hl-line' faces.
+      ;; @see https://emacs.stackexchange.com/questions/36420
+      (defun my-rainbow-colorize-match (color &optional match)
+        (let* ((match (or match 0))
+               (ov (make-overlay (match-beginning match) (match-end match))))
+          (overlay-put ov 'ovrainbow t)
+          (overlay-put ov 'face `((:foreground ,(if (> 0.5 (rainbow-x-color-luminance color))
+                                                    "white" "black"))
+                                  (:background ,color)))))
+      (advice-add #'rainbow-colorize-match :override #'my-rainbow-colorize-match)
 
-       (defun my-rainbow-clear-overlays ()
-         "Clear all rainbow overlays."
-         (remove-overlays (point-min) (point-max) 'ovrainbow t))
-       (advice-add #'rainbow-turn-off :after #'my-rainbow-clear-overlays)))
+      (defun my-rainbow-clear-overlays ()
+        "Clear all rainbow overlays."
+        (remove-overlays (point-min) (point-max) 'ovrainbow t))
+      (advice-add #'rainbow-turn-off :after #'my-rainbow-clear-overlays)))
 #+end_src
 ** Pulse
 #+begin_src emacs-lisp
 
   ;;Pulse current line
-    (use-package pulse
-      :straight t
-      :custom-face
-      (pulse-highlight-start-face ((t (:inherit region))))
-      (pulse-highlight-face ((t (:inherit region))))
-      :hook (((dumb-jump-after-jump
-               imenu-after-jump) . my-recenter-and-pulse)
-             ((bookmark-after-jump
-               magit-diff-visit-file
-               next-error) . my-recenter-and-pulse-line))
-      :init
-      (with-no-warnings
-        (defun my-pulse-momentary-line (&rest _)
-          "Pulse the current line."
-          (pulse-momentary-highlight-one-line (point)))
+  (use-package pulse
+    :straight t
+    :custom-face
+    (pulse-highlight-start-face ((t (:inherit region))))
+    (pulse-highlight-face ((t (:inherit region))))
+    :hook (((dumb-jump-after-jump
+             imenu-after-jump) . my-recenter-and-pulse)
+           ((bookmark-after-jump
+             magit-diff-visit-file
+             next-error) . my-recenter-and-pulse-line))
+    :init
+    (with-no-warnings
+      (defun my-pulse-momentary-line (&rest _)
+        "Pulse the current line."
+        (pulse-momentary-highlight-one-line (point)))
 
-        (defun my-pulse-momentary (&rest _)
-          "Pulse the region or the current line."
-          (if (fboundp 'xref-pulse-momentarily)
-              (xref-pulse-momentarily)
-            (my-pulse-momentary-line)))
+      (defun my-pulse-momentary (&rest _)
+        "Pulse the region or the current line."
+        (if (fboundp 'xref-pulse-momentarily)
+            (xref-pulse-momentarily)
+          (my-pulse-momentary-line)))
 
-        (defun my-recenter-and-pulse(&rest _)
-          "Recenter and pulse the region or the current line."
-          (recenter)
-          (my-pulse-momentary))
+      (defun my-recenter-and-pulse(&rest _)
+        "Recenter and pulse the region or the current line."
+        (recenter)
+        (my-pulse-momentary))
 
-        (defun my-recenter-and-pulse-line (&rest _)
-          "Recenter and pulse the current line."
-          (recenter)
-          (my-pulse-momentary-line))
+      (defun my-recenter-and-pulse-line (&rest _)
+        "Recenter and pulse the current line."
+        (recenter)
+        (my-pulse-momentary-line))
 
-        ;;TODO Add personal functions
-        (dolist (cmd '(recenter-top-bottom
-                       other-window windmove-do-window-select
-                       ace-window aw--select-window
-                       pager-page-down pager-page-up
-                       treemacs-select-window
-                       symbol-overlay-basic-jump))
-          (advice-add cmd :after #'my-pulse-momentary-line))
+      ;;TODO Add personal functions
+      (dolist (cmd '(recenter-top-bottom
+                     other-window windmove-do-window-select
+                     ace-window aw--select-window
+                     pager-page-down pager-page-up
+                     treemacs-select-window
+                     symbol-overlay-basic-jump))
+        (advice-add cmd :after #'my-pulse-momentary-line))
 
-        (dolist (cmd '(pop-to-mark-command
-                       pop-global-mark
-                       evil-jump-backward
-                       evil-jump-forward
-                       goto-last-change))
-          (advice-add cmd :after #'my-recenter-and-pulse))))
+      (dolist (cmd '(pop-to-mark-command
+                     pop-global-mark
+                     evil-jump-backward
+                     evil-jump-forward
+                     goto-last-change))
+        (advice-add cmd :after #'my-recenter-and-pulse))))
 #+end_src
 
 ** All-the-icons
@@ -1202,7 +1239,6 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   ;;Consult dir to quickly switch dirs while in
   ;;the minibuffer prompt
   (use-package consult-dir
-    :straight t
     :commands consult-dir
     :bind (("C-x C-d" . consult-dir)
            :map minibuffer-local-completion-map
@@ -1212,24 +1248,23 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 *** Embark
 #+begin_src emacs-lisp
   (use-package embark
-  :straight t
-  :bind
-  (("C-." . embark-act)         ;; pick some comfortable binding
-   ("C-;" . embark-dwim)        ;; good alternative: M-.
-   ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
+    :bind
+    (("C-." . embark-act)         ;; pick some comfortable binding
+     ("C-;" . embark-dwim)        ;; good alternative: M-.
+     ("C-h B" . embark-bindings)) ;; alternative for `describe-bindings'
 
-  :init
+    :init
 
-  ;; Optionally replace the key help with a completing-read interface
-  (setq prefix-help-command #'embark-prefix-help-command)
+    ;; Optionally replace the key help with a completing-read interface
+    (setq prefix-help-command #'embark-prefix-help-command)
 
-  :config
+    :config
 
-  ;; Hide the mode line of the Embark live/completions buffers
-  (add-to-list 'display-buffer-alist
-               '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
-                 nil
-                 (window-parameters (mode-line-format . none)))))
+    ;; Hide the mode line of the Embark live/completions buffers
+    (add-to-list 'display-buffer-alist
+                 '("\\`\\*Embark Collect \\(Live\\|Completions\\)\\*"
+                   nil
+                   (window-parameters (mode-line-format . none)))))
 
   (use-package embark-consult
     :ensure t ; only need to install it, embark loads it after consult if found
@@ -1250,7 +1285,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+end_src
 *** Autocomplete (For Planisware)
 #+begin_src emacs-lisp
-(use-package auto-complete
+  (use-package auto-complete
     :straight t
     :hook (opx2-js-mode . auto-complete-mode))
 #+end_src
@@ -1332,10 +1367,31 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :bind ("C-ö" . avy-goto-char-timer))
 #+end_src
 * Encryption
+** General
 #+begin_src emacs-lisp
   ;;This will force Emacs to use its own internal password prompt
   ;;instead of an external pin entry program.
   (setenv "GPG_AGENT_INFO" nil)
+#+end_src
+** Keepass
+#+begin_src emacs-lisp
+  (use-package keepass-mode
+    :init (setq keepass-mode-password (mz/ico2-keepass-password))
+    :config (and (boundp 'evil-mode)
+                 (evil-collection-define-key 'normal 'keepass-mode-map
+                   (kbd "RET") 'keepass-mode-select
+                   (kbd "DEL") 'keepass-mode-back
+                   "l" 'keepass-mode-copy-url
+                   "u" 'keepass-mode-copy-username
+                   "p" 'keepass-mode-copy-password))
+    :hook (keepass-mode . (lambda ()
+                            (setq-local keepass-mode-password
+                                        (mz/ico2-keepass-password)))))
+
+#+end_src
+* Search
+#+begin_src emacs-lisp
+  (use-package rg)
 #+end_src
 * Document management
 ** PDF tools
@@ -1352,7 +1408,6 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+begin_src emacs-lisp
   ;; magit
   (use-package magit
-    :straight t
     :config
     (global-set-key (kbd "C-x g") 'magit-status))
 #+end_src
@@ -1378,8 +1433,9 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     (setq lsp-tailwindcss-add-on-mode t
           lsp-tailwindcss-experimental-class-regex ":[\\w-.#>]+\\.([\\w-]*)")
     :config
-    ;(add-to-list 'lsp-language-id-configuration '(".*\\.clj$" . "html"))
-    (add-to-list 'lsp-tailwindcss-major-modes 'clojure-mode))
+                                          ;(add-to-list 'lsp-language-id-configuration '(".*\\.clj$" . "html"))
+                                          ;(add-to-list 'lsp-tailwindcss-major-modes 'clojure-mode)
+    )
 
 
 #+end_src
@@ -1490,17 +1546,17 @@ Evaluation Result OverlayS for Emacs Lisp.
 #+end_src
 *** Multiple cursors (Evil)
 #+begin_src emacs-lisp
-(use-package evil-mc
+  (use-package evil-mc
     :config (global-evil-mc-mode))
 #+end_src
 *** Auto pairing parens
 #+begin_src emacs-lisp
   (use-package elec-pair
-      :straight t
-                                            ;:ensure nil
-      :hook (after-init . electric-pair-mode)
-      :init (setq electric-pair-inhibit-predicate
-                  'electric-pair-default-inhibit))
+    :straight t
+                                          ;:ensure nil
+    :hook (after-init . electric-pair-mode)
+    :init (setq electric-pair-inhibit-predicate
+                'electric-pair-default-inhibit))
 #+end_src
 *** Expand region
 #+begin_src emacs-lisp
@@ -1553,7 +1609,8 @@ Evaluation Result OverlayS for Emacs Lisp.
   (use-package mermaid-mode
     :init
     (setq mermaid-mmdc-location "~/node_modules/.bin/mmdc"
-          mermaid-tmp-dir "~/temp/")
+          mermaid-tmp-dir "~/temp/"
+          mermaid-flags "-H 2500 -w 2500")
     :bind (:map mermaid-mode-map
                 ("C-c m c" . mermaid-compile)
                 ("C-c m f" . mermaid-compile-file)
@@ -1565,6 +1622,12 @@ Evaluation Result OverlayS for Emacs Lisp.
     :config (add-to-list 'auto-mode-alist '("\\.mmd" . mermaid-mode)))
 
 #+end_src
+** D2
+#+begin_src emacs-lisp
+  (use-package d2-mode
+    :init (setq d2-output-format ".png")
+    :config (add-to-list 'auto-mode-alist '("\\.d2" . d2-mode)))
+#+end_src
 ** Visual reg-exp
 #+begin_src emacs-lisp
   ;; Assign keyboard shortcut to query replace
@@ -1572,6 +1635,18 @@ Evaluation Result OverlayS for Emacs Lisp.
     :commands vr/query-replace
     :bind
     ("C-c r" . vr/query-replace))
+#+end_src
+** PlantUML
+#+begin_src emacs-lisp
+  (use-package plantuml-mode
+    :init (setq plantuml-jar-path "~/Downloads/plantuml-1.2023.4.jar"
+                plantuml-default-exec-mode 'jar)
+    :config
+    ;; Enable plantuml-mode for PlantUML files
+    (add-to-list 'auto-mode-alist '("\\.plantuml\\'" . plantuml-mode)))
+
+  (setq org-plantuml-jar-path
+        (expand-file-name "~/Downloads/plantuml-1.2023.4.jar"))
 #+end_src
 * File management
 ** Treemacs
@@ -1665,8 +1740,7 @@ Evaluation Result OverlayS for Emacs Lisp.
     :config (treemacs-load-theme "all-the-icons"))
 
   (use-package treemacs-magit
-    :after (treemacs magit)
-    :straight t)
+    :after (treemacs magit))
 
 #+end_src
 ** ZTree
@@ -1823,10 +1897,10 @@ See: https://github.com/fourier/ztree
 ** So-long
 #+begin_src emacs-lisp
   (when emacs/>=27p
-      (use-package so-long
-                                            ;:ensure nil
-        :hook (after-init . global-so-long-mode)
-        :config (setq so-long-threshold 400)))
+    (use-package so-long
+                                          ;:ensure nil
+      :hook (after-init . global-so-long-mode)
+      :config (setq so-long-threshold 400)))
 #+end_src
 ** Tree-sitter
 #+begin_src emacs-lisp
@@ -1871,7 +1945,7 @@ Add an overlay for the prompts:
 #+begin_src emacs-lisp
   (font-lock-add-keywords 'fi:lisp-listener-mode
                           '(("^[PO]JS\([0-9]*\)\[?[A-Za-z_0-9-]*\]?:" 
-    . font-lock-type-face)))
+                             . font-lock-type-face)))
   (font-lock-add-keywords 'fi:subprocess-mode
                           '(("^[PO]JS\([0-9]*\)\[?[A-Za-z_0-9-]*\]?:" . font-lock-type-face)))
   (font-lock-add-keywords 'js-evaluator-mode
@@ -1896,6 +1970,88 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
 * EWW
 #+begin_src emacs-lisp
   (use-package eww
-    :init (setq shr-max-width 80))
+    :init (setq shr-max-width 80)
+    :config
+    (require 'cl-lib)
 
+    (defun eww-tag-pre (dom)
+      (let ((shr-folding-mode 'none)
+            (shr-current-font 'default))
+        (shr-ensure-newline)
+        (insert (eww-fontify-pre dom))
+        (shr-ensure-newline)))
+
+    (defun eww-fontify-pre (dom)
+      (with-temp-buffer
+        (shr-generic dom)
+        (let ((mode (eww-buffer-auto-detect-mode)))
+          (when mode
+            (eww-fontify-buffer mode)))
+        (buffer-string)))
+
+    (defun eww-fontify-buffer (mode)
+      (delay-mode-hooks (funcall mode))
+      (font-lock-default-function mode)
+      (font-lock-default-fontify-region (point-min)
+                                        (point-max)
+                                        nil))
+
+    (defun eww-buffer-auto-detect-mode ()
+      (let* ((map '((ada ada-mode)
+                    (awk awk-mode)
+                    (c c-mode)
+                    (cpp c++-mode)
+                    (clojure clojure-mode lisp-mode)
+                    (csharp csharp-mode java-mode)
+                    (css css-mode)
+                    (dart dart-mode)
+                    (delphi delphi-mode)
+                    (emacslisp emacs-lisp-mode)
+                    (erlang erlang-mode)
+                    (fortran fortran-mode)
+                    (fsharp fsharp-mode)
+                    (go go-mode)
+                    (groovy groovy-mode)
+                    (haskell haskell-mode)
+                    (html html-mode)
+                    (java java-mode)
+                    (javascript javascript-mode)
+                    (json json-mode javascript-mode)
+                    (latex latex-mode)
+                    (lisp lisp-mode)
+                    (lua lua-mode)
+                    (matlab matlab-mode octave-mode)
+                    (objc objc-mode c-mode)
+                    (perl perl-mode)
+                    (php php-mode)
+                    (prolog prolog-mode)
+                    (python python-mode)
+                    (r r-mode)
+                    (ruby ruby-mode)
+                    (rust rust-mode)
+                    (scala scala-mode)
+                    (shell shell-script-mode)
+                    (smalltalk smalltalk-mode)
+                    (sql sql-mode)
+                    (swift swift-mode)
+                    (visualbasic visual-basic-mode)
+                    (xml sgml-mode)))
+             (language (language-detection-string
+                        (buffer-substring-no-properties (point-min) (point-max))))
+             (modes (cdr (assoc language map)))
+             (mode (cl-loop for mode in modes
+                            when (fboundp mode)
+                            return mode)))
+        (message (format "%s" language))
+        (when (fboundp mode)
+          mode)))
+
+    (setq shr-external-rendering-functions
+          '((pre . eww-tag-pre))))
+
+#+end_src
+* AI
+#+begin_src emacs-lisp
+  (use-package gptel
+    :config (setq gptel-api-key (mz/openai-key)))
 #+end_src
