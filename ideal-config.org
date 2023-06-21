@@ -1729,14 +1729,13 @@ Evaluation Result OverlayS for Emacs Lisp.
           ("C-x t M-t" . treemacs-find-tag)))
 
   (use-package treemacs-evil
-    :after (treemacs evil)
-    :straight t)
+    :after (treemacs evil))
 
   (use-package treemacs-projectile
-    :after (treemacs projectile)
-    :straight t)
+    :after (treemacs projectile))
 
   (use-package treemacs-all-the-icons
+    :disabled t
     :config (treemacs-load-theme "all-the-icons"))
 
   (use-package treemacs-magit
