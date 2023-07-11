@@ -471,7 +471,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (setq org-agenda-custom-commands
         '(("d" "DASHBOARD"
            ((agenda "" ((org-agenda-span 'day)
-                        (org-deadline-warning-days 365)))
+                        (org-deadline-warning-days 60)))
             (todo "NEXT"
                   ((org-agenda-overriding-header "Next Tasks")))
             (todo "TODO"
