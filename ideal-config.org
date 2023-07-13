@@ -428,6 +428,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           ("~/orgfiles/projects.org" :maxlevel . 1)
           ("~/orgfiles/habits.org" :maxlevel . 1)
           ("~/orgfiles/work.org" :maxlevel . 1)
+          ("~/orgfiles/ideas.org" :maxlevel . 1)
           ("~/orgfiles/trash.org" :maxlevel . 1)
           ("~/orgfiles/personal.org" :maxlevel . 1)
           ("~/orgfiles/ARCHIVE/ARCHIVE-Work.org" :maxlevel . 1)))
