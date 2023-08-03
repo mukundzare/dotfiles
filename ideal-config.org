@@ -1523,6 +1523,11 @@ Evaluation Result OverlayS for Emacs Lisp.
   (use-package sql
     :hook (sql-interactive-mode . (lambda () (toggle-truncate-lines t))))
 #+end_src
+*** Common lisp
+#+begin_src emacs-lisp
+  (load (expand-file-name "~/.quicklisp/slime-helper.el"))
+  (setq inferior-lisp-program "sbcl")
+#+end_src
 ** Tools
 *** Restclient
 #+begin_src emacs-lisp
