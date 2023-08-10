@@ -1524,7 +1524,10 @@ Evaluation Result OverlayS for Emacs Lisp.
     :hook (sql-interactive-mode . (lambda () (toggle-truncate-lines t))))
 #+end_src
 *** Common lisp
-**** General #+begin_src emacs-lisp (setq inferior-lisp-program "sbcl") #+end_src
+**** General
+#+begin_src emacs-lisp
+(setq inferior-lisp-program "sbcl")
+#+end_src
 **** SLIME
 #+begin_src emacs-lisp
   (use-package slime
