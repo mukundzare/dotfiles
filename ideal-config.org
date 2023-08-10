@@ -1958,6 +1958,7 @@ See: https://github.com/fourier/ztree
 
   (add-hook 'opx2-js-mode-hook (lambda ()
                                  (company-mode 0)))
+  (setq fi:common-lisp-file-types '())
 #+end_src
 ** Keybindings
 #+begin_src emacs-lisp
