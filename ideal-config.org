@@ -1920,6 +1920,7 @@ See: https://github.com/fourier/ztree
 #+begin_src emacs-lisp
   (setq treesit-language-source-alist
      '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+       (clojure "https://github.com/sogaiu/tree-sitter-clojure")
        (cmake "https://github.com/uyha/tree-sitter-cmake")
        (css "https://github.com/tree-sitter/tree-sitter-css")
        (elisp "https://github.com/Wilfred/tree-sitter-elisp")
