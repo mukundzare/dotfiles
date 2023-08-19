@@ -1520,6 +1520,39 @@ Evaluation Result OverlayS for Emacs Lisp.
     :commands macrostep-expand
     :bind ("C-c e m" . macrostep-expand))
 #+end_src
+**** Emacs Inspector
+Inspector tool for Emacs Lisp objects.
+#+begin_src emacs-lisp
+  (defun eval-or-inspect-expression (arg)
+    "Like `eval-expression', but also inspect when called with prefix ARG."
+    (interactive "P")
+    (pcase arg
+      ('(4) (let ((current-prefix-arg nil))
+          (call-interactively #'inspector-inspect-expression)))
+      (_ (call-interactively #'eval-expression))))
+
+  (defun eval-or-inspect-last-sexp (arg)
+    "Like `eval-last-sexp', but also inspect when called with prefix ARG."
+    (interactive "P")
+    (pcase arg
+      ('(4) (inspector-inspect-last-sexp))
+      (_ (call-interactively #'eval-last-sexp))))
+
+  ;; Add evil keybindings to inspector-mode
+  (defun inspector--set-evil-key-binding ()
+  "Set evil keybindings for inspector-mode if in Evil mode."
+          (when (bound-and-true-p evil-mode)
+          (evil-define-key 'normal inspector-mode-map
+          "q" #'inspector-quit
+          "l" #'inspector-pop
+          "e" #'eval-expression
+          "n" #'forward-button
+          "p" #'backward-button
+          "P" #'inspector-pprint-inspected-object)))
+
+  (use-package inspector
+    :hook (inspector-mode . #'inspector--set-evil-key-binding))
+#+end_src
 *** SQL mode
 #+begin_src emacs-lisp
   (use-package sql
