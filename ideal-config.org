@@ -692,6 +692,8 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   (setq inhibit-startup-message t) ;Disable initial splash screen
   (setq initial-scratch-message nil)
 
+  (pixel-scroll-mode 1) ;Enable precision scrolling
+  (pixel-scroll-precision-mode)
   (scroll-bar-mode -1)    ;Disable visible scrollbar
   (tool-bar-mode -1)      ;Disable the toolbar
   (tooltip-mode -1)       ;Disable tooltips
