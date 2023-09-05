@@ -81,7 +81,8 @@ POWERLINE9K_MODE="nerdfont-complete"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-export FZF_BASE=$(which fzf)
+export FZF_BASE="/home/linuxbrew/.linuxbrew/opt/fzf"
+
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --margin=2' 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
@@ -125,6 +126,9 @@ alias ctc="xclip -selection clipboard"
 bindkey -v
 export KEYTIMEOUT=1
 
+#Set homebrew path
+export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
+
 #Set java into $PATH
 export PATH="/usr/bin/jdk-16.0.1/bin:$PATH"
 
@@ -135,23 +139,6 @@ export PATH="${PATH}:${HOME}/.local/bin/"
 export http_proxy=http://localhost:3128
 export https_proxy=http://localhost:3128
 export ftp_proxy=http://localhost:3128
-
-# Check if vpn is connected if not then connect
-# but prevent connecting in a tmux session
-if [[ (-z $TMUX) &&
-          (-z $(vpnstat))
-    ]] then
-   if [[ (-t 1) ]] then
-      echo "VPN not connected...autoconnecting."
-      osd-vpn-connect 1>/dev/null 2&>1
-   fi
-fi
-
-
-#Autoconnect vpn if unavailable for more than 150 seconds
-#if [[ -h ~/vpn_autoconnect.sh ]] then
-#    ~/vpn_autoconnect.sh &
-#fi
 
 # Get the 20 top non-hidden last modified files in this directory
 alias lt='ls -lt | head -20'
