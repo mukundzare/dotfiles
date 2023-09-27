@@ -444,6 +444,11 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
            "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
+          ("r" "Track behaviour" entry
+           (file+olp+datetree "behaviour.org.gpg")
+           "\n* %<%I:%M %p> - Behaviour :journal:\n\n%?\n\n"
+           :clock-in :clock-resume
+           :empty-lines 1)
           ("i" "Info" entry (file "Inbox.org")
            "* TODO %?\n %U\n %x\n %i" :empty-lines 1)
           ("g" "Gratitude" entry (file "gratitude.org")
