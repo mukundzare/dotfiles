@@ -201,18 +201,25 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (message "At performance marker 0")
   (defvar perf-init-time (float-time))
 #+end_src
+
+
 * Package system config
 ** General config
 #+begin_src emacs-lisp
   ;;Initialize packages sources
   (require 'package)
-
+  (add-to-list 'load-path "/home/zam4abt/emacs-libs")
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                           ("elpa" . "https://elpa.gnu.org/packages/")
-                           ("melpa-stable" . "https://stable.melpa.org/packages/")))
+	       ("elpa" . "https://elpa.gnu.org/packages/")
+	       ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
   (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
   (add-to-list 'package-pinned-packages '(magit . "melpa-stable") t)
+
+  ;;Connect to the internet if not connected
+  (require 'internet-check)
+  (unless (internet-connected-p)
+    (mz-connect-vpn))
 
   (unless (package-installed-p 'use-package)
     (package-install 'use-package))
@@ -229,15 +236,15 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   ;;Straight.el
   (defvar bootstrap-version)
   (let ((bootstrap-file
-         (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
-        (bootstrap-version 5))
+     (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
+    (bootstrap-version 5))
     (unless (file-exists-p bootstrap-file)
       (with-current-buffer
-          (url-retrieve-synchronously
-           "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
-           'silent 'inhibit-cookies)
-        (goto-char (point-max))
-        (eval-print-last-sexp)))
+      (url-retrieve-synchronously
+       "https://raw.githubusercontent.com/raxod502/straight.el/develop/install.el"
+       'silent 'inhibit-cookies)
+    (goto-char (point-max))
+    (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
   (setq package-enable-at-startup nil)
 #+end_src
@@ -935,7 +942,9 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
           ef-themes-variable-pitch-ui t)
     (mapc #'disable-theme custom-enabled-themes)
     ;; use this to load the theme which also calls `ef-themes-post-load-hook':
-    (ef-themes-select 'ef-tritanopia-dark))
+    ;;(ef-themes-select 'ef-tritanopia-dark)
+    )
+  (mz-set-theme)
 #+end_src
 ** Rainbow delimiters
 
