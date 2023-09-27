@@ -1094,8 +1094,10 @@ I don't need to keep certain buffers like help mode open when the buffer is buri
 
       (defun my-recenter-and-pulse(&rest _)
         "Recenter and pulse the region or the current line."
-        (recenter)
-        (my-pulse-momentary))
+        (unless (string= major-mode "org-mode")
+          (recenter)
+          (my-pulse-momentary)))
+
 
       (defun my-recenter-and-pulse-line (&rest _)
         "Recenter and pulse the current line."
