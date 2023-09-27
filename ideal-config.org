@@ -411,15 +411,6 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (use-package svg-tag-mode)
 
 #+end_src
-** Languages to load for evaluating the results in org-mode
-#+begin_src emacs-lisp
-  (org-babel-do-load-languages
-   'org-babel-load-languages
-   '((emacs-lisp . t )
-     (clojure . t)
-     (js . t)
-     (plantuml . t)))
-#+end_src
 ** Files
 #+begin_src emacs-lisp
   (setq org-directory "~/orgfiles")
@@ -531,7 +522,8 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
                     (org-agenda-files org-agenda-files)))))))
 
 #+end_src
-** Autotangle
+** Org babel
+*** Autotangle
 #+begin_src emacs-lisp
 
   ;;Automatically tangle the config.org file when we save it
@@ -544,6 +536,20 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
         (org-babel-tangle))))
 
   (add-hook 'org-mode-hook (lambda () (add-hook 'after-save-hook #'mz/org-babel-tangle-config)))
+#+end_src
+*** Languages to load for evaluating the results in org-mode
+#+begin_src emacs-lisp
+  (org-babel-do-load-languages
+   'org-babel-load-languages
+   '((emacs-lisp . t )
+     (clojure . t)
+     (js . t)
+     (plantuml . t)
+     (shell . t)))
+#+end_src
+*** Layout
+#+begin_src emacs-lisp
+  (add-hook 'org-mode-hook #'org-babel-result-hide-all)
 #+end_src
 ** Org-Roam
 #+begin_src emacs-lisp
