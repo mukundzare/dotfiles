@@ -333,7 +333,9 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 
           org-agenda-start-with-log-mode t
           org-log-done 'time
-          org-log-into-drawer t)
+          org-log-into-drawer t
+          org-src-tab-acts-natively nil) ;Set to prevent problems with pulse
+                                         ;package in src blocks
 
     (add-to-list 'org-structure-template-alist '("sh" . "src shell"))
     (add-to-list 'org-structure-template-alist '("el" . "src emacs-lisp"))
