@@ -1559,7 +1559,13 @@ Inspector tool for Emacs Lisp objects.
           "P" #'inspector-pprint-inspected-object)))
 
   (use-package inspector
-    :hook (inspector-mode . #'inspector--set-evil-key-binding))
+    :hook (inspector-mode . inspector--set-evil-key-binding))
+#+end_src
+**** Emacs refactor
+#+begin_src emacs-lisp
+  (use-package emr
+    :config
+    (define-key prog-mode-map (kbd "M-RET") 'emr-show-refactor-menu))
 #+end_src
 *** SQL mode
 #+begin_src emacs-lisp
@@ -1657,6 +1663,17 @@ Inspector tool for Emacs Lisp objects.
   (use-package eglot
     :config
     (cl-pushnew '(sql-mode . ("sqls")) eglot-server-programs))
+#+end_src
+*** Highlight quoted
+#+begin_src emacs-lisp
+  (use-package highlight-quoted
+    :hook (emacs-lisp . highlight-quoted-mode))
+#+end_src
+*** Hideshow (hideshow)
+#+begin_src emacs-lisp
+  (use-package hideshow
+    :config
+    :hook (prog-mode . hs-minor-mode))
 #+end_src
 * Visual tools
 ** Mermaid mode
