@@ -976,7 +976,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     :straight t
     :diminish
     :hook ((prog-mode yaml-mode) . highlight-indent-guides-mode)
-    :init (setq highlight-indent-guides-method 'bitmap
+    :init (setq highlight-indent-guides-method 'character
                 highlight-indent-guides-responsive 'top
                 highlight-indent-guides-suppress-auto-error t)
     :config
@@ -1113,10 +1113,12 @@ I don't need to keep certain buffers like help mode open when the buffer is buri
 
       (dolist (cmd '(pop-to-mark-command
                      pop-global-mark
-                     evil-jump-backward
                      evil-jump-forward
+                     evil-jump-backward
                      goto-last-change))
         (advice-add cmd :after #'my-recenter-and-pulse))))
+
+
 #+end_src
 
 ** All-the-icons
@@ -1341,6 +1343,18 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 
 #+end_src
 * Hinting
+** Elisp demos
+#+begin_src emacs-lisp
+  (use-package elisp-demos
+    :config
+    (advice-add
+     'describe-function-1
+     :after #'elisp-demos-advice-describe-function-1)
+    (advice-add
+     'helpful-update
+     :after
+     #'elisp-demos-advice-helpful-update))
+#+end_src
 ** Which-key
 #+begin_src emacs-lisp
 
