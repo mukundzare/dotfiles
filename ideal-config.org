@@ -826,13 +826,13 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+begin_src emacs-lisp
   ;;Set default font
   (set-face-attribute 'default nil
-                      :family "JetBrains Mono"
+                      :family "JetBrainsMono Nerd Font"
                       :weight 'normal
                       :height 100)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
-                      :family "JetBrains Mono"
+                      :family "JetBrainsMono Nerd Font"
                       :weight 'light
                       :height 0.95)
 
@@ -841,6 +841,9 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
                       :font "Roboto Mono"
                       :weight 'normal
                       :height 0.95)
+
+
+  (set-fontset-font t 'symbol (font-spec :family "Symbols Nerd Font Mono") nil 'prepend)
 #+end_src
 * Session management
 ** Savehist and saveplace
