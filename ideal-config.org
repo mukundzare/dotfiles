@@ -780,11 +780,6 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
         word-wrap-by-category t)
 #+end_src
   
-** Fancy battery
-#+begin_src emacs-lisp
-  (use-package fancy-battery
-    :hook (after-init . fancy-battery-mode))
-#+end_src
 * Custom functions
 ** Git grep
 #+begin_src emacs-lisp
