@@ -181,3 +181,6 @@ export MOBIFY_TARGETS="~/share/:~/Downloads/:~/books"
 export ORACLE_HOME=/opt/oracle/instantclient_21_4
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib:$ORACLE_HOME
 export PATH=$LD_LIBRARY_PATH:$PATH
+export PATH=/home/zam4abt/work/tools/adr-tools/src:$PATH
+# Path to go
+export PATH=/usr/local/bin/go:$PATH

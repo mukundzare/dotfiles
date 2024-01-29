@@ -210,8 +210,8 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (require 'package)
   (add-to-list 'load-path "/home/zam4abt/emacs-libs")
   (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-	       ("elpa" . "https://elpa.gnu.org/packages/")
-	       ("melpa-stable" . "https://stable.melpa.org/packages/")))
+           ("elpa" . "https://elpa.gnu.org/packages/")
+           ("melpa-stable" . "https://stable.melpa.org/packages/")))
 
   (add-to-list 'package-pinned-packages '(cider . "melpa-stable") t)
   (add-to-list 'package-pinned-packages '(magit . "melpa-stable") t)
@@ -637,14 +637,34 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+end_src
 ** Google calendar
 #+begin_src emacs-lisp
-  (use-package org-gcal
-    :after (org org-agenda evil-org)
-    :init
-    (setq org-gcal-file-alist '(("mukundzare@gmail.com" .  "~/orgfiles/schedule.org"))
-          plstore-cache-passphrase-for-symmetric-encryption t)
-    :config
-    (org-gcal-sync-tokens-clear)
-    (org-gcal-fetch))
+    (defun mz/org-gcal-schedule-entries ()
+      "Schedule all the google calendar entries."
+      (with-current-buffer (get-file-buffer "~/orgfiles/schedule.org")
+        (org-map-entries (lambda ()
+                           (when-let ((timestamp (cdr (assoc "TIMESTAMP"
+                                                        (org-entry-properties)))))
+                             (org-schedule nil timestamp))))))
+
+    (defun mz/org-gcal-clear-tokens (freq)
+      "Call `org-gcal-sync-tokens' after every FREQ days. "
+      (let* ((now (current-time))
+           (past (date-to-time "2023-05-16 20:31:00"))
+           (diff (time-subtract now past))
+           (diff-seconds (float-time diff)))
+      (when (> diff-seconds (* 24 60 60))
+        (org-gcal-sync-tokens-clear))))
+
+    (use-package org-gcal
+      :after (org org-agenda evil-org)
+      :init
+      (setq org-gcal-file-alist '(("mukundzare@gmail.com" .  "~/orgfiles/schedule.org"))
+            plstore-cache-passphrase-for-symmetric-encryption t
+            org-gcal-up-days 2)
+      :config)
+  ;(advice-add 'org-gcal-fetch :after  #'mz/org-gcal-schedule-entries)
+  ; (run-with-timer 10 (* 30 60) (lambda ()
+  ;                               (org-gcal-sync-tokens-clear)
+  ;                               (org-gcal-fetch)))
 #+end_src
 * Key bindings
 ** General key bindings
@@ -782,7 +802,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
         completion-ignore-case t
         word-wrap-by-category t)
 #+end_src
-  
+
 * Custom functions
 ** Git grep
 #+begin_src emacs-lisp
@@ -805,13 +825,13 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
   (defun mz/consult-git-grep-opx  ()
     (interactive)
-    (mz/consult-git-grep "~/opx/dev" (mz/opx-buffer-p)))
+    (mz/consult-git-grep "~/work/opx/dev" (mz/opx-buffer-p)))
 #+end_src
 *** Git grep within the standard repo
 #+begin_src emacs-lisp
   (defun mz/consult-git-grep-std  ()
     (interactive)
-    (mz/consult-git-grep "~/opx/v6_3_6_standard_scripts" (mz/opx-buffer-p)))
+    (mz/consult-git-grep "~/work/opx/v6_3_6_standard_scripts" (mz/opx-buffer-p)))
 #+end_src
 * Centaur functions
 #+begin_src emacs-lisp
@@ -823,14 +843,29 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 * Font configuration
 #+begin_src emacs-lisp
   ;;Set default font
+  (defvar mz-font-alist '(("CodeNewRoman Nerd Font" . 100)
+                       ("UbuntuMono Nerd Font" . 100)
+                       ("JetBrainsMono Nerd Font" . 100)))
+
+  (defun mz-set-font ()
+    (interactive)
+    (let* ((chosen-font (consult--read (mapcar #'car mz-font-alist)
+                                      :prompt "Choose a font"))
+           (font-height (alist-get chosen-font mz-font-alist nil nil #'equal)))
+      (dolist (font-type '(default fixed-pitch))
+        (set-face-attribute font-type nil
+                            :family chosen-font
+                            :weight 'light
+                            :height font-height))))
+
   (set-face-attribute 'default nil
-                      :family "JetBrainsMono Nerd Font"
+                      :family "CodeNewRoman Nerd Font"
                       :weight 'normal
-                      :height 100)
+                      :height 105)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
-                      :family "JetBrainsMono Nerd Font"
+                      :family "CodeNewRoman Nerd Font"
                       :weight 'light
                       :height 0.95)
 
@@ -1259,6 +1294,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 *** Consult
 #+begin_src emacs-lisp
   (use-package consult
+    :init (setq consult-ripgrep-args              "rg --pre ./home/zam4abt/Brain-dump/gpgdecrypt --null --line-buffered --color=never --max-columns=1000 --path-separator  /   --smart-case --no-heading --with-filename --line-number --search-zip")
     :bind (("C-s" . consult-line)
            ("C-x b" . consult-buffer)
            ("C-c i" . consult-imenu)
@@ -1389,12 +1425,10 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (use-package helpful
     :straight t
     :bind
-    (([remap describe-function] . helpful-callable)
-     ([remap describe-variable] . helpful-variable)
+    (([remap describe-variable] . helpful-variable)
      ([remap describe-command] . helpful-command)
      ([remap describe-key] . helpful-key)
-     ("C-c C-d" . helpful-at-point)
-     ("C-h F" . helpful-function)))
+     ("C-c C-d" . helpful-at-point)))
 #+end_src
 ** Info colours
 #+begin_src emacs-lisp
@@ -1617,6 +1651,15 @@ Inspector tool for Emacs Lisp objects.
 #+begin_src emacs-lisp
   (use-package sly)
 #+end_src
+*** Golang
+#+begin_src emacs-lisp
+  (use-package go-mode)
+  (use-package go-playground)
+#+end_src
+*** Dockerfile mode
+#+begin_src emacs-lisp
+  (use-package dockerfile-mode)
+#+end_src
 ** Tools
 *** Restclient
 #+begin_src emacs-lisp
@@ -1660,6 +1703,10 @@ Inspector tool for Emacs Lisp objects.
 #+end_src
 *** lsp-mode
 #+begin_src emacs-lisp
+  (defun lsp-go-install-save-hooks ()
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t))
+
   (use-package lsp-mode
     :straight t
     :init
@@ -1677,7 +1724,9 @@ Inspector tool for Emacs Lisp objects.
            (clojurec-mode . lsp)
            (clojurescript-mode . lsp)
            ;; if you want which-key integration
-           (lsp-mode . lsp-enable-which-key-integration))
+           (lsp-mode . lsp-enable-which-key-integration)
+           (go-mode . (lsp-go-install-save-hooks lsp-deferred)))
+
     :commands lsp)
 
   ;; optionally
@@ -1688,6 +1737,15 @@ Inspector tool for Emacs Lisp objects.
   (use-package lsp-treemacs
     :straight t
     :commands lsp-treemacs-errors-list)
+
+  (add-hook 'go-mode-hook #'lsp-deferred)
+
+  ;; Set up before-save hooks to format buffer and add/delete imports.
+  ;; Make sure you don't have other gofmt/goimports hooks enabled.
+  (defun lsp-go-install-save-hooks ()
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t))
+  (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 #+end_src
 *** Eglot
 #+begin_src emacs-lisp
@@ -2014,8 +2072,11 @@ See: https://github.com/fourier/ztree
        (clojure "https://github.com/sogaiu/tree-sitter-clojure")
        (cmake "https://github.com/uyha/tree-sitter-cmake")
        (css "https://github.com/tree-sitter/tree-sitter-css")
+       (dockerfile "https://github.com/camdencheek/tree-sitter-dockerfile")
        (elisp "https://github.com/Wilfred/tree-sitter-elisp")
        (go "https://github.com/tree-sitter/tree-sitter-go")
+       (gomod "https://github.com/camdencheek/tree-sitter-go-mod")
+       (gowork "https://github.com/omertuc/tree-sitter-go-work")
        (html "https://github.com/tree-sitter/tree-sitter-html")
        (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
        (json "https://github.com/tree-sitter/tree-sitter-json")
@@ -2029,13 +2090,14 @@ See: https://github.com/fourier/ztree
   (use-package tree-sitter
       :straight t
       :config (global-tree-sitter-mode))
-    (use-package tree-sitter-langs
-      :straight t
-      :after tree-sitter)
-    (use-package treesit-auto
-      :demand t
-      :config
-      (global-treesit-auto-mode))
+  (use-package tree-sitter-langs
+    :straight t
+    :after tree-sitter)
+  (use-package treesit-auto
+    :disabled t
+    :demand t
+    :config
+    (global-treesit-auto-mode))
 
 
 #+end_src
@@ -2044,7 +2106,7 @@ See: https://github.com/fourier/ztree
 #+begin_src emacs-lisp
   (when (equal (system-name)
                "ABT1-C-001GT")
-    (progn (defvar *opx2-network-folder-work-path* (file-name-as-directory "~/opx/plw-devenv-experimental/runtime/dist/"))
+    (progn (defvar *opx2-network-folder-work-path* (file-name-as-directory "~/work/opx/plw-devenv-experimental/runtime/dist/"))
            (load (format "%semacs.el" *opx2-network-folder-work-path*))))
   ;; Disable company mode and enable autocomplete in Planisware buffers
 
@@ -2072,7 +2134,7 @@ See: https://github.com/fourier/ztree
 Add an overlay for the prompts:
 #+begin_src emacs-lisp
   (font-lock-add-keywords 'fi:lisp-listener-mode
-                          '(("^[PO]JS\([0-9]*\)\[?[A-Za-z_0-9-]*\]?:" 
+                          '(("^[PO]JS\([0-9]*\)\[?[A-Za-z_0-9-]*\]?:"
                              . font-lock-type-face)))
   (font-lock-add-keywords 'fi:subprocess-mode
                           '(("^[PO]JS\([0-9]*\)\[?[A-Za-z_0-9-]*\]?:" . font-lock-type-face)))
@@ -2179,7 +2241,21 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
 
 #+end_src
 * AI
+** GptEl (ChatGPT)
 #+begin_src emacs-lisp
   (use-package gptel
     :config (setq gptel-api-key (mz/openai-key)))
+#+end_src
+** Github copilot
+#+begin_src emacs-lisp
+  (use-package copilot
+    :init (setq copilot-node-executable "/usr/bin/node")
+    :config (setq copilot-network-proxy '(:host "127.0.0.1" :port 3128))
+    :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
+    :ensure t
+    :hook ((prog-mode . copilot-mode)
+           (copilot-mode . (lambda ()
+                             (setq copilot--indent-warning-printed-p t))));Workaround for warning message
+    :bind (("TAB" . 'copilot-accept-completion)))
+  ;; you can utilize :map :hook and :config to customize copilot
 #+end_src
