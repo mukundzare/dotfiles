@@ -1653,8 +1653,17 @@ Inspector tool for Emacs Lisp objects.
 #+end_src
 *** Golang
 #+begin_src emacs-lisp
-  (use-package go-mode)
-  (use-package go-playground)
+  (use-package go-mode
+    :hook ((go-mode . lsp-deferred)))
+
+  ;;Go playground
+  (defun my/go-playground-remove-lsp-workspace ()
+    (when-let ((root (lsp-workspace-root)))
+      (lsp-workspace-folders-remove root)))
+  (use-package go-playground
+    :init (setq go-playground-init-command "go mod init")
+    :hook ((go-playground-pre-rm . my/go-playground-remove-lsp-workspace)))
+
 #+end_src
 *** Dockerfile mode
 #+begin_src emacs-lisp
@@ -1725,7 +1734,7 @@ Inspector tool for Emacs Lisp objects.
            (clojurescript-mode . lsp)
            ;; if you want which-key integration
            (lsp-mode . lsp-enable-which-key-integration)
-           (go-mode . (lsp-go-install-save-hooks lsp-deferred)))
+           (go-mode . lsp-deferred))
 
     :commands lsp)
 
@@ -1738,14 +1747,6 @@ Inspector tool for Emacs Lisp objects.
     :straight t
     :commands lsp-treemacs-errors-list)
 
-  (add-hook 'go-mode-hook #'lsp-deferred)
-
-  ;; Set up before-save hooks to format buffer and add/delete imports.
-  ;; Make sure you don't have other gofmt/goimports hooks enabled.
-  (defun lsp-go-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-format-buffer t t)
-    (add-hook 'before-save-hook #'lsp-organize-imports t t))
-  (add-hook 'go-mode-hook #'lsp-go-install-save-hooks)
 #+end_src
 *** Eglot
 #+begin_src emacs-lisp
@@ -1764,6 +1765,23 @@ Inspector tool for Emacs Lisp objects.
     :config
     :hook (prog-mode . hs-minor-mode))
 #+end_src
+*** Flycheck
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :ensure t
+    :init
+    (global-flycheck-mode)
+    :config
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (setq flycheck-idle-change-delay 0.8)
+    (setq flycheck-display-errors-delay 0.8)
+    (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
+    (setq flycheck-emacs-lisp-load-path 'inherit)
+    (setq flycheck-indication-mode 'left-fringe)
+    (setq flycheck-standard-error-navigation nil)
+    :hook ((after-init . global-flycheck-mode)))
+#+end_src
+
 * Visual tools
 ** Mermaid mode
 #+begin_src emacs-lisp
