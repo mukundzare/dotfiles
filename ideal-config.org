@@ -2287,3 +2287,20 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
     :bind (("TAB" . 'copilot-accept-completion)))
   ;; you can utilize :map :hook and :config to customize copilot
 #+end_src
+
+
+* Temp configs
+Configs for temporary time
+** House buy export org to txt
+#+begin_src emacs-lisp
+  (defun mz/export-org-to-txt-home ()
+    (when (and (equal major-mode #'org-mode)
+               (string= (file-name-directory (buffer-file-name))
+                        (expand-file-name "~/share/Apartment_LB/")))
+      (message "Exported notes.org to notes.txt")
+      ;;Export org mode to txt file
+      (org-export-to-file 'ascii "~/share/Apartment_LB/notes.txt")))
+
+  (add-hook 'org-mode-hook (lambda ()
+                             (add-hook 'after-save-hook #'mz/export-org-to-txt-home)))
+#+end_src
