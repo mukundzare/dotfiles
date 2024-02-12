@@ -1489,6 +1489,129 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+end_src
 
 * Development
+** Utilities
+*** Aggressive indent
+#+begin_src emacs-lisp
+  ;;Aggresive-indent mode
+  (use-package aggressive-indent
+    :disabled
+    :hook ((clojure-mode . aggressive-indent-mode)
+                                          ;(opx2-js-mode . aggressive-indent-mode)
+           (emacs-lisp-mode . aggressive-indent-mode)))
+#+end_src
+*** Multiple cursors (Evil)
+#+begin_src emacs-lisp
+  (use-package evil-mc
+    :config (global-evil-mc-mode))
+#+end_src
+*** Auto pairing parens
+#+begin_src emacs-lisp
+  (use-package elec-pair
+    :straight t
+                                          ;:ensure nil
+    :hook (after-init . electric-pair-mode)
+    :init (setq electric-pair-inhibit-predicate
+                'electric-pair-default-inhibit))
+#+end_src
+*** Expand region
+#+begin_src emacs-lisp
+  (use-package expand-region
+    :bind ("C-=" . er/expand-region))
+#+end_src
+*** lsp-mode
+#+begin_src emacs-lisp
+  (defun lsp-go-install-save-hooks ()
+    (add-hook 'before-save-hook #'lsp-format-buffer t t)
+    (add-hook 'before-save-hook #'lsp-organize-imports t t))
+
+  (use-package lsp-mode
+    ;:straight t
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    (setq lsp-clojure-server-command '("/usr/local/bin/clojure-lsp"))
+    (setq lsp-sqls-workspace-config-path nil)
+    (setq lsp-sqls-server "/home/zam4abt/go/bin/sqls")
+    (setq lsp-sqls-connections
+          (and (boundp 'opx-conn-credentials)
+               opx-conn-credentials))     ;opx-conn-details comes from
+                                          ;opx-db-conns.el.gpg file
+    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
+                                          ;(sql-mode . lsp)
+           (clojure-mode . lsp)
+           (clojurec-mode . lsp)
+           (clojurescript-mode . lsp)
+           ;; if you want which-key integration
+           (lsp-mode . lsp-enable-which-key-integration)
+           (go-mode . lsp-deferred))
+
+    :commands lsp)
+
+  ;; optionally
+  (use-package lsp-ui
+    :straight t
+    :commands lsp-ui-mode)
+
+  (use-package lsp-treemacs
+    :straight t
+    :commands lsp-treemacs-errors-list)
+
+#+end_src
+*** Eglot
+#+begin_src emacs-lisp
+  (use-package eglot
+    :config
+    (cl-pushnew '(sql-mode . ("sqls")) eglot-server-programs))
+#+end_src
+*** Highlight quoted
+#+begin_src emacs-lisp
+  (use-package highlight-quoted
+    :hook (emacs-lisp . highlight-quoted-mode))
+#+end_src
+*** Hideshow (hideshow)
+#+begin_src emacs-lisp
+  (use-package hideshow
+    :config
+    :hook (prog-mode . hs-minor-mode))
+#+end_src
+*** Flycheck
+#+begin_src emacs-lisp
+  (use-package flycheck
+    :ensure t
+    :init
+    (global-flycheck-mode)
+    :config
+    (setq flycheck-check-syntax-automatically '(save mode-enabled))
+    (setq flycheck-idle-change-delay 0.8)
+    (setq flycheck-display-errors-delay 0.8)
+    (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
+    (setq flycheck-emacs-lisp-load-path 'inherit)
+    (setq flycheck-indication-mode 'left-fringe)
+    (setq flycheck-standard-error-navigation nil)
+    :hook ((after-init . global-flycheck-mode)))
+#+end_src
+
+** Tools
+*** Restclient
+#+begin_src emacs-lisp
+  (use-package restclient
+    :straight t
+    :init
+    (add-to-list 'auto-mode-alist '("\\.restclient" . restclient-mode)))
+#+end_src
+*** Project management
+#+begin_src emacs-lisp
+  (use-package projectile
+    :ensure t
+    :init
+    (projectile-mode +1)
+    :bind (:map projectile-mode-map
+                ("s-p" . projectile-command-map)
+                ("C-c p" . projectile-command-map)))
+#+end_src
+** Debugging
+#+begin_src emacs-lisp
+  (use-package bug-hunter)
+#+end_src
 ** Language modes
 *** HTML
 #+begin_src emacs-lisp
@@ -1669,119 +1792,6 @@ Inspector tool for Emacs Lisp objects.
 #+begin_src emacs-lisp
   (use-package dockerfile-mode)
 #+end_src
-** Tools
-*** Restclient
-#+begin_src emacs-lisp
-  (use-package restclient
-    :straight t
-    :init
-    (add-to-list 'auto-mode-alist '("\\.restclient" . restclient-mode)))
-#+end_src
-** Debugging
-#+begin_src emacs-lisp
-  (use-package bug-hunter)
-#+end_src
-** Usability
-*** Aggressive indent
-#+begin_src emacs-lisp
-  ;;Aggresive-indent mode
-  (use-package aggressive-indent
-    :disabled
-    :hook ((clojure-mode . aggressive-indent-mode)
-                                          ;(opx2-js-mode . aggressive-indent-mode)
-           (emacs-lisp-mode . aggressive-indent-mode)))
-#+end_src
-*** Multiple cursors (Evil)
-#+begin_src emacs-lisp
-  (use-package evil-mc
-    :config (global-evil-mc-mode))
-#+end_src
-*** Auto pairing parens
-#+begin_src emacs-lisp
-  (use-package elec-pair
-    :straight t
-                                          ;:ensure nil
-    :hook (after-init . electric-pair-mode)
-    :init (setq electric-pair-inhibit-predicate
-                'electric-pair-default-inhibit))
-#+end_src
-*** Expand region
-#+begin_src emacs-lisp
-  (use-package expand-region
-    :bind ("C-=" . er/expand-region))
-#+end_src
-*** lsp-mode
-#+begin_src emacs-lisp
-  (defun lsp-go-install-save-hooks ()
-    (add-hook 'before-save-hook #'lsp-format-buffer t t)
-    (add-hook 'before-save-hook #'lsp-organize-imports t t))
-
-  (use-package lsp-mode
-    :straight t
-    :init
-    (setq lsp-keymap-prefix "C-c l")
-    (setq lsp-clojure-server-command '("/usr/local/bin/clojure-lsp"))
-    (setq lsp-sqls-workspace-config-path nil)
-    (setq lsp-sqls-server "/home/zam4abt/go/bin/sqls")
-    (setq lsp-sqls-connections
-          (and (boundp 'opx-conn-credentials)
-               opx-conn-credentials))     ;opx-conn-details comes from
-                                          ;opx-db-conns.el.gpg file
-    :hook (;; replace XXX-mode with concrete major-mode(e. g. python-mode)
-                                          ;(sql-mode . lsp)
-           (clojure-mode . lsp)
-           (clojurec-mode . lsp)
-           (clojurescript-mode . lsp)
-           ;; if you want which-key integration
-           (lsp-mode . lsp-enable-which-key-integration)
-           (go-mode . lsp-deferred))
-
-    :commands lsp)
-
-  ;; optionally
-  (use-package lsp-ui
-    :straight t
-    :commands lsp-ui-mode)
-
-  (use-package lsp-treemacs
-    :straight t
-    :commands lsp-treemacs-errors-list)
-
-#+end_src
-*** Eglot
-#+begin_src emacs-lisp
-  (use-package eglot
-    :config
-    (cl-pushnew '(sql-mode . ("sqls")) eglot-server-programs))
-#+end_src
-*** Highlight quoted
-#+begin_src emacs-lisp
-  (use-package highlight-quoted
-    :hook (emacs-lisp . highlight-quoted-mode))
-#+end_src
-*** Hideshow (hideshow)
-#+begin_src emacs-lisp
-  (use-package hideshow
-    :config
-    :hook (prog-mode . hs-minor-mode))
-#+end_src
-*** Flycheck
-#+begin_src emacs-lisp
-  (use-package flycheck
-    :ensure t
-    :init
-    (global-flycheck-mode)
-    :config
-    (setq flycheck-check-syntax-automatically '(save mode-enabled))
-    (setq flycheck-idle-change-delay 0.8)
-    (setq flycheck-display-errors-delay 0.8)
-    (setq flycheck-display-errors-function #'flycheck-display-error-messages-unless-error-list)
-    (setq flycheck-emacs-lisp-load-path 'inherit)
-    (setq flycheck-indication-mode 'left-fringe)
-    (setq flycheck-standard-error-navigation nil)
-    :hook ((after-init . global-flycheck-mode)))
-#+end_src
-
 * Visual tools
 ** Mermaid mode
 #+begin_src emacs-lisp
