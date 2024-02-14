@@ -1541,8 +1541,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
            (clojurec-mode . lsp)
            (clojurescript-mode . lsp)
            ;; if you want which-key integration
-           (lsp-mode . lsp-enable-which-key-integration)
-           (go-mode . lsp-deferred))
+           (lsp-mode . lsp-enable-which-key-integration))
 
     :commands lsp)
 
@@ -1777,7 +1776,11 @@ Inspector tool for Emacs Lisp objects.
 *** Golang
 #+begin_src emacs-lisp
   (use-package go-mode
-    :hook ((go-mode . lsp-deferred)))
+    :hook ((go-mode . (lambda ()
+                        (lsp-deferred)
+                        (setq lsp-ui-doc-show-with-cursor t
+                              lsp-ui-doc-position 'at-point
+                              lsp-ui-doc-max-height 30)))))
 
   ;;Go playground
   (defun my/go-playground-remove-lsp-workspace ()
