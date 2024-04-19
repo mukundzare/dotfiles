@@ -130,7 +130,7 @@ export KEYTIMEOUT=1
 export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
 
 #Set java into $PATH
-export PATH="/usr/bin/jdk-16.0.1/bin:$PATH"
+#export PATH="/usr/bin/jdk-16.0.1/bin:$PATH"
 
 #Set GOBIN path for go packages
 export PATH="/home/zam4abt/go/bin:$PATH"
@@ -183,4 +183,8 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib:$ORACLE_HOME
 export PATH=$LD_LIBRARY_PATH:$PATH
 export PATH=/home/zam4abt/work/tools/adr-tools/src:$PATH
 # Path to go
-export PATH=/usr/local/bin/go:$PATH
+export PATH=/usr/local/go/bin:$PATH
+
+#Path to GraalVM_HOME for babashka.
+#See here: https://github.com/babashka/babashka/blob/master/doc/build.md
+export GRAALVM_HOME=/usr/lib/jvm//usr/lib/jvm/graalvm-jdk-22+36.1/bin/

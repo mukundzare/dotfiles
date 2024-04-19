@@ -290,6 +290,15 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (use-package f
     :defer t)
 #+end_src
+** Date time library
+#+begin_src emacs-lisp
+  (use-package ts
+    :defer t)
+#+end_src
+** Parse-EDN
+#+begin_src emacs-lisp
+(use-package parseedn)
+#+end_src
 ** Overlay library
 #+begin_src emacs-lisp
 (use-package ov
@@ -439,9 +448,20 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (setq org-capture-templates
         `(("t" "Task" entry (file "Inbox.org")
            "* TODO %?\n  %i" :empty-lines 1)
-          ("j" "Journal" entry
+          ("j" "Journal")
+          ("jp" "Journal" entry
            (file+olp+datetree "Journal.org.gpg")
            "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+           :clock-in :clock-resume
+           :empty-lines 1)
+          ("jw" "Work Journal" entry
+           (file+olp+datetree "Work-Journal.org")
+           "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+           :clock-in :clock-resume
+           :empty-lines 1)
+          ("jt" "Trading Journal" entry
+           (file+olp+datetree "trading-journal.org")
+           "\n* %<%I:%M %p> - Trading Journal :journal:\n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
           ("s" "Scratch" entry
@@ -843,9 +863,10 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 * Font configuration
 #+begin_src emacs-lisp
   ;;Set default font
-  (defvar mz-font-alist '(("CodeNewRoman Nerd Font" . 100)
+  (defvar mz-font-alist '(("CodeNewRoman Nerd Font" . 105)
                        ("UbuntuMono Nerd Font" . 100)
-                       ("JetBrainsMono Nerd Font" . 100)))
+                       ("JetBrainsMono Nerd Font" . 100)
+                       ("Roboto Mono" . 95)))
 
   (defun mz-set-font ()
     (interactive)
@@ -1210,6 +1231,17 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :ensure nil
     :config (mouse-avoidance-mode 'animate))
 #+end_src
+** Dimmer
+#+begin_src emacs-lisp
+  (use-package dimmer
+    :config (dimmer-mode 1)
+    (setq fraction 0.6))
+
+#+end_src
+** Focus
+#+begin_src emacs-lisp
+  (use-package focus)
+#+end_src
 * Completion
 ** Minibuffer Completion
 *** Vertico
@@ -1246,7 +1278,9 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     (minibuffer-setup . vertico-repeat-save)
     :config
     (vertico-multiform-mode)
-    (global-set-key (kbd "M-s s") #'vertico-repeat))
+    (global-set-key (kbd "M-s s") #'vertico-repeat)
+    (evil-global-set-key 'normal (kbd "M-<dead-acute>") #'consult-register-store)
+    (evil-global-set-key 'normal (kbd "M-<dead-grave>") #'consult-register-load))
 
   ;; A few more useful configurations...
   (use-package emacs
@@ -1477,6 +1511,18 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :config
     (pdf-tools-install)
     (setq pdf-view-display-size 'fit-width))
+#+end_src
+#+begin_src emacs-lisp
+  (use-package nov
+    :mode ("\\.epub\\'" . nov-mode)
+    :config
+    (setq nov-text-width 80)
+    (setq nov-save-place-file (expand-file-name "nov-places" user-emacs-directory))
+    (add-hook 'nov-mode-hook 'visual-fill-column-mode)
+    (add-hook 'nov-mode-hook 'olivetti-mode)
+    (add-hook 'nov-mode-hook 'variable-pitch-mode)
+    (add-hook 'nov-mode-hook (lambda () (face-remap-add-relative 'variable-pitch :family "Literata"
+                                                            :height 1.1))))
 #+end_src
 * Git
 ** Magit
@@ -1834,19 +1880,22 @@ Inspector tool for Emacs Lisp objects.
 ** PlantUML
 #+begin_src emacs-lisp
   (use-package plantuml-mode
-    :init (setq plantuml-jar-path "~/Downloads/plantuml-1.2023.4.jar"
+    :init (setq plantuml-jar-path "~/Downloads/plantuml-1.2024.3.jar"
                 plantuml-default-exec-mode 'jar)
     :config
     ;; Enable plantuml-mode for PlantUML files
     (add-to-list 'auto-mode-alist '("\\.plantuml\\'" . plantuml-mode)))
 
   (setq org-plantuml-jar-path
-        (expand-file-name "~/Downloads/plantuml-1.2023.4.jar"))
+        (expand-file-name "~/Downloads/plantuml-1.2024.3.jar"))
+  (use-package flycheck-plantuml
+    :config (flycheck-plantuml-setup))
 #+end_src
 * File management
 ** Treemacs
 #+begin_src emacs-lisp
   (use-package treemacs
+    :disabled t
     :straight t
                                           ;:ensure t
     :defer t
@@ -1995,6 +2044,22 @@ See: https://github.com/fourier/ztree
         :bind (:map dired-mode-map
                     ("S" . hydra-dired-quick-sort/body)))))
 
+  (use-package dired-preview
+    :init (setq dired-preview-delay 0.7
+                dired-preview-max-size (expt 2 40)
+                dired-preview-ignored-extensions-regexp
+                (concat "\\."
+                        "\\(mkv\\|webm\\|mp4\\|mp3\\|ogg\\|m4a"
+                        "\\|gz\\|zst\\|tar\\|xz\\|rar\\|zip"
+                        "\\|iso\\|epub\\)"))
+    :config (dired-preview-global-mode 1))
+
+  ;; Default values for demo purposes
+
+
+  ;; Enable `dired-preview-mode' in a given Dired buffer or do it
+  ;; globally:
+  (dired-preview-global-mode 1)
 
 
   ;; Allow rsync from dired buffers
