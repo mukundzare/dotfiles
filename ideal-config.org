@@ -1715,6 +1715,13 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
       (let-routes 1)
       (context 2)))
 
+  (add-hook 'clojure-mode-hook
+            (lambda ()
+              (add-hook 'before-save-hook
+                        (lambda ()
+                          (clojure-align (point-min)
+                                         (point-max))))))
+
   ;; extra syntax highlighting for clojure
   (use-package clojure-mode-extra-font-locking
     :straight t)
