@@ -2,7 +2,7 @@
 ##+SETUPFILE: https://fniessen.github.io/org-html-themes/org/theme-readtheorg.setup
 #+STARTUP: overview
 #+PROPERTY: header-args:emacs-lisp :tangle ./ideal-init.el :mkdirp yes
-#+HTML_HEAD: <style>pre.src{background:#343131;color:white;} </style>
+#+HTML_HEAD: <style>pre.src{background :#343131 ;color:white;} </style>
 
 * Mandatory lexical binding
 #+begin_src emacs-lisp
@@ -863,30 +863,28 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 * Font configuration
 #+begin_src emacs-lisp
   ;;Set default font
-  (defvar mz-font-alist '(("CodeNewRoman Nerd Font" . 105)
-                       ("UbuntuMono Nerd Font" . 100)
-                       ("JetBrainsMono Nerd Font" . 100)
-                       ("Roboto Mono" . 95)))
+  (defvar mz-font-alist '("CodeNewRoman Nerd Font-11"
+                          "UbuntuMono Nerd Font-12"
+                          "JetBrainsMono Nerd Font-10"
+                          "Roboto Mono Nerd Font-10"
+                          "FantasqueSansM Nerd Font-11"
+                          "SauceCodePro Nerd Font-10"))
 
   (defun mz-set-font ()
     (interactive)
-    (let* ((chosen-font (consult--read (mapcar #'car mz-font-alist)
-                                      :prompt "Choose a font"))
-           (font-height (alist-get chosen-font mz-font-alist nil nil #'equal)))
-      (dolist (font-type '(default fixed-pitch))
-        (set-face-attribute font-type nil
-                            :family chosen-font
-                            :weight 'light
-                            :height font-height))))
+    (let* ((chosen-font (consult--read mz-font-alist
+                                      :prompt "Choose a font: ")))
+      (set-face-attribute 'default nil
+                          :font chosen-font)))
 
   (set-face-attribute 'default nil
-                      :family "CodeNewRoman Nerd Font"
+                      :font "UbuntuMono Nerd Font"
                       :weight 'normal
                       :height 105)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
-                      :family "CodeNewRoman Nerd Font"
+                      :font "CodeNewRoman Nerd Font"
                       :weight 'light
                       :height 0.95)
 
@@ -898,6 +896,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
 
   (set-fontset-font t 'symbol (font-spec :family "Symbols Nerd Font Mono") nil 'prepend)
+
 #+end_src
 * Session management
 ** Savehist and saveplace
