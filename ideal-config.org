@@ -883,17 +883,17 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
                           "FantasqueSansM Nerd Font-11"
                           "SauceCodePro Nerd Font-10"))
 
+  (defvar mz-current-preferred-font "CodeNewRoman Nerd Font-11")
+
   (defun mz-set-font ()
     (interactive)
     (let* ((chosen-font (consult--read mz-font-alist
-                                      :prompt "Choose a font: ")))
+                                       :prompt "Choose a font: ")))
       (set-face-attribute 'default nil
                           :font chosen-font)))
 
   (set-face-attribute 'default nil
-                      :font "UbuntuMono Nerd Font"
-                      :weight 'normal
-                      :height 105)
+                      :font mz-current-preferred-font)
 
   ;; Set the fixed pitch face
   (set-face-attribute 'fixed-pitch nil
@@ -903,9 +903,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
   ;;Set the variable pitch face
   (set-face-attribute 'variable-pitch nil
-                      :font "Roboto Mono"
-                      :weight 'normal
-                      :height 0.95)
+                      :font "CodeNewRoman Nerd Font-11")
 
 
   (set-fontset-font t 'symbol (font-spec :family "Symbols Nerd Font Mono") nil 'prepend)
