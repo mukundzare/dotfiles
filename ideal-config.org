@@ -489,28 +489,27 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (setq org-agenda-files
         '("~/orgfiles/personal.org"
           "~/orgfiles/projects.org"
-          "~/orgfiles/schedule.org"
+          "~/orgfiles/gmail.org"
           "~/orgfiles/emacs.org"
           "~/orgfiles/Inbox.org"
           "~/orgfiles/work.org"
           "~/share/Apartment_LB/notes.org"
-          "~/orgfiles/habits.org")
+                                          ;"~/orgfiles/habits.org"
+          )
         org-agenda-start-with-log-mode t)
   (define-key global-map (kbd "C-c a") 'org-agenda)
   (setq org-agenda-todo-ignore-scheduled t)
   (setq org-agenda-custom-commands
-        '(("d" "DASHBOARD"
+        '(("D" "DASHBOARD"
            ((agenda "" ((org-agenda-span 'day)
                         (org-deadline-warning-days 60)))
-            (todo "NEXT"
-                  ((org-agenda-overriding-header "Next Tasks")))
             (todo "TODO"
                   ((org-agenda-overriding-header "Inbox")
                    (org-agenda-files '("~/orgfiles/Inbox.org"))))
-            (tags-todo "agenda/ACTIVE"
-                       ((org-agenda-overriding-header "Active Projects")))
-            (tags-todo "errand"
-                       ((org-agenda-overriding-header "Home")))))
+            (tags-todo "SCHEDULED=\"\"&+DEADLINE=\"\"" ;
+                       ((org-agenda-overriding-header "Unscheduled work tasks")
+                        (org-agenda-prefix-format "             ")
+                        (org-agenda-files '("~/orgfiles/work.org"))))))
           ("n" "Next Tasks"
            ((todo "NEXT"
                   ((org-agenda-overriding-header "Next Tasks")))))
@@ -521,54 +520,19 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
             (todo "TODO"
                   ((org-agenda-overriding-header "To be done")
                    (org-agenda-files '("~/orgfiles/work.org"))))))
-          ;; Low-effort next actions
-          ("e" todo "Effort<0:15&+Effort>0:00"
-           ((org-agenda-overriding-header "Low Effort Tasks")
-            (org-agenda-max-todos 20)
-            (org-agenda-files org-agenda-files)))
-
-
-          ("w" "Workflow Status"
-           ((todo "WAIT"
-                  ((org-agenda-overriding-header "Waiting on External")
-                   (org-agenda-files org-agenda-files)))
-            (todo "REVIEW"
-                  ((org-agenda-overriding-header "In Review")
-                   (org-agenda-files org-agenda-files)))
-            (todo "PLAN"
-                  ((org-agenda-overriding-header "In Planning")
-                   (org-agenda-todo-list-sublevels nil)
-                   (org-agenda-files org-agenda-files)))
-            (todo "BACKLOG"
-                  ((org-agenda-overriding-header "Project Backlog")
-                   (org-agenda-todo-list-sublevels nil)
-                   (org-agenda-files org-agenda-files)))
-
-            (todo "READY"
-                  ((org-agenda-overriding-header "Ready for Work")
-                   (org-agenda-files org-agenda-files)))
-            (todo "ACTIVE"
-                  ((org-agenda-overriding-header "Active Projects")
-                   (org-agenda-files org-agenda-files)))
-            (todo "COMPLETED"
-                  ((org-agenda-overriding-header "Completed Projects")
-                   (org-agenda-files org-agenda-files)))
-            (todo "CANC"
-                  ((org-agenda-overriding-header "Cancelled Projects")
-                   (org-agenda-files org-agenda-files)))))
           ("h" "Apartment tasks"
            ((tags-todo "SCHEDULED=\"\"&+DEADLINE=\"\"" ;
-                   ((org-agenda-overriding-header "Unscheduled aparment tasks")
-                    (org-agenda-use-time-grid t)
-                    (org-agenda-prefix-format "             ")
-                    (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
+                       ((org-agenda-overriding-header "Unscheduled apartment tasks")
+                        (org-agenda-use-time-grid t)
+                        (org-agenda-prefix-format "             ")
+                        (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
             (tags-todo "SCHEDULED<>\"\"&+DEADLINE=\"\""
-                  ((org-agenda-overriding-header "Scheduled aparment tasks")
-                   (org-agenda-prefix-format " %(let ((scheduled (org-get-scheduled-time (point)))) (if scheduled (format-time-string \"%Y-%m-%d\" scheduled) \"\")) %i ")                 (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
+                       ((org-agenda-overriding-header "Scheduled apartment tasks")
+                        (org-agenda-prefix-format " %(let ((scheduled (org-get-scheduled-time (point)))) (if scheduled (format-time-string \"%Y-%m-%d\" scheduled) \"\")) %i ")                 (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
             (tags-todo "+DEADLINE<>\"\""
-                  ((org-agenda-overriding-header "Deadline")
-                   (org-agenda-prefix-format " %(let ((deadline (org-get-deadline-time (point)))) (if deadline (format-time-string \"%Y-%m-%d\" deadline) \"\")) %i ")
-                   (org-agenda-files '("~/share/Apartment_LB/notes.org"))))))))
+                       ((org-agenda-overriding-header "Deadline")
+                        (org-agenda-prefix-format " %(let ((deadline (org-get-deadline-time (point)))) (if deadline (format-time-string \"%Y-%m-%d\" deadline) \"\")) %i ")
+                        (org-agenda-files '("~/share/Apartment_LB/notes.org"))))))))
 #+end_src
 ** Org babel
 *** Autotangle
@@ -653,6 +617,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
   ;;Autosave org mode buffers on refiling
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
+  (advice-add 'org-agenda-schedule :after 'org-save-all-org-buffers)
   (advice-add 'org-agenda-refile :after 'org-save-all-org-buffers)
 #+end_src
 ** Notifications
@@ -672,7 +637,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+begin_src emacs-lisp
     (defun mz/org-gcal-schedule-entries ()
       "Schedule all the google calendar entries."
-      (with-current-buffer (get-file-buffer "~/orgfiles/schedule.org")
+      (with-current-buffer (get-file-buffer "~/orgfiles/gmail.org")
         (org-map-entries (lambda ()
                            (when-let ((timestamp (cdr (assoc "TIMESTAMP"
                                                         (org-entry-properties)))))
@@ -690,10 +655,9 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     (use-package org-gcal
       :after (org org-agenda evil-org)
       :init
-      (setq org-gcal-file-alist '(("mukundzare@gmail.com" .  "~/orgfiles/schedule.org"))
+      (setq org-gcal-fetch-file-alist '(("mukundzare@gmail.com" .  "~/orgfiles/gmail.org"))
             plstore-cache-passphrase-for-symmetric-encryption t
-            org-gcal-up-days 2)
-      :config)
+            org-gcal-up-days 2))
   ;(advice-add 'org-gcal-fetch :after  #'mz/org-gcal-schedule-entries)
   ; (run-with-timer 10 (* 30 60) (lambda ()
   ;                               (org-gcal-sync-tokens-clear)
