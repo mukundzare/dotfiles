@@ -874,9 +874,12 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
          (require 'all-the-icons nil t)))
 #+end_src
 * Font configuration
+** Default fonts
 #+begin_src emacs-lisp
+  (require 'consult)
+
   ;;Set default font
-  (defvar mz-font-alist '("CodeNewRoman Nerd Font-11"
+  (defvar mz-font-list '("CodeNewRoman Nerd Font-11"
                           "UbuntuMono Nerd Font-12"
                           "JetBrainsMono Nerd Font-10"
                           "Roboto Mono Nerd Font-10"
@@ -885,28 +888,56 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
   (defvar mz-current-preferred-font "CodeNewRoman Nerd Font-11")
 
-  (defun mz-set-font ()
+  (defvar mz-fontset-alist '((default . "CodeNewRoman Nerd Font-11")
+                             (fixed-pitch . "CodeNewRoman Nerd Font-11")
+                             (variable-pitch . "Ubuntu")
+                             (org-block . "UbuntuMono Nerd Font-11")))
+
+
+  (cl-defun mz-set-fixed-pitch-font (&optional fix-pitch-font &key type)
     (interactive)
-    (let* ((chosen-font (consult--read mz-font-alist
-                                       :prompt "Choose a font: ")))
-      (set-face-attribute 'default nil
+    (let* ((chosen-font (or fix-pitch-font
+                            (consult--read mz-font-list
+                                           :prompt "Choose a font: "))))
+      (set-face-attribute type nil
                           :font chosen-font)))
 
-  (set-face-attribute 'default nil
-                      :font mz-current-preferred-font)
+  (cl-defun mz-set-variable-pitch-font (&optional var-pitch-font &key type)
+    (interactive)
+    (let* ((chosen-font (or variable-pitch-font
+                            (consult--read mz-font-list
+                                           :prompt "Choose a font: "))))
+      (set-face-attribute type nil
+                          :font chosen-font)))
 
-  ;; Set the fixed pitch face
-  (set-face-attribute 'fixed-pitch nil
-                      :font "CodeNewRoman Nerd Font"
-                      :weight 'light
-                      :height 0.95)
-
-  ;;Set the variable pitch face
-  (set-face-attribute 'variable-pitch nil
-                      :font "CodeNewRoman Nerd Font-11")
-
+  (cl-defun mz-set-fonts ()
+    (dolist (type '(default fixed-pitch variable-pitch org-block))
+      (set-face-attribute type nil
+                          :font (alist-get type mz-fontset-alist))))
 
   (set-fontset-font t 'symbol (font-spec :family "Symbols Nerd Font Mono") nil 'prepend)
+  (mz-set-fonts)
+#+end_src
+** Buffer specific font setup
+#+begin_src emacs-lisp
+  (defvar opx2-js-mode-font "SauceCodePro Nerd Font-10")
+  (defvar lisp-mode-font "CodeNewRoman Nerd Font-10")
+  (defun set-opx2-js-mode-font ()
+    "Sets a fixed width (monospace) font in current buffer"
+    (interactive)
+    (setq buffer-face-mode-face '(:family opx2-js-mode-font))
+    (buffer-face-mode))
+
+
+  (defun set-lisp-mode-font ()
+     "Sets a fixed width (monospace) font in current buffer"
+    (interactive)
+    (setq buffer-face-mode-face '(:family lisp-mode-font))
+    (buffer-face-mode))
+
+  ;; Set default font faces for Info and ERC modes
+  (add-hook 'opx2-js-mode-hook 'set-opx2-js-mode-font)
+  (add-hook 'lisp-mode-hook 'set-lisp-mode-font)
 
 #+end_src
 * Session management
