@@ -2366,8 +2366,7 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
     :config (setq copilot-network-proxy '(:host "127.0.0.1" :port 3128))
     :straight (:host github :repo "zerolfx/copilot.el" :files ("dist" "*.el"))
     :ensure t
-    :hook ((prog-mode . copilot-mode)
-           (copilot-mode . (lambda ()
+    :hook ((copilot-mode . (lambda ()
                              (setq copilot--indent-warning-printed-p t))));Workaround for warning message
     :bind (("TAB" . 'copilot-accept-completion)))
   ;; you can utilize :map :hook and :config to customize copilot
