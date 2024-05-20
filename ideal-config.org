@@ -380,11 +380,11 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
             ("family" . ?n)
             ("recurring" . ?r)
             ("idea" . ?i))))
-  (require 'org-habit)
-  (add-to-list 'org-modules 'org-habit)
+  ;(require 'org-habit)
+  ;(add-to-list 'org-modules 'org-habit)
   ;;Provides <el style completion to insert blocks
   (add-to-list 'org-modules 'org-tempo)
-  (setq org-habit-graph-column 60)
+  ;(setq org-habit-graph-column 60)
 #+end_src
 ** Layout
 *** Basic UI
@@ -435,7 +435,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           ("~/orgfiles/emacs.org" :maxlevel . 1)
           ("~/orgfiles/homeserver.org" :maxlevel . 1)
           ("~/orgfiles/projects.org" :maxlevel . 1)
-          ("~/orgfiles/habits.org" :maxlevel . 1)
+          ;("~/orgfiles/habits.org" :maxlevel . 1)
           ("~/orgfiles/work.org" :maxlevel . 1)
           ("~/orgfiles/ideas.org" :maxlevel . 1)
           ("~/orgfiles/trash.org" :maxlevel . 1)
