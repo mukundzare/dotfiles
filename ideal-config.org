@@ -195,6 +195,10 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   ;; Load init-private.el if it exists
   (when (file-exists-p (expand-file-name "init-private.el" user-emacs-directory))
     (load-file (expand-file-name "init-private.el" user-emacs-directory)))
+
+  (let ((temp-wa-lib-path (expand-file-name "~/Brain-dump/private/temp-watch.el")))
+    (when (file-exists-p temp-wa-lib-path)
+      (load-file temp-wa-lib-path)))
 #+end_src
 * ~~~~~Performance marker~~~~~~
 #+begin_src emacs-lisp
