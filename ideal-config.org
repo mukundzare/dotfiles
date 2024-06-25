@@ -398,7 +398,8 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
     (outline-minor-mode)
     (variable-pitch-mode 1)
     (global-visual-line-mode 1)
-    (setq evil-auto-indent nil))
+    (setq evil-auto-indent nil)
+    (setq org-startup-align-all-tables t))
 
   (defun mz/org-mode-visual-fill ()
     (setq-local visual-fill-column-width 90
