@@ -465,7 +465,8 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           ("~/orgfiles/ideas.org" :maxlevel . 1)
           ("~/orgfiles/trash.org" :maxlevel . 1)
           ("~/orgfiles/personal.org" :maxlevel . 1)
-          ("~/orgfiles/ARCHIVE/ARCHIVE-Work.org" :maxlevel . 1)))
+          ("~/orgfiles/ARCHIVE/ARCHIVE-Work.org" :maxlevel . 1)
+          ("~/share/Apartment_LB/notes.org" :maxlevel . 1)))
 
 #+end_src
 ** Org Capture
@@ -802,6 +803,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   ;; Sentences should end after single space.
   (setq-default major-mode 'text-mode
                 fill-column 80
+                comment-fill-column 72
                 tab-width 4
                 indent-tabs-mode nil)     ; Permanently indent with spaces, never with TABs
 
@@ -1758,8 +1760,8 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   ;; https://github.com/clojure-emacs/clojure-mode
   ;; then install the checker as soon as `clojure-mode' is loaded
   (use-package clojure-mode
-                                          ;:ensure t
-    :straight t
+    :ensure t
+    ;:straight t
     :config
     (require 'flycheck-clj-kondo)
     (setq clojure-align-forms-automatically t)
