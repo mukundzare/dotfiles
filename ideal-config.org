@@ -432,6 +432,26 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (use-package svg-tag-mode)
 
 #+end_src
+*** Fonts
+#+begin_src emacs-lisp
+  (defun my-adjoin-to-list-or-symbol (element list-or-symbol)
+    (let ((list (if (not (listp list-or-symbol))
+                    (list list-or-symbol)
+                  list-or-symbol)))
+      (require 'cl-lib)
+      (cl-adjoin element list)))
+
+  (mapc
+   (lambda (face)
+     (set-face-attribute
+      face nil
+      :inherit
+      (my-adjoin-to-list-or-symbol
+       'fixed-pitch
+       (face-attribute face :inherit))))
+   (list 'org-table 'org-date
+         'org-link 'org-footnote))
+#+end_src
 ** Files
 #+begin_src emacs-lisp
   (setq org-directory "~/orgfiles")
@@ -849,43 +869,74 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
   ;;Set default font
   (defvar mz-font-list '("CodeNewRoman Nerd Font-11"
-                          "UbuntuMono Nerd Font-12"
+                          "UbuntuMono Nerd Font-11"
                           "JetBrainsMono Nerd Font-10"
                           "Roboto Mono Nerd Font-10"
                           "FantasqueSansM Nerd Font-11"
                           "SauceCodePro Nerd Font-10"))
 
-  (defvar mz-current-preferred-font "CodeNewRoman Nerd Font-11")
-
   (defvar mz-fontset-alist '((default . "CodeNewRoman Nerd Font-11")
                              (fixed-pitch . "CodeNewRoman Nerd Font-11")
                              (variable-pitch . "Ubuntu")
+                             (org-table . "UbuntuMono Nerd Font-11")
                              (org-block . "UbuntuMono Nerd Font-11")))
 
-
-  (cl-defun mz-set-fixed-pitch-font (&optional fix-pitch-font &key type)
+  (cl-defun mz-set-fixed-pitch-font (&optional fix-pitch-font)
     (interactive)
     (let* ((chosen-font (or fix-pitch-font
                             (consult--read mz-font-list
                                            :prompt "Choose a font: "))))
-      (set-face-attribute type nil
+      (set-face-attribute 'default nil
                           :font chosen-font)))
 
-  (cl-defun mz-set-variable-pitch-font (&optional var-pitch-font &key type)
+  (cl-defun mz-set-variable-pitch-font (&optional var-pitch-font)
     (interactive)
-    (let* ((chosen-font (or variable-pitch-font
+    (let* ((chosen-font (or var-pitch-font
                             (consult--read mz-font-list
                                            :prompt "Choose a font: "))))
-      (set-face-attribute type nil
+      (set-face-attribute 'variable-pitch nil
                           :font chosen-font)))
 
+  ;; Monospacing some faces
+  ;; Taken from here:
+  ;; https://yoo2080.wordpress.com/2013/05/30/monospace-font-in-tables-and-source-code-blocks-in-org-mode-proportional-font-in-other-parts/
+  (defun my-adjoin-to-list-or-symbol (element list-or-symbol)
+    (let ((list (if (not (listp list-or-symbol))
+                    (list list-or-symbol)
+                  list-or-symbol)))
+      (require 'cl-lib)
+      (cl-adjoin element list)))
+
+
+
   (cl-defun mz-set-fonts ()
-    (dolist (type '(default fixed-pitch variable-pitch org-block))
+
+    (dolist (type (mapcar #'car mz-fontset-alist))
       (set-face-attribute type nil
                           :font (alist-get type mz-fontset-alist))))
 
+  (defun mz-set-org-fonts ()
+    ;; Run this func only once during an emacs session.
+    (when (not (boundp 'org-fonts-already-set?))
+      (setq org-src-block-faces
+            '(("emacs-lisp" (:font "UbuntuMono Nerd Font-11"))))
+
+      (mz-set-fonts)
+      (mapc                               ;Taken from blog. See link above
+       (lambda (face)
+         (set-face-attribute
+          face nil
+          :inherit
+          (my-adjoin-to-list-or-symbol
+           'fixed-pitch
+           (face-attribute face :inherit))))
+       (list 'org-code 'org-block 'org-table))
+      (setq org-fonts-already-set? t)))
+
+  ;; Monospacing some faces END
+  (add-hook 'org-mode-hook 'set-org-fonts)
+
   (set-fontset-font t 'symbol (font-spec :family "Symbols Nerd Font Mono") nil 'prepend)
-  (mz-set-fonts)
 #+end_src
 ** Buffer specific font setup
 #+begin_src emacs-lisp
