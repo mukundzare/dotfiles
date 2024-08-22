@@ -285,7 +285,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 #+end_src
 ** Emacssql
 #+begin_src emacs-lisp
-  (use-package emacsql-sqlite
+  (use-package emacsql
     :defer t)
 #+end_src
 ** F-el
