@@ -2228,33 +2228,34 @@ See: https://github.com/fourier/ztree
 #+end_src
 ** Recentf
 #+begin_src emacs-lisp
-  (use-package recentf
-    :straight t
-    :bind (("C-x C-r" . consult-recent-file))
-    :hook ((after-init . recentf-mode)
-           (buffer-list-update . recentf-track-opened-file))
-    :init (setq recentf-max-saved-items 300
-                recentf-case-fold-search t
-                recentf-exclude
-                '("\\.?cache"
-                  ".cask"
-                  "COMMIT_EDITMSG\\'"
-                  "bookmarks"
-                  "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
-                  "\\.?ido\\.last$"
-                  "\\.revive$"
-                  "/G?TAGS$"
-                  "/.elfeed/"
-                  "^/tmp/"
-                  "\\.gpg$"
-                  "^/var/folders/.+$"
-                  "^/ssh:"
-                  "/persp-confs/"
-                  (lambda (file) (file-in-directory-p file package-user-dir))))
-    :config
-    (run-at-time nil (* 5 60) 'recentf-save-list)
-    (setq recentf-max-menu-items 100)
-    (push (expand-file-name recentf-save-file) recentf-exclude))
+    (use-package recentf
+      :straight t
+      :bind (("C-x C-r" . consult-recent-file))
+      :hook ((after-init . recentf-mode)
+             (buffer-list-update . recentf-track-opened-file))
+      :init (setq recentf-max-saved-items 300
+                  recentf-case-fold-search t
+                  recentf-exclude
+                  '("\\.?cache"
+                    ".cask"
+                    "COMMIT_EDITMSG\\'"
+                    "bookmarks"
+                    "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
+                    "\\.?ido\\.last$"
+                    "\\.revive$"
+                    "/G?TAGS$"
+                    "/.elfeed/"
+                    "^/tmp/"
+                    "\\.gpg$"
+                    "^/var/folders/.+$"
+                    "^/ssh:"
+                    "/persp-confs/"
+                    "~/syncthing/Temp/"
+                    (lambda (file) (file-in-directory-p file package-user-dir))))
+      :config
+      (run-at-time nil (* 5 60) 'recentf-save-list)
+      (setq recentf-max-menu-items 100)
+      (push (expand-file-name recentf-save-file) recentf-exclude))
 #+end_src
 * Performace
 ** So-long
@@ -2463,14 +2464,21 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
 Configs for temporary time
 ** House buy export org to txt
 #+begin_src emacs-lisp
+  (defvar mz/org-to-text-targets '("~/share/Apartment_LB"
+                                   "~/share/family/prachiti/"))
+
   (defun mz/export-org-to-txt-home ()
-    (when (and (equal major-mode #'org-mode)
-               (string= (file-name-directory (buffer-file-name))
-                        (expand-file-name "~/share/Apartment_LB/")))
-      (message "Exported notes.org to notes.txt")
-      ;;Export org mode to txt file
-      (let ((file-name-no-ext (file-name-sans-extension (buffer-file-name))))
-        (org-export-to-file 'ascii (format "%s.txt" file-name-no-ext) ))))
+    (when-let* ((visiting-file (buffer-file-name))
+                (file-dir (file-name-directory visiting-file))
+                (_ (and (equal major-mode #'org-mode)
+                        (some (lambda (x)
+                                (string-equal (expand-file-name x) file-dir))
+                              mz/org-to-text-targets)))
+                (file-name-no-ext (file-name-sans-extension visiting-file)))
+      (message (format "Exported %s.org to %s.txt"
+                       file-name-no-ext
+                       file-name-no-ext))
+      (org-export-to-file 'ascii (format "%s.txt" file-name-no-ext))))
 
   (add-hook 'org-mode-hook (lambda ()
                              (add-hook 'after-save-hook #'mz/export-org-to-txt-home)))
