@@ -190,6 +190,21 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (when (memq window-system '(mac ns x))
     (exec-path-from-shell-initialize))
 #+end_src
+
+** dwim shell command
+#+begin_src emacs-lisp
+  (use-package dwim-shell-command
+    :ensure t
+    :bind (([remap shell-command] . dwim-shell-command)
+           :map dired-mode-map
+           ([remap dired-do-async-shell-command] . dwim-shell-command)
+           ([remap dired-do-shell-command] . dwim-shell-command)
+           ([remap dired-smart-shell-command] . dwim-shell-command)))
+
+  (when (package-installed-p 'dwim-shell-command)
+    (require 'dwim-shell-commands))
+#+end_src
+
 * Private data
 #+begin_src emacs-lisp
   ;; Load init-private.el if it exists
@@ -346,6 +361,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
     (org-hierarchical-todo-statistics nil)
     :config
     (setq org-startup-with-inline-images t
+          org-export-with-sub-superscripts nil
           org-ellipsis " ▾"
           org-todo-keywords
           '((sequence "TODO(t!)" "NEXT(n)" "ON_HOLD(h!)" "|" "DONE(d!)" "CANC(k!)"))
@@ -363,6 +379,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
     (add-to-list 'org-structure-template-alist '("sql" . "src sql"))
     (add-to-list 'org-structure-template-alist '("plw" . "src opx2-js"))
     (add-to-list 'org-structure-template-alist '("pu" . "src plantuml"))
+    (add-to-list 'org-structure-template-alist '("rc" . "src restclient"))
     (setq org-tag-alist
           '((:startgroup)                 ;Group tags are always mutually
                                           ;exclusive, i.e. either one of these
@@ -561,6 +578,10 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
                         (org-agenda-files '("~/share/Apartment_LB/notes.org"))))))))
 #+end_src
 ** Org babel
+*** OB Rest client
+#+begin_src emacs-lisp
+  (use-package ob-restclient)
+#+end_src
 *** Autotangle
 #+begin_src emacs-lisp
 
@@ -583,7 +604,8 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
      (clojure . t)
      (js . t)
      (plantuml . t)
-     (shell . t)))
+     (shell . t)
+     (restclient . t)))
 #+end_src
 *** Layout
 #+begin_src emacs-lisp
@@ -600,6 +622,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
     :init
     (setq org-roam-v2-ack t)
     :custom
+    (org-roam-database-connector 'sqlite-builtin)
     (org-roam-directory (mz--get-first-valid-path "~/RoamNotes"
                                                   "~/Org-roam_files/"))
     (org-roam-capture-templates
@@ -875,11 +898,12 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
                           "JetBrainsMono Nerd Font-10"
                           "Roboto Mono Nerd Font-10"
                           "FantasqueSansM Nerd Font-11"
-                          "SauceCodePro Nerd Font-10"))
+                          "SauceCodePro Nerd Font-10"
+                          "Geist Mono-11"))
 
   (defvar mz-fontset-alist '((default . "CodeNewRoman Nerd Font-11")
                              (fixed-pitch . "CodeNewRoman Nerd Font-11")
-                             (variable-pitch . "Ubuntu")
+                             (variable-pitch . "Geist-11")
                              (org-table . "UbuntuMono Nerd Font-11")
                              (org-block . "UbuntuMono Nerd Font-11")))
 
@@ -919,7 +943,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
   (defun mz-set-org-fonts ()
     ;; Run this func only once during an emacs session.
-    (when (not (boundp 'org-fonts-already-set?))
+    (when (not (bound-and-true-p org-fonts-already-set?))
       (setq org-src-block-faces
             '(("emacs-lisp" (:font "UbuntuMono Nerd Font-11"))))
 
@@ -936,7 +960,8 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
       (setq org-fonts-already-set? t)))
 
   ;; Monospacing some faces END
-  (add-hook 'org-mode-hook 'set-org-fonts)
+  (add-hook 'org-mode-hook 'mz-set-org-fonts)
+  (add-hook 'after-init-hook 'mz-set-fonts)
 
   (set-fontset-font t 'symbol (font-spec :family "Symbols Nerd Font Mono") nil 'prepend)
 #+end_src
