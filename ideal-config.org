@@ -1227,9 +1227,23 @@ I don't need to keep certain buffers like help mode open when the buffer is buri
 #+end_src
 ** Pulse
 #+begin_src emacs-lisp
+  (use-package pulsic
+    :straight
+    (pulsic :type git :host github :repo "ichernyshovvv/pulsic.el")
+    :config (pulsic-mode 1)
+    :custom
+    (pulsic-duration 0.6)
+    (pulsic-predicate
+     (lambda ()
+       (not
+        (or (memq last-command
+                  '(indent-for-tab-command))
+            ;;(derived-mode-p 'telega-chat-mode 'enlight-mode)
+            (minibufferp))))))
 
   ;;Pulse current line
   (use-package pulse
+    :disabled t
     :straight t
     :custom-face
     (pulse-highlight-start-face ((t (:inherit region))))
