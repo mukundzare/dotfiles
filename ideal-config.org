@@ -1559,6 +1559,14 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :hook
     (Info-selection . info-colors-fontify-node))
 #+end_src
+** Flyspell
+#+begin_src emacs-lisp
+  (use-package flyspell
+    :init (setq ispell-personal-dictionary "~/Brain-dump/ispell-personal-dict")
+    :hook ((prog-mode . flyspell-prog-mode)
+           (text-mode . flyspell-mode)
+           (org-mode . (lambda () (flyspell-mode 1)))))
+#+end_src
 * Navigation
 #+begin_src emacs-lisp
   (use-package avy
@@ -1570,6 +1578,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   ;;This will force Emacs to use its own internal password prompt
   ;;instead of an external pin entry program.
   (setenv "GPG_AGENT_INFO" nil)
+  (setq epa-file-encrypt-to "Mukund.Zare@de.bosch.com")
 #+end_src
 ** Keepass
 #+begin_src emacs-lisp
