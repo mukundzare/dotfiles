@@ -1344,7 +1344,16 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+end_src
 ** Focus
 #+begin_src emacs-lisp
-  (use-package focus)
+  (use-package focus
+    :hook (prog-mode . (lambda ()
+                         (when (> (count-words (point-min) (point-max))
+                                  200)
+                           (focus-mode)))))
+#+end_src
+** Prism (depth highlighting)
+#+begin_src emacs-lisp
+  (use-package prism
+    :straight (:host github :repo "alphapapa/prism.el"))
 #+end_src
 * Completion
 ** Minibuffer Completion
@@ -1417,6 +1426,8 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+begin_src emacs-lisp
   (use-package marginalia
     :straight t
+    :bind (:map minibuffer-local-map
+                ("M-A" . marginalia-cycle))
     :config
     (marginalia-mode))
 #+end_src
@@ -1604,6 +1615,31 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
            (org-mode . (lambda () (flyspell-mode 1)))))
 #+end_src
 * Navigation
+** iMenu
+#+begin_src emacs-lisp
+  (use-package imenu
+    :hook ((opx2-js-mode . (lambda ()
+                             (message (format "Before - imenu-generic-expression: %s" imenu-generic-expression))
+                             (setq imenu-generic-expression
+                                   '(("Functions" "^function \\([a-zA-Z0-9_]+\\)" 1)
+                                     ("Methods" "^method \\([a-zA-Z0-9_]+\\) on \\([a-zA-Z0-9_]+\\)" 1)
+                                     ("Variables" "^var \\([a-zA-Z0-9_]+\\)" 1)))
+
+                             (message (format "After - imenu-generic-expression: %s" imenu-generic-expression))))
+           (pjs-mode . (lambda ()
+                         (setq imenu-generic-expression
+                               '(("Functions" "^function \\([a-zA-Z0-9_]+\\)" 1)
+                                 ("Namespaces" "^namespace \\([a-zA-Z0-9_]+\\)" 1)
+                                 ("Variables" "^var \\([a-zA-Z0-9_]+\\)" 1))) ))))
+#+end_src
+** iMenu List
+#+begin_src emacs-lisp
+  (use-package imenu-list
+    :init (setq imenu-list-auto-resize 1
+                imenu-list-after-jump-hook (lambda () (recenter-top-bottom 5)))
+    :config (imenu-list-minor-mode))
+#+end_src
+** Avy
 #+begin_src emacs-lisp
   (use-package avy
     :bind ("C-ö" . avy-goto-char-timer))
@@ -1755,8 +1791,6 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+begin_src emacs-lisp
   (use-package flycheck
     :ensure t
-    :init
-    (global-flycheck-mode)
     :config
     (setq flycheck-check-syntax-automatically '(save mode-enabled))
     (setq flycheck-idle-change-delay 0.8)
@@ -2368,8 +2402,7 @@ See: https://github.com/fourier/ztree
 
   (add-hook 'opx2-js-mode-hook (lambda ()
                                  (company-mode 0)))
-  (add-hook 'opx2-js-mode-hook (lambda ()
-                                 (imenu-list)))
+
   (setq fi:common-lisp-file-types '())
 
 
@@ -2406,9 +2439,33 @@ See: https://github.com/fourier/ztree
     ;; display doc quickly
     (setq ac-quick-help-delay 0.1)
     ;; autocomplete only when I ask for it
-    (setq ac-auto-start nil)
-    )
+    (setq ac-auto-start nil))
+
+
+  (defun advice:list-ojs-kernel-functions ()
+    "Advice prevents stray calls to check for connection to Planisware
+  env when it is not needed."
+    (when fi::common-lisp-backdoor-main-process-name 
+      (cond (*ojs-kernel-functions-cache*
+             ,*ojs-kernel-functions-cache*)
+            (*ojs-kernel-functions-present*
+             (setq *ojs-kernel-functions-cache*
+                   (let ((functions-list
+                          (progn (setq *ojs-kernel-functions-present*
+                                       (when (fi::ensure-lep-connection)
+                                         (fi:eval-in-lisp "(if (fboundp 'jvs::list-js-functions) t nil)")))
+                                 (sort (when (fi::ensure-lep-connection)
+                                         (fi:eval-in-lisp "(jvs::list-js-functions)")) 'string<)))
+                         regexp-list)
+
+                     (dolist (sublist (partition-list functions-list *regexp-elements-limit*))
+                       (push (format "\\(%s\\)" (js--regexp-opt-symbol sublist)) regexp-list))
+                     regexp-list)))
+            (t
+             nil))))
+
   (advice-add 'opx2-js-setup-auto-complete-mode :override 'advice:opx2-js-setup-auto-complete-mode)
+  (advice-add 'list-ojs-kernel-functions :override 'advice:list-ojs-kernel-functions)
 #+end_src
 ** Keybindings
 #+begin_src emacs-lisp
