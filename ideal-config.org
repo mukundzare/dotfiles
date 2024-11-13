@@ -713,6 +713,26 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   ;                               (org-gcal-fetch)))
 #+end_src
 * Key bindings
+** Keyfreq mode
+#+begin_src emacs-lisp
+  (use-package keyfreq
+  :init (setq keyfreq-excluded-commands '(self-insert-command
+                                          evil-previous-line
+                                          evil-next-line
+                                          org-self-insert-command
+                                          vertico-previous
+                                          vertico-next
+                                          org-cycle
+                                          evil-normal-state
+                                          evil-forward-char
+                                          evil-insert
+                                          evil-backward-word-begin
+                                          evil-delete-backward-char-and-join
+                                          evil-append-line
+                                          paredit-backward-delete
+                                          paredit-open-round))
+    :config (keyfreq-mode 1))
+#+end_src
 ** General key bindings
 #+begin_src emacs-lisp
   ;;Make ESC quit prompts
@@ -756,7 +776,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     (setq evil-want-integration t
           evil-want-keybinding nil
           evil-want-minibuffer nil
-          evil-want-C-u-scroll t
+          evil-want-C-u-scroll nil
           evil-want-fine-undo t
           evil-want-C-i-jump t)
     :config
@@ -893,15 +913,15 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   (require 'consult)
 
   ;;Set default font
-  (defvar mz-font-list '("CodeNewRoman Nerd Font-11"
+  (defvar mz-font-list '("CodeNewRoman Nerd Font-10"
                           "UbuntuMono Nerd Font-11"
                           "JetBrainsMono Nerd Font-10"
-                          "Roboto Mono Nerd Font-10"
+                          "Roboto Mono Nerd Font-9"
                           "FantasqueSansM Nerd Font-11"
                           "SauceCodePro Nerd Font-10"
-                          "Geist Mono-11"))
+                          "Geist Mono-10"))
 
-  (defvar mz-fontset-alist '((default . "CodeNewRoman Nerd Font-11")
+  (defvar mz-fontset-alist '((default . "Geist Mono-10")
                              (fixed-pitch . "CodeNewRoman Nerd Font-11")
                              (variable-pitch . "Geist-11")
                              (org-table . "UbuntuMono Nerd Font-11")
@@ -967,24 +987,6 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+end_src
 ** Buffer specific font setup
 #+begin_src emacs-lisp
-  (defvar opx2-js-mode-font "SauceCodePro Nerd Font-10")
-  (defvar lisp-mode-font "CodeNewRoman Nerd Font-10")
-  (defun set-opx2-js-mode-font ()
-    "Sets a fixed width (monospace) font in current buffer"
-    (interactive)
-    (setq buffer-face-mode-face '(:family opx2-js-mode-font))
-    (buffer-face-mode))
-
-
-  (defun set-lisp-mode-font ()
-     "Sets a fixed width (monospace) font in current buffer"
-    (interactive)
-    (setq buffer-face-mode-face '(:family lisp-mode-font))
-    (buffer-face-mode))
-
-  ;; Set default font faces for Info and ERC modes
-  (add-hook 'opx2-js-mode-hook 'set-opx2-js-mode-font)
-  (add-hook 'lisp-mode-hook 'set-lisp-mode-font)
 
 #+end_src
 * Session management
@@ -1431,12 +1433,32 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+begin_src emacs-lisp
   (use-package consult
     :init (setq consult-ripgrep-args              "rg --pre ./home/zam4abt/Brain-dump/gpgdecrypt --null --line-buffered --color=never --max-columns=1000 --path-separator  /   --smart-case --no-heading --with-filename --line-number --search-zip")
+    :config
+    (defun consult-ripgrep-with-init ()
+      (interactive)
+      (consult-ripgrep "." (thing-at-point 'word)))
+
+    (setq consult-imenu-config
+          '((emacs-lisp-mode :toplevel "Functions" :types
+                             ((?f "Functions" font-lock-function-name-face)
+                              (?m "Macros" font-lock-function-name-face)
+                              (?p "Packages" font-lock-constant-face)
+                              (?t "Types" font-lock-type-face)
+                              (?v "Variables" font-lock-variable-name-face)))
+            (opx2-js-mode :toplevel "Functions" :types
+                          ((?f "Functions" font-lock-function-name-face)
+                           (?m "Methods" font-lock-function-name-face)
+                           (?v "Variables" font-lock-variable-name-face)))
+            (pjs-mode :toplevel "Functions" :types
+                      ((?f "Functions" font-lock-function-name-face)
+                       (?m "Methods" font-lock-function-name-face)
+                       (?v "Variables" font-lock-variable-name-face)))))
     :bind (("C-s" . consult-line)
            ("C-x b" . consult-buffer)
            ("C-c i" . consult-imenu)
            ("C-c g g" . consult-git-grep)
            ("C-x 4 b" . consult-buffer-other-window)
-           ("C-c g r" . consult-ripgrep)))
+           ("C-c g r" . consult-ripgrep-with-init)))
 
   ;;Consult dir to quickly switch dirs while in
   ;;the minibuffer prompt
@@ -1745,7 +1767,25 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     (setq flycheck-standard-error-navigation nil)
     :hook ((after-init . global-flycheck-mode)))
 #+end_src
-
+*** Hide comments
+#+begin_src emacs-lisp
+  (use-package hide-comnt
+    :straight (:host github
+                     :repo "emacsmirror/hide-comnt"))
+#+end_src
+*** Function/method help
+#+begin_src emacs-lisp
+  (which-function-mode 1)
+#+end_src
+*** Narrow customizations
+#+begin_src emacs-lisp
+  (setq narrow-to-defun-include-comments t)
+#+end_src
+*** Prettier
+#+begin_src emacs-lisp
+  (use-package prettier
+    :init (setenv "NODE_PATH" "/usr/bin/node"))
+#+end_src
 ** Tools
 *** Restclient
 #+begin_src emacs-lisp
@@ -2185,7 +2225,8 @@ See: https://github.com/fourier/ztree
     :bind (:map dired-mode-map
                 ("C-c C-r" . dired-rsync)))
 
-  (use-package dired-single)
+  (use-package dired-single
+    :straight t)
 
   (use-package all-the-icons-dired
     :diminish
@@ -2327,7 +2368,47 @@ See: https://github.com/fourier/ztree
 
   (add-hook 'opx2-js-mode-hook (lambda ()
                                  (company-mode 0)))
+  (add-hook 'opx2-js-mode-hook (lambda ()
+                                 (imenu-list)))
   (setq fi:common-lisp-file-types '())
+
+
+  (defun advice:opx2-js-setup-auto-complete-mode ()
+    "Advice function around opx2-js-setup-auto-complete-mode to prevent error due to
+  not being connected to a Planisware environment."
+    ;;  (message "Setting autocomplete")
+    ;; js functions defined in the file
+    (setq ac-sources nil)
+    ;;(setq ac-sources '(ac-source-ojs-functions ac-source-ojs-methods ac-source-ojs-vars ac-source-ojs-kernel))
+
+    (add-to-list 'ac-sources 'ac-source-ojs-functions)
+    (add-to-list 'ac-sources 'ac-source-ojs-vars)
+    (add-to-list 'ac-sources 'ac-source-ojs-kernel)
+    (add-to-list 'ac-sources 'ac-source-ojs-dictionary)
+    (add-to-list 'ac-sources 'ac-source-ojs-members)
+    (add-to-list 'ac-sources 'ac-source-ojs-classes)
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+  ;;;;;ADVICE CHANGES START
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+    (when fi::common-lisp-backdoor-main-process-name 
+      (progn ;; initialize kernel completion
+        (ojs-kernel-ac-init)
+        ;; classes completion
+        (ojs-classes-ac-init)))
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  ;;;;;ADVICE CHANGES END
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+    ;; dictionary cache
+    (setq *ac-dictionary-candidates-cache* (ac-file-dictionary (concat *opx2-network-folder-work-path* "devenv/el/dict/opx2-js-mode")))
+
+    ;; display doc quickly
+    (setq ac-quick-help-delay 0.1)
+    ;; autocomplete only when I ask for it
+    (setq ac-auto-start nil)
+    )
+  (advice-add 'opx2-js-setup-auto-complete-mode :override 'advice:opx2-js-setup-auto-complete-mode)
 #+end_src
 ** Keybindings
 #+begin_src emacs-lisp
