@@ -2421,10 +2421,10 @@ See: https://github.com/fourier/ztree
     (add-to-list 'ac-sources 'ac-source-ojs-members)
     (add-to-list 'ac-sources 'ac-source-ojs-classes)
 
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;  
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;;;;ADVICE CHANGES START
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
-    (when fi::common-lisp-backdoor-main-process-name 
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    (when fi::common-lisp-backdoor-main-process-name
       (progn ;; initialize kernel completion
         (ojs-kernel-ac-init)
         ;; classes completion
@@ -2445,7 +2445,7 @@ See: https://github.com/fourier/ztree
   (defun advice:list-ojs-kernel-functions ()
     "Advice prevents stray calls to check for connection to Planisware
   env when it is not needed."
-    (when fi::common-lisp-backdoor-main-process-name 
+    (when fi::common-lisp-backdoor-main-process-name
       (cond (*ojs-kernel-functions-cache*
              ,*ojs-kernel-functions-cache*)
             (*ojs-kernel-functions-present*
@@ -2509,6 +2509,30 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
   ;;Set major mode for OJS and PJS files to javascript mode
   ;;(add-to-list 'auto-mode-alist '("\\.ojs" . javascript-mode))
   (add-to-list 'auto-mode-alist '("\\.pjs" . opx2-js-mode))
+#+end_src
+** UX
+#+begin_src emacs-lisp
+  (defun mz/plw-method-which-func ()
+    "Used by which-function mode to correctly determine the method name.
+  Not using this function will cause method names to show incorrectly in the
+  modeline."
+    (save-excursion
+      (let ((location (point)))
+        (or (eobp) (forward-char 1))
+        (beginning-of-defun)
+        (when (and (looking-at "method")
+                   (progn (end-of-defun)
+                          (< location (point)))
+                   (progn (beginning-of-defun)
+                          (>= location (point))))
+          (forward-word 1)
+          (trim-string
+           (buffer-substring-no-properties (point)
+                                           (progn (skip-chars-forward "A-Za-z _0-9")
+                                                  (point))))))))
+
+  (add-to-list 'which-func-functions 'mz/plw-method-which-func)
+
 #+end_src
 * EWW
 #+begin_src emacs-lisp
