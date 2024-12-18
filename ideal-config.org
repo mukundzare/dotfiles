@@ -1720,6 +1720,10 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (use-package rg)
 #+end_src
 * Document management
+** Olivetti mode
+#+begin_src emacs-lisp
+  (use-package olivetti)
+#+end_src
 ** PDF tools
 #+begin_src emacs-lisp
   (use-package pdf-tools
@@ -1728,6 +1732,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     (pdf-tools-install)
     (setq pdf-view-display-size 'fit-width))
 #+end_src
+** EPUB tools
 #+begin_src emacs-lisp
   (use-package nov
     :mode ("\\.epub\\'" . nov-mode)
