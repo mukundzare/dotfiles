@@ -1355,6 +1355,20 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (use-package prism
     :straight (:host github :repo "alphapapa/prism.el"))
 #+end_src
+** Misc UI
+#+begin_src emacs-lisp
+  (use-package spacious-padding
+    ;; These are the default values, but I keep them here for visibility.
+    :init
+    (setq spacious-padding-widths
+          '( :internal-border-width 15
+             :header-line-width 4
+             :mode-line-width 6
+             :tab-width 4
+             :right-divider-width 30
+             :scroll-bar-width 8
+             :fringe-width 8)))
+#+end_src
 * Completion
 ** Minibuffer Completion
 *** Vertico
@@ -1379,8 +1393,18 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
        (consult-grep buffer)
        (imenu buffer)
        (consult-ripgrep buffer)))
-    (vertico-multiform-commands
-     '((consult-imenu buffer indexed)))
+    (setq vertico-multiform-commands
+          '((consult-line (:not posframe)
+           (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
+           (vertico-posframe-border-width . 10)
+           ;; NOTE: This is useful when emacs is used in both in X and
+           ;; terminal, for posframe do not work well in terminal, so
+           ;; vertico-buffer-mode will be used as fallback at the
+           ;; moment.
+           (vertico-posframe-fallback-mode . vertico-buffer-mode))
+          (t posframe)))
+  (vertico-multiform-mode 1)
+
     :bind  (:map vertico-map
                  ("C-j" . vertico-next)
                  ("C-k" . vertico-previous)
