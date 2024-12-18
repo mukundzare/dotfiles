@@ -1452,7 +1452,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :straight t
     :bind (:map minibuffer-local-map
                 ("M-A" . marginalia-cycle))
-    :config
+    :init
     (marginalia-mode))
 #+end_src
 *** Orderless
@@ -1472,6 +1472,13 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     (defun consult-ripgrep-with-init ()
       (interactive)
       (consult-ripgrep "." (thing-at-point 'word)))
+
+    (defvar my-consult-line-map
+      (let ((map (make-sparse-keymap)))
+        (define-key map "\C-s" #'previous-history-element)
+        map))
+
+    (consult-customize consult-line :keymap my-consult-line-map)
 
     (setq consult-imenu-config
           '((emacs-lisp-mode :toplevel "Functions" :types
