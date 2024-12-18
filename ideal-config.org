@@ -1502,6 +1502,22 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
            ("C-x 4 b" . consult-buffer-other-window)
            ("C-c g r" . consult-ripgrep-with-init)))
 
+  (defun plw-consult-line-in-function ()
+    "Run consult-line with the current function name in opx2-js-mode.
+  Excludes lines containing `writeln', starting with `function' or `method',
+  and commented lines."
+    (interactive)
+    (when (and (derived-mode-p 'opx2-js-mode)
+               (fboundp 'which-function))
+      (let* ((function-name (which-function))
+             (name (when function-name
+                     (if (string-match "\\(.*\\) on .*" function-name)
+                         (match-string 1 function-name)
+                       function-name))))
+        (when name
+          (let ((consult--initial (concat name " !function !method !writeln !writetolog !//")))
+            (consult-line consult--initial))))))
+
   ;;Consult dir to quickly switch dirs while in
   ;;the minibuffer prompt
   (use-package consult-dir
@@ -2512,7 +2528,8 @@ See: https://github.com/fourier/ztree
    "C-c m o" 'opx2-clear-repl-buffer
    "C-c m 1" 'opx2-switch-to-v1
    "C-c m 2" 'opx2-switch-to-v2
-   "C-c m i" 'opx2-inspect-last-result)
+   "C-c m i" 'opx2-inspect-last-result
+   (kbd "<f12>") 'plw-consult-line-in-function)
 #+end_src
 ** REPL customizations
 Add an overlay for the prompts:
