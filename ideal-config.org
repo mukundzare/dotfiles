@@ -712,26 +712,34 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   ;                               (org-gcal-sync-tokens-clear)
   ;                               (org-gcal-fetch)))
 #+end_src
-* Key bindings
-** Keyfreq mode
+* Keybindings
+** Evil
 #+begin_src emacs-lisp
-  (use-package keyfreq
-  :init (setq keyfreq-excluded-commands '(self-insert-command
-                                          evil-previous-line
-                                          evil-next-line
-                                          org-self-insert-command
-                                          vertico-previous
-                                          vertico-next
-                                          org-cycle
-                                          evil-normal-state
-                                          evil-forward-char
-                                          evil-insert
-                                          evil-backward-word-begin
-                                          evil-delete-backward-char-and-join
-                                          evil-append-line
-                                          paredit-backward-delete
-                                          paredit-open-round))
-    :config (keyfreq-mode 1))
+  (use-package evil
+    :straight t
+    :init
+    (setq evil-want-integration t
+          evil-want-keybinding nil
+          evil-want-minibuffer nil
+          evil-want-C-u-scroll nil
+          evil-want-fine-undo t
+          evil-want-C-i-jump t)
+    :config
+    (evil-mode 1))
+  (use-package evil-collection
+    :after evil
+    :config
+    (evil-collection-init))
+  (use-package evil-org
+    :ensure t
+    :after (evil evil-collection org)
+    :hook (org-mode . (lambda () evil-org-mode))
+    :config
+    (require 'evil-org-agenda)
+    (evil-org-agenda-set-keys))
+  ;; Use evil keybindings in org-mode
+  (use-package hydra)
+
 #+end_src
 ** General key bindings
 #+begin_src emacs-lisp
@@ -768,33 +776,28 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
       "s" '(ace-swap-window :which-key "swap windows")))
 
 #+end_src
-** Evil
+** Keyfreq mode
 #+begin_src emacs-lisp
-  (use-package evil
-    :straight t
-    :init
-    (setq evil-want-integration t
-          evil-want-keybinding nil
-          evil-want-minibuffer nil
-          evil-want-C-u-scroll nil
-          evil-want-fine-undo t
-          evil-want-C-i-jump t)
-    :config
-    (evil-mode 1))
-  (use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
-  (use-package evil-org
-    :ensure t
-    :after (evil evil-collection org)
-    :hook (org-mode . (lambda () evil-org-mode))
-    :config
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys))
-  ;; Use evil keybindings in org-mode
-  (use-package hydra)
-
+  (use-package keyfreq
+  :init (setq keyfreq-excluded-commands '(self-insert-command
+                                          evil-previous-line
+                                          evil-next-line
+                                          org-self-insert-command
+                                          vertico-previous
+                                          vertico-next
+                                          org-cycle
+                                          evil-normal-state
+                                          evil-forward-char
+                                          evil-insert
+                                          evil-backward-word-begin
+                                          evil-delete-backward-char-and-join
+                                          evil-append-line
+                                          paredit-backward-delete
+                                          paredit-open-round))
+    :config (keyfreq-mode 1))
+#+end_src
+** Misc
+#+begin_src emacs-lisp
 #+end_src
 * Basic UI Configuration
 #+begin_src emacs-lisp
