@@ -1393,21 +1393,23 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     (vertico-cycle t)
     (vertico-multiform-categories
      '((file grid reverse)
-       (consult-grep buffer)
-       (imenu buffer)
-       (consult-ripgrep buffer)))
-    (setq vertico-multiform-commands
-          '((consult-line (:not posframe)
-           (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
-           (vertico-posframe-border-width . 10)
-           ;; NOTE: This is useful when emacs is used in both in X and
-           ;; terminal, for posframe do not work well in terminal, so
-           ;; vertico-buffer-mode will be used as fallback at the
-           ;; moment.
-           (vertico-posframe-fallback-mode . vertico-buffer-mode))
-          (t posframe)))
-  (vertico-multiform-mode 1)
-
+       (imenu buffer)))
+    (vertico-multiform-commands
+     '((consult-line (:not posframe))
+       (consult-grep (:not :posframe) buffer)
+       (consult-git-grep (:not posframe) buffer)
+       (mz/consult-git-grep-opx (:not posframe) buffer)
+       (mz/consult-git-grep-std (:not posframe) buffer)
+       (vertico-posframe-poshandler . posframe-poshandler-frame-top-center)
+       (vertico-posframe-border-width . 10)
+       ;; NOTE: This is useful when emacs is used in both in X and
+       ;; terminal, for posframe do not work well in terminal, so
+       ;; vertico-buffer-mode will be used as fallback at the
+       ;; moment.
+       (vertico-posframe-fallback-mode . vertico-buffer-mode)
+       (t posframe)))
+    (vertico-posframe-parameters '((left-fringe . 8)
+                                   (right-fringe . 8)))
     :bind  (:map vertico-map
                  ("C-j" . vertico-next)
                  ("C-k" . vertico-previous)
@@ -1417,7 +1419,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :hook
     (minibuffer-setup . vertico-repeat-save)
     :config
-    (vertico-multiform-mode)
+    (vertico-multiform-mode 1)
     (global-set-key (kbd "M-s s") #'vertico-repeat)
     (evil-global-set-key 'normal (kbd "M-<dead-acute>") #'consult-register-store)
     (evil-global-set-key 'normal (kbd "M-<dead-grave>") #'consult-register-load))
