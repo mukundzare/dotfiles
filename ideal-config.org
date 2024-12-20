@@ -1370,7 +1370,9 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
              :tab-width 4
              :right-divider-width 30
              :scroll-bar-width 8
-             :fringe-width 8)))
+             :fringe-width 8))
+    :custom (spacious-padding-subtle-mode-line t)
+    :config (spacious-padding-mode 1))
 #+end_src
 * Completion
 ** Minibuffer Completion
