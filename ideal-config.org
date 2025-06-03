@@ -395,11 +395,12 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
             ("workflow" . ?w)
             (:endgrouptag)
             ("errand" . ?E)
-            ("phone" . ?c)
-            ("project" . ?P)
             ("learn" . ?l)
             ("family" . ?n)
             ("recurring" . ?r)
+            ("today" . ?t)
+            ("cis" . ?c)
+            ("pmx" . ?p)
             ("idea" . ?i))))
   ;(require 'org-habit)
   ;(add-to-list 'org-modules 'org-habit)
@@ -549,33 +550,35 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
             (todo "TODO"
                   ((org-agenda-overriding-header "Inbox")
                    (org-agenda-files '("~/orgfiles/Inbox.org"))))
-            (tags-todo "SCHEDULED=\"\"&+DEADLINE=\"\"" ;
+            (tags-todo "SCHEDULED=\"\"&+DEADLINE=\"\"" 
                        ((org-agenda-overriding-header "Unscheduled work tasks")
                         (org-agenda-prefix-format "             ")
                         (org-agenda-files '("~/orgfiles/work.org"))))))
+
           ("n" "Next Tasks"
            ((todo "NEXT"
                   ((org-agenda-overriding-header "Next Tasks")))))
+
           ("W" "Work Tasks"
-           ((todo "NEXT"
-                  ((org-agenda-overriding-header "Do now")
-                   (org-agenda-files '("~/orgfiles/work.org"))))
-            (todo "TODO"
-                  ((org-agenda-overriding-header "To be done")
-                   (org-agenda-files '("~/orgfiles/work.org"))))))
+           ((tags-todo "-DONE+pmx+cis|today"
+                  ((org-agenda-overriding-header "Tagged Work Tasks: :pmx:, :cis: or :today:")
+                   (org-agenda-files '("~/orgfiles/Inbox.org"))))))
+
           ("h" "Apartment tasks"
-           ((tags-todo "SCHEDULED=\"\"&+DEADLINE=\"\"" ;
+           ((tags-todo "SCHEDULED=\"\"&+DEADLINE=\"\"" 
                        ((org-agenda-overriding-header "Unscheduled apartment tasks")
                         (org-agenda-use-time-grid t)
                         (org-agenda-prefix-format "             ")
                         (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
             (tags-todo "SCHEDULED<>\"\"&+DEADLINE=\"\""
                        ((org-agenda-overriding-header "Scheduled apartment tasks")
-                        (org-agenda-prefix-format " %(let ((scheduled (org-get-scheduled-time (point)))) (if scheduled (format-time-string \"%Y-%m-%d\" scheduled) \"\")) %i ")                 (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
+                        (org-agenda-prefix-format " %(let ((scheduled (org-get-scheduled-time (point)))) (if scheduled (format-time-string \"%Y-%m-%d\" scheduled) \"\")) %i ")
+                        (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
             (tags-todo "+DEADLINE<>\"\""
                        ((org-agenda-overriding-header "Deadline")
                         (org-agenda-prefix-format " %(let ((deadline (org-get-deadline-time (point)))) (if deadline (format-time-string \"%Y-%m-%d\" deadline) \"\")) %i ")
                         (org-agenda-files '("~/share/Apartment_LB/notes.org"))))))))
+
 #+end_src
 ** Org babel
 *** OB Rest client
@@ -1349,9 +1352,11 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+begin_src emacs-lisp
   (use-package focus
     :hook (prog-mode . (lambda ()
-                         (when (> (count-words (point-min) (point-max))
-                                  200)
-                           (focus-mode)))))
+                         (if (equal major-mode 'sql-mode)
+                             (focus-mode -1)
+                             (when (> (count-words (point-min) (point-max))
+                                      200)
+                               (focus-mode))))))
 #+end_src
 ** Prism (depth highlighting)
 #+begin_src emacs-lisp
@@ -1917,6 +1922,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 *** CSS
 #+begin_src emacs-lisp
   (use-package lsp-tailwindcss
+    :disabled t
     :after lsp-mode
     :init
     (setq lsp-tailwindcss-add-on-mode t
@@ -2681,7 +2687,41 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
 ** GptEl (ChatGPT)
 #+begin_src emacs-lisp
   (use-package gptel
-    :config (setq gptel-api-key (mz/openai-key)))
+    :config (setq gptel-api-key (mz/together-ai-key))
+    (gptel-make-gpt4all "GPT4All"           ;Name of your choosing
+      :protocol "http"
+      :host "localhost:4891"                 ;Where it's running
+      :models '("Nous-Hermes-2-mistral-7B-DPO.Q4_0.gguf"
+                "llama-3.2-3B-instruct-Q4_0.gguf"))
+    ;; Together.ai offers an OpenAI compatible API
+    (gptel-make-openai "TogetherAI"         ;Any name you want
+      :host "api.together.xyz"
+      :key (mz/together-ai-key)                   ;can be a function that returns the key
+      :stream t
+      :models '(;; has many more, check together.ai
+                mistralai/Mixtral-8x7B-Instruct-v0.1
+                codellama/CodeLlama-13b-Instruct-hf
+                codellama/CodeLlama-34b-Instruct-hf))
+    ;; Github Models offers an OpenAI compatible API
+    (gptel-make-openai "Github Models" ;Any name you want
+      :host "models.inference.ai.azure.com"
+      :endpoint "/chat/completions"
+      :stream t
+      :key ""
+      :models '(gpt-4o-mini
+                gpt-4o))
+    ;; OpenRouter offers an OpenAI compatible API
+    (gptel-make-openai "OpenRouter"               ;Any name you want
+      :host "openrouter.ai"
+      :endpoint "/api/v1/chat/completions"
+      :stream t
+      :key (mz/openrouter-key)                   ;can be a function that returns the key
+      :models '(anthropic/claude-3.5-sonnet
+                openai/gpt-4o-mini))
+    (gptel-make-ollama "Ollama"             ;Any name of your choosing
+    :host "localhost:5859"               ;Where it's running
+    :stream t                             ;Stream responses
+    :models '(deepseek-coder-v2)))         ;List of models ;;Available models
 #+end_src
 ** Github copilot
 #+begin_src emacs-lisp
