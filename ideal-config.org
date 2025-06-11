@@ -560,8 +560,11 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
                   ((org-agenda-overriding-header "Next Tasks")))))
 
           ("W" "Work Tasks"
-           ((tags-todo "-DONE+pmx+cis|today"
-                  ((org-agenda-overriding-header "Tagged Work Tasks: :pmx:, :cis: or :today:")
+           ((tags-todo "-DONE+pmx&today"
+                  ((org-agenda-overriding-header "Today's tasks for PMX")
+                   (org-agenda-files '("~/orgfiles/Inbox.org"))))
+            (tags-todo "-DONE+cis&today"
+                  ((org-agenda-overriding-header "Today's tasks for BEG CIS")
                    (org-agenda-files '("~/orgfiles/Inbox.org"))))))
 
           ("h" "Apartment tasks"
