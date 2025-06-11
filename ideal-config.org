@@ -369,6 +369,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           org-agenda-start-with-log-mode t
           org-log-done 'time
           org-log-into-drawer t
+          org-startup-folded t
           org-src-tab-acts-natively nil) ;Set to prevent problems with pulse
                                          ;package in src blocks
 
@@ -609,8 +610,10 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
    '((emacs-lisp . t )
      (clojure . t)
      (js . t)
+     (sql . t)
      (plantuml . t)
      (shell . t)
+     (gnuplot . t)
      (restclient . t)))
 #+end_src
 *** Layout
