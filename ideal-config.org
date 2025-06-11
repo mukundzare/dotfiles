@@ -918,78 +918,79 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+begin_src emacs-lisp
   (require 'consult)
 
-  ;;Set default font
-  (defvar mz-font-list '("CodeNewRoman Nerd Font-10"
-                          "UbuntuMono Nerd Font-11"
-                          "JetBrainsMono Nerd Font-10"
-                          "Roboto Mono Nerd Font-9"
-                          "FantasqueSansM Nerd Font-11"
-                          "SauceCodePro Nerd Font-10"
-                          "Geist Mono-10"))
+  ;; Font candidates displayed as "Family-Size" but internally parsed if needed
+  (defvar mz-font-list
+    '("UbuntuMono Nerd Font-11"    ;; include size in display for interactive use
+      "Geist Mono-10"
+      "CodeNewRoman Nerd Font-10"
+      "JetBrainsMono Nerd Font-10"
+      "Roboto Mono-9"))
 
-  (defvar mz-fontset-alist '((default . "Geist Mono-10")
-                             (fixed-pitch . "CodeNewRoman Nerd Font-11")
-                             (variable-pitch . "Geist-11")
-                             (org-table . "UbuntuMono Nerd Font-11")
-                             (org-block . "UbuntuMono Nerd Font-11")))
+  ;; Map faces to (family . size) pairs for clarity
+  (defvar mz-fontset-alist
+    '((default        . ("Geist Mono" . 10))
+      (fixed-pitch    . ("Geist Mono" . 11))
+      (variable-pitch . ("Manjari" . 11))
+      (org-table      . ("CodeNewRoman Nerd Font" . 10))
+      (org-block      . ("UbuntuMono Nerd Font" . 10)))
+    "Alist mapping face symbols to (FONT-FAMILY . SIZE-PT) pairs.")
 
-  (cl-defun mz-set-fixed-pitch-font (&optional fix-pitch-font)
-    (interactive)
-    (let* ((chosen-font (or fix-pitch-font
-                            (consult--read mz-font-list
-                                           :prompt "Choose a font: "))))
-      (set-face-attribute 'default nil
-                          :font chosen-font)))
+  (defun mz-set-face-font-via-family (face family size)
+    "Set FACE to FAMILY at SIZE pt, only in GUI frames."
+    (when (display-graphic-p)
+      (condition-case err
+          (set-face-attribute face nil
+                              :family family
+                              :height (* 10 size))
+        (error
+         (message "Failed to set %s to %s at %dpt: %S"
+                  face family size err)))))
 
-  (cl-defun mz-set-variable-pitch-font (&optional var-pitch-font)
-    (interactive)
-    (let* ((chosen-font (or var-pitch-font
-                            (consult--read mz-font-list
-                                           :prompt "Choose a font: "))))
-      (set-face-attribute 'variable-pitch nil
-                          :font chosen-font)))
+  (defun mz-set-fonts ()
+    "Apply fonts from `mz-fontset-alist` for each face, in GUI frames."
+    (dolist (entry mz-fontset-alist)
+      (let ((face (car entry))
+            (pair (cdr entry)))
+        (when (and (consp pair)
+                   (stringp (car pair))
+                   (numberp (cdr pair)))
+          (mz-set-face-font-via-family face (car pair) (cdr pair))))))
 
-  ;; Monospacing some faces
-  ;; Taken from here:
-  ;; https://yoo2080.wordpress.com/2013/05/30/monospace-font-in-tables-and-source-code-blocks-in-org-mode-proportional-font-in-other-parts/
-  (defun my-adjoin-to-list-or-symbol (element list-or-symbol)
-    (let ((list (if (not (listp list-or-symbol))
-                    (list list-or-symbol)
-                  list-or-symbol)))
-      (require 'cl-lib)
-      (cl-adjoin element list)))
-
-
-
-  (cl-defun mz-set-fonts ()
-
-    (dolist (type (mapcar #'car mz-fontset-alist))
-      (set-face-attribute type nil
-                          :font (alist-get type mz-fontset-alist))))
+  (defun mz-setup-org-src-faces ()
+    "Set `org-src-block-faces` in GUI frames only, using family/height."
+    (when (display-graphic-p)
+      (setq org-src-block-faces
+            '(("emacs-lisp" (:family "UbuntuMono Nerd Font" :height 100)))
+            ;; add more languages if desired:
+            ;; '("python" (:family "UbuntuMono Nerd Font" :height 110)) ...
+            )))
 
   (defun mz-set-org-fonts ()
-    ;; Run this func only once during an emacs session.
-    (when (not (bound-and-true-p org-fonts-already-set?))
-      (setq org-src-block-faces
-            '(("emacs-lisp" (:font "UbuntuMono Nerd Font-11"))))
-
-      (mz-set-fonts)
-      (mapc                               ;Taken from blog. See link above
+    "Set Org-mode specific fonts once per session in GUI."
+    (when (and (display-graphic-p)
+               (not (bound-and-true-p org-fonts-already-set?)))
+      (mz-setup-org-src-faces)
+      ;; Ensure code/table faces inherit fixed-pitch:
+      (mapc
        (lambda (face)
-         (set-face-attribute
-          face nil
-          :inherit
-          (my-adjoin-to-list-or-symbol
-           'fixed-pitch
-           (face-attribute face :inherit))))
-       (list 'org-code 'org-block 'org-table))
+         (set-face-attribute face nil
+                             :inherit
+                             (my-adjoin-to-list-or-symbol
+                              'fixed-pitch
+                              (face-attribute face :inherit))))
+       '(org-code org-block org-table))
       (setq org-fonts-already-set? t)))
 
-  ;; Monospacing some faces END
-  (add-hook 'org-mode-hook 'mz-set-org-fonts)
-  (add-hook 'after-init-hook 'mz-set-fonts)
-
-  (set-fontset-font t 'symbol (font-spec :family "Symbols Nerd Font Mono") nil 'prepend)
+  ;; Hooks for initial and new frames
+  (add-hook 'after-init-hook #'mz-set-fonts)
+  (add-hook 'after-make-frame-functions
+            (lambda (frame)
+              (with-selected-frame frame
+                (mz-set-fonts)
+                ;; Add Org hook locally for new frames
+                (add-hook 'org-mode-hook #'mz-set-org-fonts nil t))))
+  ;; Also for the first Org buffers:
+  (add-hook 'org-mode-hook #'mz-set-org-fonts)
 #+end_src
 ** Buffer specific font setup
 #+begin_src emacs-lisp
