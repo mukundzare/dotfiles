@@ -1481,6 +1481,64 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (use-package consult
     :init (setq consult-ripgrep-args              "rg --pre ./home/zam4abt/Brain-dump/gpgdecrypt --null --line-buffered --color=never --max-columns=1000 --path-separator  /   --smart-case --no-heading --with-filename --line-number --search-zip")
     :config
+
+    (defun consult--candidate-consult-location-which-function (cand)
+      (let ((prop 'consult-location))
+        (pcase (get-text-property 0 prop cand)
+          ((or (and (or (and `(,(and (pred markerp) marker) . ,line)
+                             (let `(,buffer . ,point-at-bol)
+                               (cons (marker-buffer marker)
+                                     (marker-position marker))))
+                        `((,buffer . ,point-at-bol) . ,line))
+                    (let ctx
+                      (with-current-buffer buffer
+                        (save-excursion
+                          (goto-char point-at-bol)
+                          (substring-no-properties
+                           (or (which-function)
+                               ""))))))
+               (app (format "%S") ctx))
+           ctx))))
+
+    (defun consult--candidate-consult-location-lisp (cand)
+      (let ((prop 'consult-location))
+        (pcase (get-text-property 0 prop cand)
+          ((app (format "%S") ctx)
+           ctx))))
+
+    (defun consult--candidate-consult-location-line-no (cand)
+      (pcase (get-text-property 0 'consult-location cand)
+        (`(,_ . ,line)
+         line)))
+
+    (defun consult--line-prefix (&optional curr-line)
+      (lexical-let* ((display-style
+                      ;; 'prefix
+                      'suffix
+                      )
+                     (consult--candidate-to-context
+                      ;; #'consult--candidate-consult-location-line-no
+                      #'consult--candidate-consult-location-which-function
+                      ;; #'consult--candidate-consult-location-lisp
+                      ))
+        (pcase display-style
+          (`prefix
+           (lambda (cand)
+             (list cand
+                   (thread-last cand
+                                (funcall (lambda (cand)
+                                           (->> cand
+                                              (funcall consult--candidate-to-context)
+                                              (format "%-50s| ") ; FIXME
+                                              (funcall (-rpartial #'propertize 'face 'marginalia-symbol))))))
+                   "")))
+          (`suffix
+           (lambda (cand)
+             (consult--annotate-align cand
+                                      (->> cand
+                                         (funcall consult--candidate-to-context)
+                                         (funcall (-rpartial #'propertize 'face 'font-lock-warning-face)))))))))
+
     (defun consult-ripgrep-with-init ()
       (interactive)
       (consult-ripgrep "." (thing-at-point 'word)))
