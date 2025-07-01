@@ -686,10 +686,15 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+begin_src emacs-lisp
   (use-package gnuplot)
 #+end_src
-** Org jira
+** Exporting
+*** JIRA
 #+begin_src emacs-lisp
   (use-package ox-jira
     :init (setq org-export-copy-to-kill-ring 'if-interactive))
+#+end_src
+*** Git-flavoured markdown
+#+begin_src emacs-lisp
+  (use-package ox-gfm)
 #+end_src
 ** Google calendar
 #+begin_src emacs-lisp
