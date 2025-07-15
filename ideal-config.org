@@ -773,18 +773,11 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
     (mz/leader-keys
       "t" '(:ignore t :which-key "toggles")
-      "o" '(:ignore t :which-key "opx")
-      "e" '(:ignore t :which-key "emacs")
       "og" '(:ignore t :which-key "git grep")
-      "ow" '(mz/find-work-diary :which-key "Work diary")
-      "tt" '(consult-theme :which-key "choose theme")
-      "tm" '(modus-themes-toggle :which-key "toggle modus themes")
       "db" '(ediff-buffers :which-key "ediff-buffers")
       "df" '(ediff-files :which-key "ediff-files")
       "ogg" '(mz/consult-git-grep-opx :which-key "Search OPX BEG repo")
       "ogs" '(mz/consult-git-grep-std :which-key "Search OPX Std. repo")
-      "ec" '(mz/find-emacs-config-org :which-key "Open emacs config.org")
-      "ei" '(mz/reload-init-el :which-key "Reload init.el")
       "p" '(switch-to-prev-buffer :which-key "switch-to-prev-buffer")
       "n" '(switch-to-next-buffer :which-key "switch-to-next-buffer")
       "s" '(ace-swap-window :which-key "swap windows")))
