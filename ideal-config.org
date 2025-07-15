@@ -1743,6 +1743,18 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
            (text-mode . flyspell-mode)
            (org-mode . (lambda () (flyspell-mode 1)))))
 #+end_src
+** Annotate mode
+#+begin_src emacs-lisp
+  (use-package annotate
+    :hook ((opx2-js-mode . annotate-mode)
+           (pjs-mode . annotate-mode)))
+#+end_src
+** Bug reference
+#+begin_src emacs-lisp
+  (use-package bug-reference
+    :hook ((prog-mode . bug-reference-prog-mode)
+           (org-mode . bug-reference-mode)))
+#+end_src
 * Navigation
 ** iMenu
 #+begin_src emacs-lisp
@@ -2218,6 +2230,12 @@ Inspector tool for Emacs Lisp objects.
         (expand-file-name "~/Downloads/plantuml-1.2024.3.jar"))
   (use-package flycheck-plantuml
     :config (flycheck-plantuml-setup))
+#+end_src
+* Emacs dashboard
+#+begin_src emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config (dashboard-setup-startup-hook))
 #+end_src
 * File management
 ** Treemacs
