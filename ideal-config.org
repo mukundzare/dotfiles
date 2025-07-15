@@ -941,7 +941,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   (defvar mz-fontset-alist
     '((default        . ("Geist Mono" . 10))
       (fixed-pitch    . ("Geist Mono" . 11))
-      (variable-pitch . ("Manjari" . 11))
+      (variable-pitch . ("Raleway" . 11))
       (org-table      . ("CodeNewRoman Nerd Font" . 10))
       (org-block      . ("UbuntuMono Nerd Font" . 10)))
     "Alist mapping face symbols to (FONT-FAMILY . SIZE-PT) pairs.")
@@ -1066,6 +1066,23 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 
 * UI config
 
+** Emojis
+#+begin_src emacs-lisp
+  (quail-define-package
+   "Emoji" "UTF-8" "😎" t
+   "Emoji input mode for people that really, really like Emoji"
+   '(("\t" . quail-completion))
+   t t nil nil nil nil nil nil nil t)
+
+  (quail-define-rules
+   (":)" ?😀)
+   (":P" ?😋)
+   (":D" ?😂)
+   (":thumb:" ?👍)
+   (":ok:" ?✅)
+   (":nok:" ?❌)
+   (":info:" ?🔔))
+#+end_src
 ** Themes
 #+begin_src emacs-lisp
   (use-package modus-themes
@@ -1390,6 +1407,11 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
              :fringe-width 8))
     :custom (spacious-padding-subtle-mode-line t)
     :config (spacious-padding-mode 1))
+#+end_src
+** Page break mode
+#+begin_src emacs-lisp
+  (use-package page-break-lines
+    :config (global-page-break-lines-mode))
 #+end_src
 * Completion
 ** Minibuffer Completion
