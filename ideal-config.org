@@ -513,7 +513,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
            :empty-lines 1)
           ("jw" "Work Journal" entry
            (file+olp+datetree "Work-Journal.org")
-           "\n* %<%I:%M %p> - Journal :journal:\n\n%?\n\n"
+           "\n* %<%I:%M %p> \n\n%?\n\n"
            :clock-in :clock-resume
            :empty-lines 1)
           ("jt" "Trading Journal" entry
@@ -524,7 +524,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           ("s" "Scratch" entry
            (file+olp+datetree "Scratch.org")
            "\n* %<%I:%M %p> - Scratch :scratch:\n\n%?\n\n")
-          ("r" "Track behaviour" entry
+          ("b" "Track behaviour" entry
            (file+olp+datetree "behaviour.org.gpg")
            "\n* %<%I:%M %p> - Behaviour :journal:\n\n%?\n\n"
            :clock-in :clock-resume
@@ -532,6 +532,8 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           ("i" "Info" entry (file "Inbox.org")
            "* TODO %?\n %U\n %x\n %i" :empty-lines 1)
           ("g" "Gratitude" entry (file "gratitude.org")
+           "* %?\n" :empty-lines 1)
+          ("r" "Rules for life" entry (file "rules.org")
            "* %?\n" :empty-lines 1)
           ("m" "Metrics Capture")
           ("mw" "Weight" table-line (file+headline "weight.org" "Weight")
