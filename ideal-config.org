@@ -1817,7 +1817,8 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (use-package imenu-list
     :init (setq imenu-list-auto-resize 1
                 imenu-list-after-jump-hook (lambda () (recenter-top-bottom 5)))
-    :config (imenu-list-minor-mode))
+    :hook ((opx2-js-mode . imenu-list-minor-mode)
+           (pjs-mode . imenu-list-minor-mode)))
 #+end_src
 ** Avy
 #+begin_src emacs-lisp
