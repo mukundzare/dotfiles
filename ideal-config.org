@@ -541,6 +541,18 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           ("mm" "Measurements" table-line (file+headline "measurements.org" "Weight")
            "| %U | %^{Abdomen} | %^{Left thigh} | %^{Right thigh}|" :kill-buffer t)))
   (define-key global-map (kbd "C-c c") 'org-capture)
+
+  ;; Set the creation date for the org elements one creation.
+
+  (defun set-creation-date-heading-property ()
+    (when (member (buffer-name) '("Inbox.org" "CAPTURE-Inbox.org"))
+      (save-excursion
+        (org-back-to-heading)
+        (org-set-property "CREATED" (format-time-string "[%Y-%m-%d %T]")))))
+
+  (add-hook 'org-capture-before-finalize-hook #'set-creation-date-heading-property)
+
+
 #+end_src
 ** Org Agenda
 #+begin_src emacs-lisp
