@@ -736,6 +736,10 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
   (use-package gnuplot)
 #+end_src
 ** Exporting
+*** Pandoc
+#+begin_src emacs-lisp
+  (use-package ox-pandoc)
+#+end_src
 *** JIRA
 #+begin_src emacs-lisp
   (use-package ox-jira
