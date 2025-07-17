@@ -552,6 +552,10 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
   (add-hook 'org-agenda-mode-hook
             #'mz/org-agenda-truncate-long-lines)
 
+
+  (add-hook 'org-agenda-finalize-hook
+            #'mz/org-agenda-truncate-long-lines)
+
   (setq org-agenda-files
         '("~/orgfiles/personal.org"
           "~/orgfiles/projects.org"
