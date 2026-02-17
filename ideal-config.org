@@ -354,7 +354,8 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 ** Org mode (MAIN)
 #+begin_src emacs-lisp
   (use-package org
-    :init (setq org-clock-sound "~/Downloads/mixkit-uplifting-bells-notification-938.wav")
+    :init (setq org-clock-sound "~/Downloads/mixkit-uplifting-bells-notification-938.wav"
+                org-fold-core-style 'overlays)
     :hook (org-mode . mz/org-mode-setup)
     :custom
     ;;
