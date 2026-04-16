@@ -81,8 +81,7 @@ POWERLINE9K_MODE="nerdfont-complete"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-export FZF_BASE="/home/linuxbrew/.linuxbrew/opt/fzf"
-
+export FZF_BASE=$(which fzf)
 export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --margin=2' 
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
@@ -115,7 +114,6 @@ fi
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-alias vpnstat='nmcli con show -active | grep -i "tun"'
 
 #Copy to keyboard using command | ctc
 #Example: pwd | ctc will copy the current working dir
@@ -126,11 +124,8 @@ alias ctc="xclip -selection clipboard"
 bindkey -v
 export KEYTIMEOUT=1
 
-#Set homebrew path
-export PATH="/home/linuxbrew/.linuxbrew/bin:$PATH"
-
 #Set java into $PATH
-#export PATH="/usr/bin/jdk-16.0.1/bin:$PATH"
+export PATH="/usr/bin/jdk-16.0.1/bin:$PATH"
 
 #Set GOBIN path for go packages
 export PATH="/home/zam4abt/go/bin:$PATH"
@@ -150,11 +145,12 @@ alias ll='ls -alht'
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
+. "/home/zam4abt/.local/share/lscolors.sh"
+
 GPG_TTY=$(tty)
 export GPG_TTY
 
 export NETRC="~/dotfiles/"
-alias curl="gpg --batch -q -d ~/.netrc.gpg | curl --netrc-file /dev/stdin"
 
 # For emacs vterm compatibility
 vterm_printf(){
@@ -175,16 +171,4 @@ vterm_prompt_end() {
 setopt PROMPT_SUBST
 PROMPT=$PROMPT'%{$(vterm_prompt_end)%}'
 fpath+=${ZDOTDIR:-~}/.zsh_functions
-
-export MOBIFY_TARGETS="~/share/:~/Downloads/:~/books"
-
-export ORACLE_HOME=/opt/oracle/instantclient_21_4
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$ORACLE_HOME/lib:$ORACLE_HOME
-export PATH=$LD_LIBRARY_PATH:$PATH
-export PATH=/home/zam4abt/work/tools/adr-tools/src:$PATH
-# Path to go
-export PATH=/usr/local/go/bin:$PATH
-
-#Path to GraalVM_HOME for babashka.
-#See here: https://github.com/babashka/babashka/blob/master/doc/build.md
-export GRAALVM_HOME=/usr/lib/jvm//usr/lib/jvm/graalvm-jdk-22+36.1/bin/
+NODE_EXTRA_CA_CERTS="/usr/local/share/ca-certificates/Bosch-CA-DE.crt"
