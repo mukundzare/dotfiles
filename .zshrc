@@ -145,7 +145,6 @@ alias ll='ls -alht'
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
-. "/home/zam4abt/.local/share/lscolors.sh"
 
 GPG_TTY=$(tty)
 export GPG_TTY
@@ -172,3 +171,4 @@ setopt PROMPT_SUBST
 PROMPT=$PROMPT'%{$(vterm_prompt_end)%}'
 fpath+=${ZDOTDIR:-~}/.zsh_functions
 NODE_EXTRA_CA_CERTS="/usr/local/share/ca-certificates/Bosch-CA-DE.crt"
+source ~/private/.plw-mcp/env

@@ -3,6 +3,3 @@
 **/#*#
 *.el
 *.gpg
-
-#Pandora specific
-/home/zam4abt/work/pandora/ico2.ppm.pandora/.doc/technical/*.html/
