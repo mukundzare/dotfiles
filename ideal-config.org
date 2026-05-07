@@ -383,16 +383,9 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
     (add-to-list 'org-structure-template-alist '("pu" . "src plantuml"))
     (add-to-list 'org-structure-template-alist '("rc" . "src restclient"))
     (setq org-tag-alist
-          '((:startgroup)                 ;Group tags are always mutually
-                                          ;exclusive, i.e. either one of these
-                                          ;tags can be set as a tag
-            ("@home" . ?H)
-            ("@work" . ?W)
-            ("@outside" . ?O)
-            (:endgroup)
-            (:startgrouptag)
-            ("productivity")
-            (:grouptags)
+          '((:startgrouptag)              ;Group tags are always mutually
+            ("productivity")              ;exclusive, i.e. either one of these
+            (:grouptags)                  ;tags can be set as a tag
             ("emacs" . ?e)
             ("workflow" . ?w)
             (:endgrouptag)
@@ -400,7 +393,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
             ("@home")
             (:grouptags)
             ("errand" . ?E)
-            ("family" . ?n)
+            ("family" . ?f)
             ("buy" . ?b)
             (:endgrouptag)
             (:startgrouptag)
@@ -408,13 +401,11 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
             (:grouptags)
             ("cis" . ?c)
             ("pmx" . ?p)
+            ("migration" . ?m)
             ("opx" . ?o)
-            ("daily" . ?d)
-            ("weekly" . ?e)
             (:endgrouptag)
-            ("trading" . ?m)
+            ("trading" . ?t)
             ("recurring" . ?r)
-            ("today" . ?t)
             ("idea" . ?i))))
   ;(require 'org-habit)
   ;(add-to-list 'org-modules 'org-habit)
