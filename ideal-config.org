@@ -1117,7 +1117,10 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     :config
     (global-undo-tree-mode))
 #+end_src
-
+** Session saving
+#+begin_src emacs-lisp
+(desktop-save-mode 1)
+#+end_src
 * UI config
 
 ** Emojis
