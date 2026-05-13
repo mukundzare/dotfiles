@@ -1,0 +1,42 @@
+#+TITLE: Early Init Config
+#+PROPERTY: header-args:emacs-lisp :tangle ./early-init.el :mkdirp yes
+#+HTML_HEAD: <style>pre.src{background :#343131 ;color:white;} </style>
+
+* Garbage Collection
+#+begin_src emacs-lisp
+(setq gc-cons-threshold 100000000)
+#+end_src
+
+* File Name Handler
+#+begin_src emacs-lisp
+(defvar file-name-handler-alist-original file-name-handler-alist)
+(setq file-name-handler-alist nil)
+#+end_src
+
+* Site Run File
+#+begin_src emacs-lisp
+(setq site-run-file nil)
+#+end_src
+
+* UI Configuration
+** Menu Bar
+#+begin_src emacs-lisp
+(menu-bar-mode -1)
+(unless (and (display-graphic-p) (eq system-type 'darwin))
+  (push '(menu-bar-lines . 0) default-frame-alist))
+#+end_src
+
+** Tool Bar
+#+begin_src emacs-lisp
+(push '(tool-bar-lines . 0) default-frame-alist)
+#+end_src
+
+** Scroll Bars
+#+begin_src emacs-lisp
+(push '(vertical-scroll-bars) default-frame-alist)
+#+end_src
+
+* Package Initialization
+#+begin_src emacs-lisp
+(setq package-enable-at-startup nil)
+#+end_src

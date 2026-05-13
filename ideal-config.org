@@ -264,7 +264,6 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
     (goto-char (point-max))
     (eval-print-last-sexp)))
     (load bootstrap-file nil 'nomessage))
-  (setq package-enable-at-startup nil)
 #+end_src
 ** Autoupdate packages
 #+begin_src emacs-lisp
