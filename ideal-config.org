@@ -1948,7 +1948,15 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   ;; magit
   (use-package magit
     :config
-    (global-set-key (kbd "C-x g") 'magit-status))
+    (global-set-key (kbd "C-x g") 'magit-status)
+    ;; dabbrev scans all open buffers for completions; Magit kills temporary
+    ;; buffers between when dabbrev collects the list and when it visits them,
+    ;; causing "Selecting deleted buffer".  Restrict dabbrev to the current
+    ;; buffer only while writing commit messages.
+    (add-hook 'git-commit-mode-hook
+              (lambda ()
+                (setq-local dabbrev-check-other-buffers nil
+                            dabbrev-check-all-buffers nil))))
 #+end_src
 
 * Development
