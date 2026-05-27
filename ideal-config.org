@@ -2344,6 +2344,7 @@ Inspector tool for Emacs Lisp objects.
 * Emacs dashboard
 #+begin_src emacs-lisp
   (use-package dashboard
+    :disabled t
     :ensure t
     :config (dashboard-setup-startup-hook))
 #+end_src
