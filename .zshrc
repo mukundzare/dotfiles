@@ -128,7 +128,9 @@ export KEYTIMEOUT=1
 export PATH="/usr/bin/jdk-16.0.1/bin:$PATH"
 
 #Set GOBIN path for go packages
-export PATH="/home/zam4abt/go/bin:$PATH"
+export GOROOT=/usr/local/go
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 export PATH="${PATH}:${HOME}/.local/bin/"
 export http_proxy=http://localhost:3128
