@@ -525,12 +525,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           ("g" "Gratitude" entry (file "gratitude.org")
            "* %?\n" :empty-lines 1)
           ("r" "Rules for life" entry (file "rules.org")
-           "* %?\n" :empty-lines 1)
-          ("m" "Metrics Capture")
-          ("mw" "Weight" table-line (file+headline "weight.org" "Weight")
-           "| %U | %^{Weight} | %^{Notes} |" :kill-buffer t)
-          ("mm" "Measurements" table-line (file+headline "measurements.org" "Weight")
-           "| %U | %^{Abdomen} | %^{Left thigh} | %^{Right thigh}|" :kill-buffer t)))
+           "* %?\n" :empty-lines 1)))
   (define-key global-map (kbd "C-c c") 'org-capture)
 
   ;; Set the creation date for the org elements one creation.
@@ -543,6 +538,369 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 
   (add-hook 'org-capture-before-finalize-hook #'set-creation-date-heading-property)
 
+
+#+end_src
+** Daily Wellbeing Check-in
+Automated morning check-in that pops up on startup and during idle
+time. Entries are stored in =~/orgfiles/daily-log.org= as headed
+org entries with machine-readable properties for later analysis.
+
+Tracked fields:
+- *Last night*: sleep hours, sleep quality
+- *Right now*: energy, mood, stress, anxiety
+- *Yesterday*: exercise, food quality, breakfast, lunch, dinner,
+  tea, coffee, alcohol, deep-work hours, productivity, social quality
+- *Reflections*: best thing, main challenge, gratitude,
+  what is lacking/better, what is getting worse, free notes
+
+Key bindings inside the check-in buffer:
+| =C-c C-c= | Save & close                 |
+| =C-c s=   | Snooze (prompts for minutes) |
+| =C-c C-k= | Cancel (entry not saved)     |
+| =C-c m d= | Open manually from anywhere  |
+
+#+begin_src emacs-lisp
+  ;;; ──────────────────────────────────────────────────────────────────
+  ;;; Daily Wellbeing & Metrics Check-in
+  ;;; ──────────────────────────────────────────────────────────────────
+
+  (defvar mz/daily-log-file "~/orgfiles/daily-log.org"
+    "Org file where daily wellbeing entries are stored.")
+
+  (defvar mz/daily-log-idle-timer nil
+    "Repeating idle timer handle for the morning check-in popup.")
+
+  (defvar mz/daily-log-snooze-timer nil
+    "One-shot timer handle when a snooze is active.")
+
+  (defconst mz/daily-log-morning-start 6
+    "First hour (0-23) of the morning popup window.")
+
+  (defconst mz/daily-log-morning-end 11
+    "Last hour (exclusive, 0-23) of the morning popup window.")
+
+  (defconst mz/daily-log-idle-seconds 300
+    "Seconds of idle time before the morning check-in popup is shown.")
+
+  ;;; ── Predicates ────────────────────────────────────────────────────
+
+  (defun mz/daily-log-today ()
+    "Return today's date as YYYY-MM-DD."
+    (format-time-string "%Y-%m-%d"))
+
+  (defun mz/daily-log-logged-p ()
+    "Return non-nil if a check-in entry for today already exists."
+    (let ((f (expand-file-name mz/daily-log-file)))
+      (when (file-exists-p f)
+        (with-temp-buffer
+          (insert-file-contents f)
+          (goto-char (point-min))
+          (re-search-forward
+           (concat ":DAILY_DATE:[[:space:]]+" (regexp-quote (mz/daily-log-today)))
+           nil t)))))
+
+  (defun mz/daily-log-normalize-key (raw)
+    "Normalize RAW key text from form labels to canonical storage keys."
+    (let* ((k (downcase (string-trim raw)))
+           (k (replace-regexp-in-string "[^[:alnum:]]+" "_" k))
+           (k (replace-regexp-in-string "_+" "_" k))
+           (k (replace-regexp-in-string "^_\\|_$" "" k)))
+      (pcase k
+        ((or "what_am_i_lacking_and_what_could_be_better"
+             "what_is_lacking_and_what_could_be_better"
+             "lacking_and_better")
+         "lacking_and_better")
+        ((or "what_is_getting_worse" "getting_worse") "getting_worse")
+        ((or "deep_work_hrs" "deep_work_hour" "deep_work") "deep_work_hours")
+        (_ k))))
+
+  (defun mz/daily-log-morning-window-p ()
+    "Return non-nil if the current hour is within the morning window."
+    (let ((hour (nth 2 (decode-time))))
+      (and (>= hour mz/daily-log-morning-start)
+           (<  hour mz/daily-log-morning-end))))
+
+  ;;; ── Template ──────────────────────────────────────────────────────
+
+  (defun mz/daily-log-template ()
+    "Return the check-in form string with today's date filled in."
+    (concat
+     "# ════════════════════════════════════════════════════════════\n"
+     "# Daily Wellbeing Check-in  ·  " (mz/daily-log-today) "\n"
+     "#\n"
+     "# Fill each field after the colon.  Scales: 1 (worst) – 10 (best).\n"
+     "# C-c C-c  Save & close     C-c s  Snooze     C-c C-k  Cancel\n"
+     "# ════════════════════════════════════════════════════════════\n"
+     "\n"
+     "──── LAST NIGHT ─────────────────────────────────────────────\n"
+     "sleep_hours:        \n"
+     "sleep_quality:      \n"
+     "\n"
+     "──── RIGHT NOW ──────────────────────────────────────────────\n"
+     "energy:             \n"
+     "mood:               \n"
+     "stress:             \n"
+     "anxiety:            \n"
+     "\n"
+     "──── YESTERDAY ──────────────────────────────────────────────\n"
+     "exercise:           \n"
+     "food_quality:       \n"
+    "breakfast:          \n"
+    "lunch:              \n"
+    "dinner:             \n"
+    "tea:                \n"
+    "coffee:             \n"
+     "alcohol:            \n"
+     "deep_work_hours:    \n"
+     "productivity:       \n"
+     "social_quality:     \n"
+     "\n"
+     "──── REFLECTIONS ────────────────────────────────────────────\n"
+     "Best thing:         \n"
+     "challenge:          \n"
+     "Gratitude:          \n"
+    "What is lacking and what could be better?: \n"
+    "What is getting worse?:      \n"
+     "Notes:              \n"
+     "\n"))
+
+  (defun mz/daily-log--find-entry-block (&optional date)
+    "Return latest check-in entry block as string.
+If DATE is non-nil, return latest block matching DATE (YYYY-MM-DD)."
+    (let ((f (expand-file-name mz/daily-log-file))
+          (found nil))
+      (when (file-exists-p f)
+        (with-temp-buffer
+          (insert-file-contents f)
+          (goto-char (point-min))
+          (while (re-search-forward "^\\* Check-in " nil t)
+            (let* ((beg (line-beginning-position))
+                   (end (or (save-excursion
+                              (when (re-search-forward "^\\* Check-in " nil t)
+                                (line-beginning-position)))
+                            (point-max)))
+                   (block (buffer-substring-no-properties beg end)))
+              (when (or (null date)
+                        (string-match-p
+                         (format ":DAILY_DATE:[[:space:]]*%s" (regexp-quote date))
+                         block))
+                (setq found block))
+              (goto-char end)))))
+      found))
+
+  (defun mz/daily-log--extract (block regexp)
+    "Extract first capture group from BLOCK with REGEXP; return empty string on miss."
+    (if (and block (string-match regexp block))
+        (string-trim (match-string 1 block))
+      ""))
+
+  (defun mz/daily-log-default-values ()
+    "Return an alist of defaults from today's latest entry, else latest previous entry."
+    (let* ((today-block (mz/daily-log--find-entry-block (mz/daily-log-today)))
+           (block (or today-block (mz/daily-log--find-entry-block))))
+      (when block
+        (let ((case-fold-search t))
+          `(("sleep_hours"        . ,(mz/daily-log--extract block ":SLEEP_HOURS:[ \t]*\\([^\n]*\\)"))
+            ("sleep_quality"      . ,(mz/daily-log--extract block ":SLEEP_QUALITY:[ \t]*\\([^\n]*\\)"))
+            ("energy"             . ,(mz/daily-log--extract block ":ENERGY:[ \t]*\\([^\n]*\\)"))
+            ("mood"               . ,(mz/daily-log--extract block ":MOOD:[ \t]*\\([^\n]*\\)"))
+            ("stress"             . ,(mz/daily-log--extract block ":STRESS:[ \t]*\\([^\n]*\\)"))
+            ("anxiety"            . ,(mz/daily-log--extract block ":ANXIETY:[ \t]*\\([^\n]*\\)"))
+            ("exercise"           . ,(mz/daily-log--extract block ":EXERCISE:[ \t]*\\([^\n]*\\)"))
+            ("food_quality"       . ,(mz/daily-log--extract block ":FOOD_QUALITY:[ \t]*\\([^\n]*\\)"))
+            ("breakfast"          . ,(mz/daily-log--extract block ":BREAKFAST:[ \t]*\\([^\n]*\\)"))
+            ("lunch"              . ,(mz/daily-log--extract block ":LUNCH:[ \t]*\\([^\n]*\\)"))
+            ("dinner"             . ,(mz/daily-log--extract block ":DINNER:[ \t]*\\([^\n]*\\)"))
+            ("tea"                . ,(mz/daily-log--extract block ":TEA:[ \t]*\\([^\n]*\\)"))
+            ("coffee"             . ,(mz/daily-log--extract block ":COFFEE:[ \t]*\\([^\n]*\\)"))
+            ("alcohol"            . ,(mz/daily-log--extract block ":ALCOHOL:[ \t]*\\([^\n]*\\)"))
+            ("deep_work_hours"    . ,(mz/daily-log--extract block ":DEEP_WORK_HRS:[ \t]*\\([^\n]*\\)"))
+            ("productivity"       . ,(mz/daily-log--extract block ":PRODUCTIVITY:[ \t]*\\([^\n]*\\)"))
+            ("social_quality"     . ,(mz/daily-log--extract block ":SOCIAL_QUALITY:[ \t]*\\([^\n]*\\)"))
+            ("best_thing"         . ,(mz/daily-log--extract block "^- \\*Best thing\\*:[ \t]*\\([^\n]*\\)"))
+            ("challenge"          . ,(mz/daily-log--extract block "^- \\*Challenge\\*:[ \t]*\\([^\n]*\\)"))
+            ("gratitude"          . ,(mz/daily-log--extract block "^- \\*Gratitude\\*:[ \t]*\\([^\n]*\\)"))
+            ("lacking_and_better" . ,(mz/daily-log--extract block "^- \\*What is lacking and what could be better?\\*:[ \t]*\\([^\n]*\\)"))
+            ("getting_worse"      . ,(mz/daily-log--extract block "^- \\*What is getting worse?\\*:[ \t]*\\([^\n]*\\)"))
+            ("notes"              . ,(mz/daily-log--extract block "^- \\*Notes\\*:[ \t]*\\([^\n]*\\)")))))))
+
+  (defun mz/daily-log-template-with-defaults ()
+    "Return check-in template optionally prefilled from latest saved values."
+    (let ((pairs (mz/daily-log-default-values))
+          (template (mz/daily-log-template)))
+      (if (null pairs)
+          template
+        (with-temp-buffer
+          (insert template)
+          (goto-char (point-min))
+          (while (re-search-forward "^\\([^#\n:][^:\n]*\\):[ \t]*\\(.*\\)$" nil t)
+            (let* ((raw-key (match-string-no-properties 1))
+                   (canon-key (mz/daily-log-normalize-key raw-key))
+                   (v (cdr (assoc canon-key pairs))))
+              (when (and v (not (string-empty-p v)))
+                (replace-match v t t nil 2))))
+          (buffer-string)))))
+
+  ;;; ── Parse & Save ──────────────────────────────────────────────────
+
+  (defun mz/daily-log-parse ()
+    "Parse the check-in buffer; return list of (KEY . VALUE) cons cells."
+    (let (result)
+      (save-excursion
+        (goto-char (point-min))
+        (while (re-search-forward
+          "^\\([^#\n:][^:\n]*\\):[ \t]*\\(.*\\)$" nil t)
+        (let ((k (mz/daily-log-normalize-key (match-string-no-properties 1)))
+                (v (string-trim (match-string-no-properties 2))))
+            (push (cons k v) result))))
+      (nreverse result)))
+
+  (defun mz/daily-log-save (pairs)
+    "Append an org entry built from PAIRS to `mz/daily-log-file'."
+    (let* ((f   (expand-file-name mz/daily-log-file))
+           (ts  (format-time-string "[%Y-%m-%d %a %H:%M]"))
+           (get (lambda (k) (or (cdr (assoc k pairs)) ""))))
+      (unless (file-exists-p f)
+        (with-temp-file f
+          (insert "#+TITLE: Daily Wellbeing Log\n"
+                  "#+STARTUP: overview\n\n")))
+      (with-current-buffer (find-file-noselect f)
+        (goto-char (point-max))
+        (unless (bolp) (insert "\n"))
+        (insert
+         (format "* Check-in %s\n" ts)
+         ":PROPERTIES:\n"
+         (format ":DAILY_DATE:      %s\n" (mz/daily-log-today))
+         (format ":SLEEP_HOURS:     %s\n" (funcall get "sleep_hours"))
+         (format ":SLEEP_QUALITY:   %s\n" (funcall get "sleep_quality"))
+         (format ":ENERGY:          %s\n" (funcall get "energy"))
+         (format ":MOOD:            %s\n" (funcall get "mood"))
+         (format ":STRESS:          %s\n" (funcall get "stress"))
+         (format ":ANXIETY:         %s\n" (funcall get "anxiety"))
+         (format ":EXERCISE:        %s\n" (funcall get "exercise"))
+         (format ":FOOD_QUALITY:    %s\n" (funcall get "food_quality"))
+         (format ":BREAKFAST:       %s\n" (funcall get "breakfast"))
+         (format ":LUNCH:           %s\n" (funcall get "lunch"))
+         (format ":DINNER:          %s\n" (funcall get "dinner"))
+         (format ":TEA:             %s\n" (funcall get "tea"))
+         (format ":COFFEE:          %s\n" (funcall get "coffee"))
+         (format ":ALCOHOL:         %s\n" (funcall get "alcohol"))
+         (format ":DEEP_WORK_HRS:   %s\n" (funcall get "deep_work_hours"))
+         (format ":PRODUCTIVITY:    %s\n" (funcall get "productivity"))
+         (format ":SOCIAL_QUALITY:  %s\n" (funcall get "social_quality"))
+         ":END:\n\n"
+         (format "- *Best thing*:  %s\n" (funcall get "best_thing"))
+         (format "- *Challenge*:   %s\n" (funcall get "challenge"))
+         (format "- *Gratitude*:   %s\n" (funcall get "gratitude"))
+         (let ((l (funcall get "lacking_and_better")))
+           (if (string-empty-p l) ""
+             (format "- *What is lacking and what could be better?*: %s\n" l)))
+         (let ((w (funcall get "getting_worse")))
+           (if (string-empty-p w) ""
+             (format "- *What is getting worse?*: %s\n" w)))
+         (let ((n (funcall get "notes")))
+           (if (string-empty-p n) ""
+             (format "- *Notes*:       %s\n" n)))
+         "\n")
+        (save-buffer))))
+
+  ;;; ── Buffer & Commands ─────────────────────────────────────────────
+
+  (defvar mz/daily-log-mode-map
+    (let ((m (make-sparse-keymap)))
+      (define-key m (kbd "C-c C-c") #'mz/daily-log-submit)
+      (define-key m (kbd "C-c C-k") #'mz/daily-log-cancel)
+      (define-key m (kbd "C-c s")   #'mz/daily-log-snooze)
+      m)
+    "Keymap active inside the Daily Wellbeing Check-in buffer.")
+
+  (define-minor-mode mz/daily-log-mode
+    "Minor mode for the Daily Wellbeing Check-in buffer.
+  \\{mz/daily-log-mode-map}"
+    :lighter " DailyLog"
+    :keymap mz/daily-log-mode-map)
+
+  (defun mz/daily-log-submit ()
+    "Parse, save, and close the check-in buffer."
+    (interactive)
+    (let ((pairs (mz/daily-log-parse)))
+      (cond
+       ((null pairs)
+        (message "No fields found – the template may be malformed."))
+       ((cl-every (lambda (p) (string-empty-p (cdr p))) pairs)
+        (when (yes-or-no-p "All fields are empty – save anyway? ")
+          (mz/daily-log-save pairs)
+          (quit-window t)))
+       (t
+        (mz/daily-log-save pairs)
+        (quit-window t)
+        (message "Daily check-in saved for %s." (mz/daily-log-today))))))
+
+  (defun mz/daily-log-cancel ()
+    "Close the check-in buffer without saving."
+    (interactive)
+    (quit-window t)
+    (message "Check-in cancelled – will reappear next morning."))
+
+  (defun mz/daily-log-snooze ()
+    "Snooze the check-in for a user-specified number of minutes."
+    (interactive)
+    (let* ((raw  (read-string "Snooze for how many minutes? [30]: " nil nil "30"))
+           (mins (string-to-number raw)))
+      (if (<= mins 0)
+          (message "Invalid snooze duration.")
+        (when (timerp mz/daily-log-snooze-timer)
+          (cancel-timer mz/daily-log-snooze-timer))
+        (setq mz/daily-log-snooze-timer
+              (run-at-time (* mins 60) nil #'mz/daily-log-open))
+        (quit-window t)
+        (message "Check-in snoozed for %d minute(s)." mins))))
+
+  (defun mz/daily-log-open (&optional force)
+    "Open the daily check-in buffer.
+When FORCE is non-nil, open even if today is already logged."
+    (interactive)
+    (if (and (not force) (mz/daily-log-logged-p))
+        (when (called-interactively-p 'any)
+          (message "Already logged today (%s)." (mz/daily-log-today)))
+      ;; Reuse any existing buffer to avoid wiping in-progress entry
+      (let ((existing (get-buffer "*Daily Check-in*")))
+        (if existing
+            (pop-to-buffer existing)
+          (let ((buf (get-buffer-create "*Daily Check-in*")))
+            (with-current-buffer buf
+              (let ((inhibit-read-only t))
+                (erase-buffer)
+                (insert (mz/daily-log-template-with-defaults))
+                (goto-char (point-min))
+                (re-search-forward "sleep_hours:[[:space:]]+" nil t))
+              (mz/daily-log-mode 1))
+            (pop-to-buffer buf))))))
+
+  ;;; ── Startup & Idle Scheduling ─────────────────────────────────────
+
+  (defun mz/daily-log-maybe-open ()
+    "Open check-in only during the morning window and when not yet logged."
+    (when (and (mz/daily-log-morning-window-p)
+               (not (mz/daily-log-logged-p)))
+      (mz/daily-log-open)))
+
+  (defun mz/daily-log-setup ()
+    "Run the check-in immediately at startup; install a repeating idle timer."
+    (mz/daily-log-maybe-open)
+    (when (timerp mz/daily-log-idle-timer)
+      (cancel-timer mz/daily-log-idle-timer))
+    (setq mz/daily-log-idle-timer
+          (run-with-idle-timer mz/daily-log-idle-seconds t
+                               #'mz/daily-log-maybe-open)))
+
+  (add-hook 'emacs-startup-hook #'mz/daily-log-setup)
+
+  ;; Manual trigger from anywhere
+  (define-key global-map (kbd "C-c m d")
+              (lambda ()
+                (interactive)
+                (mz/daily-log-open t)))
 
 #+end_src
 ** Org Agenda
