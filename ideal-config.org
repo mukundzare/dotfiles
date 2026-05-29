@@ -696,9 +696,9 @@ If DATE is non-nil, return latest block matching DATE (YYYY-MM-DD)."
       ""))
 
   (defun mz/daily-log-default-values ()
-    "Return an alist of defaults from today's latest entry, else latest previous entry."
-    (let* ((today-block (mz/daily-log--find-entry-block (mz/daily-log-today)))
-           (block (or today-block (mz/daily-log--find-entry-block))))
+    "Return an alist of defaults from today's entry only.
+Never prefill from a previous day's data."
+    (let* ((block (mz/daily-log--find-entry-block (mz/daily-log-today))))
       (when block
         (let ((case-fold-search t))
           `(("sleep_hours"        . ,(mz/daily-log--extract block ":SLEEP_HOURS:[ \t]*\\([^\n]*\\)"))
