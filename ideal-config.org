@@ -2237,6 +2237,31 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
       (vhl/define-extension 'undo-tree 'undo-tree-yank)
       (vhl/install-extension 'undo-tree)))
 #+end_src
+** Casual suite
+#+begin_src emacs-lisp
+  (use-package casual
+    :bind (:map org-agenda-mode-map
+                ("C-ü" . casual-agenda-tmenu)
+                :map org-mode-map
+                ("C-ü" . casual-org-tmenu)
+                :map calendar-mode-map
+                ("C-ü" . casual-calendar)
+                :map bookmark-bmenu-mode-map
+                ("C-ü" . casual-bookmarks-tmenu)
+                :map image-mode-map
+                ("C-ü" . casual-image-tmenu)
+                :map org-table-fedit-map
+                ("M-ü" . casual-org-table-fedit-tmenu)
+                :map dired-mode-map
+                ("C-ü" . casual-dired-tmenu)
+                ("s" . casual-dired-sort-by-tmenu)
+                ("/" . 'casual-dired-search-replace-tmenu)))
+#+end_src
+*** Casual Avy
+#+begin_src emacs-lisp
+  (use-package casual-avy
+    :bind ("C-ö" . casual-avy-tmenu))
+#+end_src
 * Navigation
 ** iMenu
 #+begin_src emacs-lisp
@@ -2264,8 +2289,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+end_src
 ** Avy
 #+begin_src emacs-lisp
-  (use-package avy
-    :bind ("C-ö" . avy-goto-char-timer))
+  (use-package avy)
 #+end_src
 * Encryption
 ** General
