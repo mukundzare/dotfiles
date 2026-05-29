@@ -937,6 +937,59 @@ When FORCE is non-nil, open even if today is already logged."
           ("OPX" "~/Pictures/plw_v6_logo.png" nil nil :ascent center)
           ("CIS" "~/Pictures/golang.png" nil nil :ascent center)
           ("emacs" "~/Pictures/emacs.png" nil nil :ascent center)))
+  (defun mz/random-rules (n)
+    "Return N random rules from ~/orgfiles/rules.org as a formatted string."
+    (let ((file (expand-file-name "~/orgfiles/rules.org"))
+          rules)
+      (when (file-exists-p file)
+        (with-temp-buffer
+          (insert-file-contents file)
+          (org-mode)
+          (goto-char (point-min))
+          (while (re-search-forward "^\\*+ \\(.+\\)$" nil t)
+            (push (match-string-no-properties 1) rules))))
+      (if (null rules)
+          "(No rules found in rules.org)"
+        (let* ((shuffled (seq-take (seq-sort-by (lambda (_) (random)) #'< rules) n))
+               (numbered (seq-map-indexed
+                          (lambda (r i)
+                            (format "  %d. %s" (1+ i) r))
+                          shuffled)))
+          (mapconcat #'identity numbered "\n")))))
+
+  (defun mz/rules-agenda-header ()
+    "Return an agenda header string with 3 random rules."
+    (concat "📜 RULES TO REMEMBER\n"
+            (mz/random-rules 3)
+            "\n"))
+
+  (defface mz/agenda-rules-header-face
+    '((t :inherit error :weight bold :height 1.3))
+    "Face for the random rules header in the agenda dashboard.")
+
+  (defface mz/agenda-rules-body-face
+    '((t :inherit warning :weight bold :height 1.1))
+    "Face for the random rules body in the agenda dashboard.")
+
+  (defun mz/insert-rules-into-agenda ()
+    "Insert a random rules banner above the FOCUS TASKS section."
+    (when (derived-mode-p 'org-agenda-mode)
+      (let ((inhibit-read-only t))
+        (save-excursion
+          (goto-char (point-min))
+          (when (and (re-search-forward "^🪔 FOCUS TASKS" nil t)
+                     (not (save-excursion
+                            (goto-char (point-min))
+                            (re-search-forward "^📜 RULES TO REMEMBER" nil t))))
+            (beginning-of-line)
+            (let* ((header (propertize "📜 RULES TO REMEMBER\n"
+                                       'face 'mz/agenda-rules-header-face))
+                   (body (propertize (concat (mz/random-rules 3) "\n\n")
+                                     'face 'mz/agenda-rules-body-face)))
+              (insert header body)))))))
+
+  (add-hook 'org-agenda-finalize-hook #'mz/insert-rules-into-agenda)
+
   (setq org-agenda-custom-commands
         '(("D" "DASHBOARD"
            ((agenda "" ((org-agenda-span 'day)
