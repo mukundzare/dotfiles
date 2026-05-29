@@ -538,6 +538,19 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 
   (add-hook 'org-capture-before-finalize-hook #'set-creation-date-heading-property)
 
+  ;;Added for pushing to vps
+  (defun cogdash/push-on-save ()
+    "Push current org file to CogDash after save."
+    (when (and (eq major-mode 'org-mode)
+               (member (buffer-file-name)
+                       '("/home/zam4abt/orgfiles/inbox.org")))
+      (start-process "cogdash-push" nil
+                     "/home/zam4abt/.cogdash/venv/bin/python"
+                     "/home/zam4abt/.cogdash/org_agent/push.py"
+                     "--file" (buffer-file-name))))
+
+  (add-hook 'after-save-hook #'cogdash/push-on-save)
+
 
 #+end_src
 ** Daily Wellbeing Check-in
