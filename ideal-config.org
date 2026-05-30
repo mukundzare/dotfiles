@@ -103,6 +103,7 @@
   ;;Straight.el — must be bootstrapped BEFORE package-initialize to avoid
   ;;the "package.el was loaded when straight.el was already loaded" warning.
   (defvar bootstrap-version)
+  (setq straight-package--warning-displayed nil)
   (let ((bootstrap-file
      (expand-file-name "straight/repos/straight.el/bootstrap.el" user-emacs-directory))
     (bootstrap-version 5))
