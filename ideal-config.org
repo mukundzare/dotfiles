@@ -901,8 +901,13 @@ When FORCE is non-nil, open even if today is already logged."
       (mz/daily-log-open)))
 
   (defun mz/daily-log-setup ()
-    "Run the check-in immediately at startup; install a repeating idle timer."
-    (mz/daily-log-maybe-open)
+    "Prompt for check-in at startup unconditionally (no time-window check).
+The idle timer uses the morning window so long-running sessions only
+nag during non-work hours."
+    ;; Startup: prompt any time Emacs launches if today not yet logged
+    (unless (mz/daily-log-logged-p)
+      (mz/daily-log-open))
+    ;; Idle timer: morning-window only, for days-long sessions
     (when (timerp mz/daily-log-idle-timer)
       (cancel-timer mz/daily-log-idle-timer))
     (setq mz/daily-log-idle-timer
@@ -958,10 +963,10 @@ When FORCE is non-nil, open even if today is already logged."
       (when (file-exists-p file)
         (with-temp-buffer
           (insert-file-contents file)
-          (org-mode)
+          ;; Parse headings without activating org-mode (fast)
           (goto-char (point-min))
           (while (re-search-forward "^\\*+ \\(.+\\)$" nil t)
-            (push (match-string-no-properties 1) rules))))
+            (push (string-trim (match-string-no-properties 1)) rules))))
       (if (null rules)
           "(No rules found in rules.org)"
         (let* ((shuffled (seq-take (seq-sort-by (lambda (_) (random)) #'< rules) n))
@@ -986,15 +991,20 @@ When FORCE is non-nil, open even if today is already logged."
     "Face for the random rules body in the agenda dashboard.")
 
   (defun mz/insert-rules-into-agenda ()
-    "Insert a random rules banner above the FOCUS TASKS section."
+    "Insert a fresh random rules banner above the FOCUS TASKS section.
+ Replaces any previously inserted block so refresh always shows new rules."
     (when (derived-mode-p 'org-agenda-mode)
       (let ((inhibit-read-only t))
         (save-excursion
+          ;; Remove any existing rules block from a prior finalize call
           (goto-char (point-min))
-          (when (and (re-search-forward "^🪔 FOCUS TASKS" nil t)
-                     (not (save-excursion
-                            (goto-char (point-min))
-                            (re-search-forward "^📜 RULES TO REMEMBER" nil t))))
+          (when (re-search-forward "^📜 RULES TO REMEMBER\n" nil t)
+            (let ((start (match-beginning 0)))
+              (when (re-search-forward "^🪔 FOCUS TASKS" nil t)
+                (delete-region start (line-beginning-position)))))
+          ;; Insert fresh rules above FOCUS TASKS
+          (goto-char (point-min))
+          (when (re-search-forward "^🪔 FOCUS TASKS" nil t)
             (beginning-of-line)
             (let* ((header (propertize "📜 RULES TO REMEMBER\n"
                                        'face 'mz/agenda-rules-header-face))
