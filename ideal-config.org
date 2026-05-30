@@ -544,7 +544,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
     "Push current org file to CogDash after save."
     (when (and (eq major-mode 'org-mode)
                (member (buffer-file-name)
-                       '("/home/zam4abt/orgfiles/inbox.org")))
+                       '("/home/zam4abt/orgfiles/Inbox.org")))
       (start-process "cogdash-push" nil
                      "/home/zam4abt/.cogdash/venv/bin/python"
                      "/home/zam4abt/.cogdash/org_agent/push.py"
