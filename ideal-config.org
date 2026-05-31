@@ -388,6 +388,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
             (:grouptags)                  ;tags can be set as a tag
             ("emacs" . ?e)
             ("workflow" . ?w)
+            ("cogdash" . ?d)
             (:endgrouptag)
             (:startgrouptag)
             ("@home")
