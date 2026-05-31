@@ -770,54 +770,138 @@ Never prefill from a previous day's data."
             (push (cons k v) result))))
       (nreverse result)))
 
-  (defun mz/daily-log-save (pairs)
-    "Append an org entry built from PAIRS to `mz/daily-log-file'."
-    (let* ((f   (expand-file-name mz/daily-log-file))
-           (ts  (format-time-string "[%Y-%m-%d %a %H:%M]"))
+  (defun mz/daily-log--json-escape (s)
+    "Escape S for safe embedding inside a JSON string value."
+    (let ((s (replace-regexp-in-string "\\\\" "\\\\\\\\" s)))
+      (setq s (replace-regexp-in-string "\"" "\\\\\"" s))
+      (setq s (replace-regexp-in-string "\n" "\\\\n" s))
+      (setq s (replace-regexp-in-string "\r" "\\\\r" s))
+      (setq s (replace-regexp-in-string "\t" "\\\\t" s))
+      s))
+
+  (defun mz/daily-log--build-json (pairs)
+    "Serialise PAIRS into the JSON body expected by the /ingest/checkin endpoint."
+    (let* ((get (lambda (k) (or (cdr (assoc k pairs)) "")))
+           (kv  (lambda (json-key lisp-key)
+                  (format "  \"%s\": \"%s\""
+                          json-key
+                          (mz/daily-log--json-escape (funcall get lisp-key)))))
+           (fields
+            (list
+             (format "  \"date\": \"%s\"" (mz/daily-log-today))
+             (funcall kv "sleep_hours"        "sleep_hours")
+             (funcall kv "sleep_quality"      "sleep_quality")
+             (funcall kv "energy"             "energy")
+             (funcall kv "mood"               "mood")
+             (funcall kv "stress"             "stress")
+             (funcall kv "anxiety"            "anxiety")
+             (funcall kv "exercise"           "exercise")
+             (funcall kv "food_quality"       "food_quality")
+             (funcall kv "breakfast"          "breakfast")
+             (funcall kv "lunch"              "lunch")
+             (funcall kv "dinner"             "dinner")
+             (funcall kv "tea"                "tea")
+             (funcall kv "coffee"             "coffee")
+             (funcall kv "alcohol"            "alcohol")
+             (funcall kv "deep_work_hours"    "deep_work_hours")
+             (funcall kv "productivity"       "productivity")
+             (funcall kv "social_quality"     "social_quality")
+             (funcall kv "best_thing"         "best_thing")
+             (funcall kv "challenge"          "challenge")
+             (funcall kv "gratitude"          "gratitude")
+             (funcall kv "lacking_and_better" "lacking_and_better")
+             (funcall kv "getting_worse"      "getting_worse")
+             (funcall kv "notes"              "notes"))))
+      (concat "{\n" (mapconcat #'identity fields ",\n") "\n}\n")))
+
+  (defun mz/daily-log--write-queue (pairs)
+    "Write JSON payload for PAIRS to ~/orgfiles/.daily-checkin-queue/YYYY-MM-DD.json."
+    (let* ((dir  (expand-file-name "~/orgfiles/.daily-checkin-queue"))
+           (file (expand-file-name
+                  (concat (mz/daily-log-today) ".json") dir))
+           (json (mz/daily-log--build-json pairs)))
+      (unless (file-directory-p dir)
+        (make-directory dir t))
+      (with-temp-file file
+        (insert json))
+      (message "Daily check-in queued for push: %s" file)))
+
+  (defun mz/daily-log--build-entry (pairs)
+    "Return the org entry string for PAIRS (used by mz/daily-log-save)."
+    (let* ((ts  (format-time-string "[%Y-%m-%d %a %H:%M]"))
            (get (lambda (k) (or (cdr (assoc k pairs)) ""))))
+      (concat
+       (format "* Check-in %s\n" ts)
+       ":PROPERTIES:\n"
+       (format ":DAILY_DATE:      %s\n" (mz/daily-log-today))
+       (format ":SLEEP_HOURS:     %s\n" (funcall get "sleep_hours"))
+       (format ":SLEEP_QUALITY:   %s\n" (funcall get "sleep_quality"))
+       (format ":ENERGY:          %s\n" (funcall get "energy"))
+       (format ":MOOD:            %s\n" (funcall get "mood"))
+       (format ":STRESS:          %s\n" (funcall get "stress"))
+       (format ":ANXIETY:         %s\n" (funcall get "anxiety"))
+       (format ":EXERCISE:        %s\n" (funcall get "exercise"))
+       (format ":FOOD_QUALITY:    %s\n" (funcall get "food_quality"))
+       (format ":BREAKFAST:       %s\n" (funcall get "breakfast"))
+       (format ":LUNCH:           %s\n" (funcall get "lunch"))
+       (format ":DINNER:          %s\n" (funcall get "dinner"))
+       (format ":TEA:             %s\n" (funcall get "tea"))
+       (format ":COFFEE:          %s\n" (funcall get "coffee"))
+       (format ":ALCOHOL:         %s\n" (funcall get "alcohol"))
+       (format ":DEEP_WORK_HRS:   %s\n" (funcall get "deep_work_hours"))
+       (format ":PRODUCTIVITY:    %s\n" (funcall get "productivity"))
+       (format ":SOCIAL_QUALITY:  %s\n" (funcall get "social_quality"))
+       ":END:\n\n"
+       (format "- *Best thing*:  %s\n" (funcall get "best_thing"))
+       (format "- *Challenge*:   %s\n" (funcall get "challenge"))
+       (format "- *Gratitude*:   %s\n" (funcall get "gratitude"))
+       (let ((l (funcall get "lacking_and_better")))
+         (if (string-empty-p l) ""
+           (format "- *What is lacking and what could be better?*: %s\n" l)))
+       (let ((w (funcall get "getting_worse")))
+         (if (string-empty-p w) ""
+           (format "- *What is getting worse?*: %s\n" w)))
+       (let ((n (funcall get "notes")))
+         (if (string-empty-p n) ""
+           (format "- *Notes*:       %s\n" n)))
+       "\n")))
+
+  (defun mz/daily-log-save (pairs)
+    "Upsert today's org entry in `mz/daily-log-file' from PAIRS.
+If an entry for today already exists it is replaced in-place rather than
+appended, so there is always exactly one heading per day.
+Also writes a JSON file to the push queue for the VPS ingest endpoint."
+    (let* ((f     (expand-file-name mz/daily-log-file))
+           (entry (mz/daily-log--build-entry pairs))
+           (today (mz/daily-log-today))
+           (date-re (concat ":DAILY_DATE:[[:space:]]+"
+                            (regexp-quote today))))
       (unless (file-exists-p f)
         (with-temp-file f
           (insert "#+TITLE: Daily Wellbeing Log\n"
                   "#+STARTUP: overview\n\n")))
       (with-current-buffer (find-file-noselect f)
-        (goto-char (point-max))
-        (unless (bolp) (insert "\n"))
-        (insert
-         (format "* Check-in %s\n" ts)
-         ":PROPERTIES:\n"
-         (format ":DAILY_DATE:      %s\n" (mz/daily-log-today))
-         (format ":SLEEP_HOURS:     %s\n" (funcall get "sleep_hours"))
-         (format ":SLEEP_QUALITY:   %s\n" (funcall get "sleep_quality"))
-         (format ":ENERGY:          %s\n" (funcall get "energy"))
-         (format ":MOOD:            %s\n" (funcall get "mood"))
-         (format ":STRESS:          %s\n" (funcall get "stress"))
-         (format ":ANXIETY:         %s\n" (funcall get "anxiety"))
-         (format ":EXERCISE:        %s\n" (funcall get "exercise"))
-         (format ":FOOD_QUALITY:    %s\n" (funcall get "food_quality"))
-         (format ":BREAKFAST:       %s\n" (funcall get "breakfast"))
-         (format ":LUNCH:           %s\n" (funcall get "lunch"))
-         (format ":DINNER:          %s\n" (funcall get "dinner"))
-         (format ":TEA:             %s\n" (funcall get "tea"))
-         (format ":COFFEE:          %s\n" (funcall get "coffee"))
-         (format ":ALCOHOL:         %s\n" (funcall get "alcohol"))
-         (format ":DEEP_WORK_HRS:   %s\n" (funcall get "deep_work_hours"))
-         (format ":PRODUCTIVITY:    %s\n" (funcall get "productivity"))
-         (format ":SOCIAL_QUALITY:  %s\n" (funcall get "social_quality"))
-         ":END:\n\n"
-         (format "- *Best thing*:  %s\n" (funcall get "best_thing"))
-         (format "- *Challenge*:   %s\n" (funcall get "challenge"))
-         (format "- *Gratitude*:   %s\n" (funcall get "gratitude"))
-         (let ((l (funcall get "lacking_and_better")))
-           (if (string-empty-p l) ""
-             (format "- *What is lacking and what could be better?*: %s\n" l)))
-         (let ((w (funcall get "getting_worse")))
-           (if (string-empty-p w) ""
-             (format "- *What is getting worse?*: %s\n" w)))
-         (let ((n (funcall get "notes")))
-           (if (string-empty-p n) ""
-             (format "- *Notes*:       %s\n" n)))
-         "\n")
-        (save-buffer))))
+        (let ((inhibit-read-only t))
+          (goto-char (point-min))
+          (if (re-search-forward date-re nil t)
+              ;; Today's entry exists — find its heading and replace to end of entry
+              (progn
+                (re-search-backward "^\\* Check-in " nil t)
+                (let ((start (point))
+                      (end   (or (save-excursion
+                                   (forward-line 1)
+                                   (when (re-search-forward "^\\* Check-in " nil t)
+                                     (line-beginning-position)))
+                                 (point-max))))
+                  (delete-region start end)
+                  (insert entry)))
+            ;; No entry for today yet — append
+            (goto-char (point-max))
+            (unless (bolp) (insert "\n"))
+            (insert entry)))
+        (save-buffer))
+      ;; Write JSON to push queue for VPS ingest (always latest snapshot)
+      (mz/daily-log--write-queue pairs)))
 
   ;;; ── Buffer & Commands ─────────────────────────────────────────────
 
