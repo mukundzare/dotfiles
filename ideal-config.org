@@ -555,6 +555,21 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
 
 
 #+end_src
+** Capture from anywhere
+#+begin_src emacs-lisp
+  (use-package yequake
+    :straight (:host github :repo "alphapapa/yequake")
+    :custom
+    (yequake-frames
+     '(("org-capture"
+        (buffer-fns . (yequake-org-capture))
+        (width . 0.75)
+        (height . 0.5)
+        (alpha . 0.95)
+        (frame-parameters . ((undecorated . t)
+                             (skip-taskbar . t)
+                             (sticky . t)))))))
+#+end_src
 ** Daily Wellbeing Check-in
 Automated morning check-in that pops up on startup and during idle
 time.  Entries are stored in =~/orgfiles/daily-log.org= as headed
