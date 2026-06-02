@@ -148,8 +148,8 @@
     ;; Optimization
     (when sys/win32p
       (setq w32-get-true-file-attributes nil   ; decrease file IO workload
-	    w32-pipe-read-delay 0              ; faster IPC
-	    w32-pipe-buffer-size (* 64 1024))) ; read more at a time (was 4K)
+            w32-pipe-read-delay 0              ; faster IPC
+            w32-pipe-buffer-size (* 64 1024))) ; read more at a time (was 4K)
     (unless sys/macp
       (setq command-line-ns-option-alist nil))
     (unless sys/linuxp
@@ -165,7 +165,7 @@
     (use-package gcmh
       :ensure t
       :init (setq gcmh-idle-delay 5
-		  gcmh-high-cons-threshold #x1000000) ; 16 MB
+                  gcmh-high-cons-threshold #x1000000) ; 16 MB
       :config (gcmh-mode 1)))
     ;; (progn
     ;;   (unless (package-installed-p 'gcmh)
@@ -1161,7 +1161,7 @@ Key bindings inside the check-in buffer:
                         (org-agenda-files '("~/orgfiles/Inbox.org"))))))
 
           ("h" "Apartment tasks"
-           ((tags-todo "SCHEDULED=\"\"&+DEADLINE=\"\"" 
+           ((tags-todo "SCHEDULED=\"\"&+DEADLINE=\"\""
                        ((org-agenda-overriding-header "UNSCHEDULED APARTMENT TASKS")
                         (org-agenda-use-time-grid t)
                         (org-agenda-prefix-format "             ")
@@ -2044,7 +2044,7 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
        (consult-git-grep buffer)
        ;;(consult-git-grep (:not posframe) buffer)
        ;;(dired (:not posframe))
-     
+
        (mz/consult-git-grep-opx buffer)
        (mz/consult-git-grep-std buffer)
        ;;(mz/consult-git-grep-opx (:not posframe) buffer)
@@ -3422,4 +3422,3 @@ Configs for temporary time
   (add-hook 'org-mode-hook (lambda ()
                              (add-hook 'after-save-hook #'mz/export-org-to-txt-home)))
 #+end_src
-
