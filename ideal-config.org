@@ -941,11 +941,11 @@ Key bindings inside the check-in buffer:
       (let ((pairs (mz/daily-log-parse)))
         (cond
          ((null pairs)
-          (message "No fields found – the template may be malformed.")
+          (message "No fields found – the template may be malformed.")) 
          ((cl-every (lambda (p) (string-empty-p (cdr p))) pairs)
           (when (yes-or-no-p "All fields are empty – save anyway? ")
             (mz/daily-log-save pairs)
-            (quit-window t)))
+            (quit-window t)))                                           
          (t
           (mz/daily-log-save pairs)
           (quit-window t)
