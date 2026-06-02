@@ -1922,7 +1922,6 @@ I don't need to keep certain buffers like help mode open when the buffer is buri
                        other-window windmove-do-window-select
                        ace-window aw--select-window
                        pager-page-down pager-page-up
-                       treemacs-select-window
                        symbol-overlay-basic-jump))
           (advice-add cmd :after #'my-pulse-momentary-line))
 
@@ -2612,9 +2611,6 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :straight t
     :commands lsp-ui-mode)
 
-  (use-package lsp-treemacs
-    :straight t
-    :commands lsp-treemacs-errors-list)
 
 #+end_src
 *** Eglot
@@ -2941,21 +2937,6 @@ Inspector tool for Emacs Lisp objects.
     :config (dashboard-setup-startup-hook))
 #+end_src
 * File management
-** Treemacs
-#+begin_src emacs-lisp
-  (use-package treemacs
-    :disabled t
-    :straight t
-    :bind (:map prog-mode-map
-                ("C-c e r" . emr/initialize-refactoring-menu)))
-
-  (use-package treemacs-evil
-    :after (treemacs evil))
-
-  (use-package lsp-tailwindcss
-    :straight t
-    :after lsp-mode)
-#+end_src
 ** ZTree
 See: https://github.com/fourier/ztree
 #+begin_src emacs-lisp
