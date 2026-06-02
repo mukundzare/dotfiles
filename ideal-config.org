@@ -2663,6 +2663,10 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (use-package prettier
     :init (setenv "NODE_PATH" "/usr/bin/node"))
 #+end_src
+*** Whitespace cleanup
+#+begin_src emacs-lisp
+  (add-hook 'before-save-hook #'whitespace-cleanup)
+#+end_src
 ** Tools
 *** Restclient
 #+begin_src emacs-lisp
