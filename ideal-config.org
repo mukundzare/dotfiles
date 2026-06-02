@@ -365,7 +365,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
           org-export-with-sub-superscripts nil
           org-ellipsis " ▾"
           org-todo-keywords
-          '((sequence "TODO(t!)" "NEXT(n)" "ON_HOLD(h!)" "|" "DONE(d!)" "CANC(k!)"))
+          '((sequence "TODO(t!)" "NEXT(n)" "ON_HOLD(h!)" "WAITING(w!)" "|" "DONE(d!)" "CANC(k!)"))
 
           org-agenda-start-with-log-mode t
           org-log-done 'time
@@ -941,11 +941,11 @@ Key bindings inside the check-in buffer:
       (let ((pairs (mz/daily-log-parse)))
         (cond
          ((null pairs)
-          (message "No fields found – the template may be malformed.")) 
+          (message "No fields found – the template may be malformed."))
          ((cl-every (lambda (p) (string-empty-p (cdr p))) pairs)
           (when (yes-or-no-p "All fields are empty – save anyway? ")
             (mz/daily-log-save pairs)
-            (quit-window t)))                                           
+            (quit-window t)))
          (t
           (mz/daily-log-save pairs)
           (quit-window t)
