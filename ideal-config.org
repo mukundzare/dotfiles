@@ -1119,23 +1119,38 @@ Key bindings inside the check-in buffer:
            ((agenda "" ((org-agenda-span 'day)
                         (org-deadline-warning-days 60)))
             (todo "NEXT"
-                  ((org-agenda-overriding-header "🪔 FOCUS TASKS")
+                   ((org-agenda-overriding-header "🔴🔍 FOCUS TASKS")
                    (org-agenda-files '("~/orgfiles/Inbox.org"))))
+
+             (todo "WAITING" ((org-agenda-overriding-header "🔴⏱️🔍 WAITING FOCUS TASKS")
+                              (org-agenda-files '("~/orgfiles/Inbox.org"))
+                              (org-agenda-skip-function
+                               '(org-agenda-skip-entry-if 'notregexp "\\[#[ABC]\\]"))))
+             (todo "TODO"
+                   ((org-agenda-overriding-header "🟠⬆️ PRIORITIZED tasks")
+                    (org-agenda-files '("~/orgfiles/Inbox.org"))
+                    (org-agenda-skip-function
+                     '(org-agenda-skip-entry-if 'notregexp "\\[#[ABC]\\]"))))
             (todo "TODO"
-                  ((org-agenda-overriding-header "⚠️ UNTAGGED TODOS IN INBOX")
+                   ((org-agenda-overriding-header "🟢⚠️ UNTAGGED TODOS IN INBOX")
                    (org-agenda-files '("~/orgfiles/Inbox.org"))
                    (org-agenda-skip-function
                     (lambda ()
                       (let ((tags (org-get-tags)))
                         (when tags (save-excursion (org-end-of-subtree t t))))))))
+             (todo "WAITING"
+                   ((org-agenda-overriding-header "🟢⏱️ WAITING no-priority")
+                    (org-agenda-files '("~/orgfiles/Inbox.org"))
+                    (org-agenda-skip-function
+                     '(org-agenda-skip-entry-if 'regexp "\\[#[ABC]\\]"))))
             (tags-todo "@work+TODO=\"TODO\"+DEADLINE=\"\""
-                       ((org-agenda-overriding-header "💼 WORK TASKS")
+                        ((org-agenda-overriding-header "🟢💼 WORK TASKS")
                         (org-agenda-files '("~/orgfiles/Inbox.org"))))
             (tags-todo "@home+TODO=\"TODO\"+DEADLINE=\"\""
-                       ((org-agenda-overriding-header "🏠 HOME TASKS")
+                        ((org-agenda-overriding-header "🟢🏠 HOME TASKS")
                         (org-agenda-files '("~/orgfiles/Inbox.org"))))
             (tags-todo "+{.+}-@home-@work" ;Tasks other than home or work tasks
-                       ((org-agenda-overriding-header "💡 OTHER TASKS")
+                        ((org-agenda-overriding-header "🟢💡 OTHER TASKS")
                         (org-agenda-files '("~/orgfiles/Inbox.org"))))))
 
           ("n" "Next Tasks"
