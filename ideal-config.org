@@ -1385,30 +1385,6 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
       "n" '(switch-to-next-buffer :which-key "switch-to-next-buffer")
       "s" '(ace-swap-window :which-key "swap windows")))
 
-  ;;Download Evil
-  (use-package evil
-    :straight t
-    :init
-    (setq evil-want-integration t)
-    (setq evil-want-keybinding nil)
-    (setq evil-want-C-u-scroll t)
-    (setq evil-want-C-i-jump t)
-    :config
-    (evil-mode 1))
-
-  (use-package evil-collection
-    :after evil
-    :config
-    (evil-collection-init))
-  ;; Use evil keybindings in org-mode
-  (use-package evil-org
-    :straight t
-    :after org
-    :hook (org-mode . (lambda () evil-org-mode))
-    :config
-    (require 'evil-org-agenda)
-    (evil-org-agenda-set-keys))
-
   (use-package hydra)
 #+end_src
 * Basic UI Configuration
@@ -1628,23 +1604,6 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
     :straight t
     :hook (after-init . save-place-mode))
 
-  (use-package recentf
-    :straight t
-    :bind (("C-x C-r" . consult-recent-file))
-    :hook (after-init . recentf-mode)
-    :init (setq recentf-max-saved-items 300
-                recentf-exclude
-                '("\\.?cache" ".cask" "url" "COMMIT_EDITMSG\\'" "bookmarks"
-                  "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
-                  "\\.?ido\\.last$" "\\.revive$" "/G?TAGS$" "/.elfeed/"
-                  "^/tmp/" "^/var/folders/.+$" "^/ssh:" "/persp-confs/"
-                  (lambda (file) (file-in-directory-p file package-user-dir))))
-    :config
-    (setq recentf-max-menu-items 40)
-    (setq recentf-max-saved-items 25)
-    (push (expand-file-name recentf-save-file) recentf-exclude)
-    (add-to-list 'recentf-filename-handlers #'abbreviate-file-name)
-    (run-at-time nil (* 5 60) 'recentf-save-list))
 #+end_src
 #+begin_src emacs-lisp
   (use-package winner
@@ -1940,13 +1899,6 @@ I don't need to keep certain buffers like help mode open when the buffer is buri
     :init (all-the-icons-ibuffer-mode 1))
 
 #+end_src
-** Info colours
-#+begin_src emacs-lisp
-  (use-package info-colors
-    :straight t
-    :hook
-    (Info-selection . info-colors-fontify-node))
-#+end_src
 ** Prettify symbols
 Prettify symbols mode, a built-in mode for displaying sequences of characters as fancy characters or symbols.
 #+begin_src emacs-lisp
@@ -2007,11 +1959,6 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
              :fringe-width 8))
     :custom (spacious-padding-subtle-mode-line t)
     :config (spacious-padding-mode 1))
-#+end_src
-** Page break mode
-#+begin_src emacs-lisp
-  (use-package page-break-lines
-    :config (global-page-break-lines-mode))
 #+end_src
 * Completion
 ** Minibuffer Completion
@@ -2514,24 +2461,6 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (use-package nov
     :straight t
     :mode ("\\.epub\\'" . nov-mode))
-#+end_src
-** Directory tree viewer
-#+begin_src emacs-lisp
-  (use-package ztree
-    :straight t)
-#+end_src
-** Web browser (eww)
-#+begin_src emacs-lisp
-  (use-package eww
-    :straight t
-    :bind (:map eww-mode-map
-                ("C-s" . eww-next-url)
-                ("C-r" . eww-previous-url)
-                ("B" . eww-back-url))
-    :init (setq eww-search-prefix "https://www.google.com/search?q=")
-    :config (setq eww-form-checkbox-selected-symbol "[x]"
-                  eww-form-checkbox-symbol "[ ]"
-                  eww-retrieve-command '("curl" "--silent" "--disable-epsv" "--cookie-jar" "/tmp/cookies.txt" "--cookie" "/tmp/cookies.txt")))
 #+end_src
 * Git
 ** Magit
