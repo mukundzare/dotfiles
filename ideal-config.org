@@ -2666,6 +2666,8 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+begin_src emacs-lisp
   (use-package csv
     :defer t)
+  (use-package rainbow-csv
+    :straight (:host github :repo "emacs-vs/rainbow-csv"))
 #+end_src
 *** Clojure
 #+begin_src emacs-lisp
