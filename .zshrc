@@ -174,3 +174,8 @@ PROMPT=$PROMPT'%{$(vterm_prompt_end)%}'
 fpath+=${ZDOTDIR:-~}/.zsh_functions
 NODE_EXTRA_CA_CERTS="/usr/local/share/ca-certificates/Bosch-CA-DE.crt"
 source ~/private/.plw-mcp/env
+
+#Oracle SQL Developer setting
+export LD_LIBRARY_PATH=/opt/oracle/instantclient_23_26:$LD_LIBRARY_PATH
+export PATH=/opt/oracle/instantclient_23_26:$PATH
+export ORACLE_HOME=/opt/oracle/instantclient_23_26
