@@ -2673,10 +2673,26 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+end_src
 *** CSV
 #+begin_src emacs-lisp
+  (require 'color)
+
+  (defun csv-highlight (&optional separator)
+    (interactive (list (when current-prefix-arg (read-char "Separator: "))))
+    (font-lock-mode 1)
+    (let* ((separator (or  separator ?\,))
+           (n (count-matches (string separator) (pos-bol) (pos-eol)))
+           (colors (cl-loop for i from 0 to 1.0 by (/ 2.0 n)
+                            collect (apply #'color-rgb-to-hex
+                                           (color-hsl-to-rgb i 0.3 0.5)))))
+      (cl-loop for i from 2 to n by 2
+               for c in colors
+               for r = (format "^\\([^%c\n]+%c\\)\\{%d\\}" separator separator i)
+               do (font-lock-add-keywords nil `((,r (1 '(face (:foreground ,c)))))))))
+
   (use-package csv
-    :defer t)
-  (use-package rainbow-csv
-    :straight (:host github :repo "emacs-vs/rainbow-csv"))
+    :defer t
+    :hook (csv-align
+           csv-highlight))
+
 #+end_src
 *** Clojure
 #+begin_src emacs-lisp
@@ -2990,13 +3006,6 @@ See: https://github.com/fourier/ztree
     ;;(add-to-list 'dired-open-functions #'dired-open-xdg t)
     (setq dired-open-extensions '(("png" . "feh")
                                   ("mkv" . "mpv"))))
-
-  (use-package dired-hide-dotfiles
-    :hook (dired-mode . dired-hide-dotfiles-mode)
-    :config
-    (and (boundp evil-mode)
-         (evil-collection-define-key 'normal 'dired-mode-map
-           "H" 'dired-hide-dotfiles-mode)))
 
   ;;Colourful dired
   (use-package diredfl
