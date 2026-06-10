@@ -1221,6 +1221,7 @@ Key bindings inside the check-in buffer:
      (plantuml . t)
      (shell . t)
      (gnuplot . t)
+     (lisp . t)
      (restclient . t)))
 #+end_src
 *** Layout
@@ -1234,7 +1235,7 @@ Key bindings inside the check-in buffer:
 
   ;; Use org-roam
   (use-package org-roam
-    :ensure t
+    :disabled t
     :init
     (setq org-roam-v2-ack t)
     :custom
@@ -1651,7 +1652,7 @@ Taken from: https://blog.jethro.dev/posts/processing_inbox/
 #+end_src
 ** Session saving
 #+begin_src emacs-lisp
-(desktop-save-mode 1)
+  (desktop-save-mode 0)
 #+end_src
 * UI config
 
@@ -2494,6 +2495,14 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
               (lambda ()
                 (setq-local dabbrev-check-other-buffers nil
                             dabbrev-check-all-buffers nil))))
+#+end_src
+** Difftastic
+#+begin_src emacs-lisp
+  (use-package magit-difftastic
+    :straight (:host github :repo "rschmukler/magit-difftastic")
+    :after magit
+    :config
+    (magit-difftastic-mode +1))
 #+end_src
 
 * Development
