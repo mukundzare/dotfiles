@@ -3043,34 +3043,36 @@ See: https://github.com/fourier/ztree
 #+end_src
 ** Recentf
 #+begin_src emacs-lisp
-    (use-package recentf
-      :straight t
-      :bind (("C-x C-r" . consult-recent-file))
-      :hook ((after-init . recentf-mode)
-             (buffer-list-update . recentf-track-opened-file))
-      :init (setq recentf-max-saved-items 300
-                  recentf-case-fold-search t
-                  recentf-exclude
-                  '("\\.?cache"
-                    ".cask"
-                    "COMMIT_EDITMSG\\'"
-                    "bookmarks"
-                    "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
-                    "\\.?ido\\.last$"
-                    "\\.revive$"
-                    "/G?TAGS$"
-                    "/.elfeed/"
-                    "^/tmp/"
-                    "\\.gpg$"
-                    "^/var/folders/.+$"
-                    "^/ssh:"
-                    "/persp-confs/"
-                    "~/syncthing/Temp/"
-                    (lambda (file) (file-in-directory-p file package-user-dir))))
-      :config
-      (run-at-time nil (* 5 60) 'recentf-save-list)
-      (setq recentf-max-menu-items 100)
-      (push (expand-file-name recentf-save-file) recentf-exclude))
+  (use-package recentf
+    :straight t
+    :bind (("C-x C-r" . consult-recent-file))
+    :hook ((after-init . recentf-mode)
+           (buffer-list-update . recentf-track-opened-file))
+    :init (setq recentf-max-saved-items 300
+                recentf-case-fold-search t
+                recentf-exclude
+                '("\\.?cache"
+                  ".cask"
+                  "COMMIT_EDITMSG\\'"
+                  "bookmarks"
+                  "\\.\\(?:gz\\|gif\\|svg\\|png\\|jpe?g\\|bmp\\|xpm\\)$"
+                  "\\.?ido\\.last$"
+                  "\\.revive$"
+                  "/G?TAGS$"
+                  "/.elfeed/"
+                  "^/tmp/"
+                  "\\.gpg$"
+                  "^/var/folders/.+$"
+                  "^/ssh:"
+                  "/persp-confs/"
+                  "~/syncthing/Temp/"
+                  (lambda (file) (and (boundp 'package-user-dir)
+                                      (file-in-directory-p file package-user-dir)))))
+    :config
+    (run-at-time (* 5 60) (* 5 60) 'recentf-save-list)
+    (setq recentf-max-menu-items 100)
+    ;(push (expand-file-name recentf-save-file) recentf-exclude)
+    )
 #+end_src
 * Performace
 ** So-long
