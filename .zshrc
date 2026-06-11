@@ -82,7 +82,7 @@ POWERLINE9K_MODE="nerdfont-complete"
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
 export FZF_BASE=$(which fzf)
-export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --margin=2' 
+export FZF_DEFAULT_OPTS='--height 40% --layout=reverse --border --margin=2'
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
 
 plugins=(git zsh-autosuggestions zsh-syntax-highlighting fzf)
@@ -118,7 +118,7 @@ fi
 #Copy to keyboard using command | ctc
 #Example: pwd | ctc will copy the current working dir
 #to the system clipboard to use elsewhere
-alias ctc="xclip -selection clipboard"     
+alias ctc="xclip -selection clipboard"
 
 #vi mode
 bindkey -v
@@ -143,7 +143,7 @@ alias lt='ls -lt | head -20'
 # Get the 20 top last modified files and folders in this directoy
 alias alt='ls -alht | head -20'
 
-alias ll='ls -alht' 
+alias ll='ls -alht'
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
 [[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
 
@@ -155,19 +155,19 @@ export NETRC="~/dotfiles/"
 
 # For emacs vterm compatibility
 vterm_printf(){
-    if [ -n "$TMUX" ] && ([ "${TERM%%-*}" = "tmux" ] || [ "${TERM%%-*}" = "screen" ] ); then
+    if         [ -n "$TMUX" ]               && ([ "${TERM%%-*}" = "tmux" ] || [ "${TERM%%-*}" = "screen" ] ) ; then
         # Tell tmux to pass the escape sequences through
-        printf "\ePtmux;\e\e]%s\007\e\\" "$1"
-    elif [ "${TERM%%-*}" = "screen" ]; then
+        printf "\ePtmux;\e\e]%s\007\e\\"    "$1"
+    elif       [ "${TERM%%-*}" = "screen" ] ; then
         # GNU screen (screen, screen-256color, screen-256color-bce)
-        printf "\eP\e]%s\007\e\\" "$1"
+        printf "\eP\e]%s\007\e\\"           "$1"
     else
-        printf "\e]%s\e\\" "$1"
+        printf "\e]%s\e\\"                  "$1"
     fi
 }
 
 vterm_prompt_end() {
-    vterm_printf "51;A$(whoami)@$(hostname):$(pwd)";
+    vterm_printf "51;A$(whoami)@$(hostname):$(pwd)" ;
 }
 setopt PROMPT_SUBST
 PROMPT=$PROMPT'%{$(vterm_prompt_end)%}'

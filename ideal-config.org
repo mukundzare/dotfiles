@@ -404,6 +404,7 @@ Garbage Collect when Emacs is out of focus and avoid garbage collection when usi
             ("pmx" . ?p)
             ("migration" . ?m)
             ("opx" . ?o)
+            ("organizational" . ?x)
             (:endgrouptag)
             ("trading" . ?t)
             ("recurring" . ?r)
@@ -1131,64 +1132,66 @@ Key bindings inside the check-in buffer:
                     (org-agenda-files '("~/orgfiles/Inbox.org"))
                     (org-agenda-skip-function
                      '(org-agenda-skip-entry-if 'notregexp "\\[#[ABC]\\]"))))
-            (todo "TODO"
+             (todo "TODO"
                    ((org-agenda-overriding-header "🟢⚠️ UNTAGGED TODOS IN INBOX")
-                   (org-agenda-files '("~/orgfiles/Inbox.org"))
-                   (org-agenda-skip-function
-                    (lambda ()
-                      (let ((tags (org-get-tags)))
-                        (when tags (save-excursion (org-end-of-subtree t t))))))))
+                    (org-agenda-files '("~/orgfiles/Inbox.org"))
+                    (org-agenda-skip-function
+                     (lambda ()
+                       (let ((tags (org-get-tags)))
+                         (if tags
+                                 (save-excursion (org-end-of-subtree t t))
+                                 (org-agenda-skip-entry-if 'regexp "\\[#[ABC]\\]")))))))
              (todo "WAITING"
                    ((org-agenda-overriding-header "🟢⏱️ WAITING no-priority")
                     (org-agenda-files '("~/orgfiles/Inbox.org"))
                     (org-agenda-skip-function
                      '(org-agenda-skip-entry-if 'regexp "\\[#[ABC]\\]"))))
-            (tags-todo "@work+TODO=\"TODO\"+DEADLINE=\"\""
+             (tags-todo "@work+TODO=\"TODO\"+DEADLINE=\"\""
                         ((org-agenda-overriding-header "🟢💼 WORK TASKS")
-                        (org-agenda-files '("~/orgfiles/Inbox.org"))))
-            (tags-todo "@home+TODO=\"TODO\"+DEADLINE=\"\""
+                         (org-agenda-files '("~/orgfiles/Inbox.org"))))
+             (tags-todo "@home+TODO=\"TODO\"+DEADLINE=\"\""
                         ((org-agenda-overriding-header "🟢🏠 HOME TASKS")
-                        (org-agenda-files '("~/orgfiles/Inbox.org"))))
-            (tags-todo "+{.+}-@home-@work" ;Tasks other than home or work tasks
+                         (org-agenda-files '("~/orgfiles/Inbox.org"))))
+             (tags-todo "+{.+}-@home-@work" ;Tasks other than home or work tasks
                         ((org-agenda-overriding-header "🟢💡 OTHER TASKS")
-                        (org-agenda-files '("~/orgfiles/Inbox.org"))))))
+                         (org-agenda-files '("~/orgfiles/Inbox.org"))))))
 
-          ("n" "Next Tasks"
-           ((todo "NEXT"
-                  ((org-agenda-overriding-header "NEXT TASKS")))))
-          ("U" "Untagged inbox items"
-           ((todo "TODO"
-                  ((org-agenda-overriding-header "UNTAGGED TODOS IN INBOX")
-                   (org-agenda-files '("~/orgfiles/Inbox.org"))
-                   (org-agenda-skip-function
-                    (lambda ()
-                      (let ((tags (org-get-tags)))
-                        (when tags (save-excursion (org-end-of-subtree t t))))))))))
-          ("W" "Work Tasks"
-           ((tags-todo "-DONE+pmx&today"
-                       ((org-agenda-overriding-header "TODAY'S TASKS FOR PMX")
-                        (org-agenda-files '("~/orgfiles/Inbox.org"))))
-            (tags-todo "-DONE+cis&today"
-                       ((org-agenda-overriding-header "TODAY'S TASKS FOR BEG CIS")
-                        (org-agenda-files '("~/orgfiles/Inbox.org"))))
-            (tags-todo "-DONE-today+cis|+pmx"
-                       ((org-agenda-overriding-header "OTHER TASKS")
-                        (org-agenda-files '("~/orgfiles/Inbox.org"))))))
+           ("n" "Next Tasks"
+            ((todo "NEXT"
+                   ((org-agenda-overriding-header "NEXT TASKS")))))
+           ("U" "Untagged inbox items"
+            ((todo "TODO"
+                   ((org-agenda-overriding-header "UNTAGGED TODOS IN INBOX")
+                    (org-agenda-files '("~/orgfiles/Inbox.org"))
+                    (org-agenda-skip-function
+                     (lambda ()
+                       (let ((tags (org-get-tags)))
+                         (when tags (save-excursion (org-end-of-subtree t t))))))))))
+           ("W" "Work Tasks"
+            ((tags-todo "-DONE+pmx"
+                        ((org-agenda-overriding-header "TODAY'S TASKS FOR PMX")
+                         (org-agenda-files '("~/orgfiles/Inbox.org"))))
+             (tags-todo "-DONE+cis"
+                        ((org-agenda-overriding-header "TODAY'S TASKS FOR BEG CIS")
+                         (org-agenda-files '("~/orgfiles/Inbox.org"))))
+             (tags-todo "-DONE-today+cis|+pmx"
+                        ((org-agenda-overriding-header "OTHER TASKS")
+                         (org-agenda-files '("~/orgfiles/Inbox.org"))))))
 
-          ("h" "Apartment tasks"
-           ((tags-todo "SCHEDULED=\"\"&+DEADLINE=\"\""
-                       ((org-agenda-overriding-header "UNSCHEDULED APARTMENT TASKS")
-                        (org-agenda-use-time-grid t)
-                        (org-agenda-prefix-format "             ")
-                        (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
-            (tags-todo "SCHEDULED<>\"\"&+DEADLINE=\"\""
-                       ((org-agenda-overriding-header "SCHEDULED APARTMENT TASKS")
-                        (org-agenda-prefix-format " %(let ((scheduled (org-get-scheduled-time (point)))) (if scheduled (format-time-string \"%Y-%m-%d\" scheduled) \"\")) %i ")
-                        (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
-            (tags-todo "+DEADLINE<>\"\""
-                       ((org-agenda-overriding-header "Deadline")
-                        (org-agenda-prefix-format " %(let ((deadline (org-get-deadline-time (point)))) (if deadline (format-time-string \"%Y-%m-%d\" deadline) \"\")) %i ")
-                        (org-agenda-files '("~/share/Apartment_LB/notes.org"))))))))
+           ("h" "Apartment tasks"
+            ((tags-todo "SCHEDULED=\"\"&+DEADLINE=\"\""
+                        ((org-agenda-overriding-header "UNSCHEDULED APARTMENT TASKS")
+                         (org-agenda-use-time-grid t)
+                         (org-agenda-prefix-format "             ")
+                         (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
+             (tags-todo "SCHEDULED<>\"\"&+DEADLINE=\"\""
+                        ((org-agenda-overriding-header "SCHEDULED APARTMENT TASKS")
+                         (org-agenda-prefix-format " %(let ((scheduled (org-get-scheduled-time (point)))) (if scheduled (format-time-string \"%Y-%m-%d\" scheduled) \"\")) %i ")
+                         (org-agenda-files '("~/share/Apartment_LB/notes.org"))))
+             (tags-todo "+DEADLINE<>\"\""
+                        ((org-agenda-overriding-header "Deadline")
+                         (org-agenda-prefix-format " %(let ((deadline (org-get-deadline-time (point)))) (if deadline (format-time-string \"%Y-%m-%d\" deadline) \"\")) %i ")
+                         (org-agenda-files '("~/share/Apartment_LB/notes.org"))))))))
 
 #+end_src
 ** Org babel
