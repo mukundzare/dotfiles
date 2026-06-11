@@ -1823,7 +1823,7 @@ I don't need to keep certain buffers like help mode open when the buffer is buri
     (dolist (key-map '(helpful-mode-map
                        calendar-mode-map
                        help-mode-map))
-      (evil-collection-define-key 'normal key-map "q" 'kill-this-buffer)))
+      (evil-collection-define-key 'normal key-map "q" 'kill-current-buffer)))
 #+end_src
 *** Ibuffer
 #+begin_src emacs-lisp
