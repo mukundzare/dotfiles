@@ -3266,7 +3266,19 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
   (add-to-list 'which-func-functions 'mz/plw-method-which-func)
 
 #+end_src
-* EWW
+* Browser
+** Spookfox
+#+begin_src emacs-lisp
+(use-package spookfox
+  :straight
+  (spookfox :type git
+            :host github
+            :repo "bitspook/spookfox"
+            :files ("lisp/*.el" "lisp/apps/*.el"))
+  :config
+  (spookfox-start-server))
+#+end_src
+** EWW
 #+begin_src emacs-lisp
   (use-package eww
     :init (setq shr-max-width 80)
