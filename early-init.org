@@ -2,6 +2,11 @@
 #+PROPERTY: header-args:emacs-lisp :tangle ./early-init.el :mkdirp yes
 #+HTML_HEAD: <style>pre.src{background :#343131 ;color:white;} </style>
 
+* Lexical binding
+#+begin_src emacs-lisp
+;;; -*- lexical-binding: t; -*-
+#+end_src
+
 * Garbage Collection
 #+begin_src emacs-lisp
 (setq gc-cons-threshold 100000000)

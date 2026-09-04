@@ -1944,8 +1944,19 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 ** Dimmer
 #+begin_src emacs-lisp
   (use-package dimmer
-    :config (dimmer-mode 1)
-    (setq fraction 0.6))
+    :config
+    (setq dimmer-fraction 0.6)
+    ;; Some faces (e.g. `whitespace-page-delimiter') use the legacy symbol
+    ;; `foreground-color' as an attribute color; dimmer passes it straight to
+    ;; `color-defined-p', which demands a string.
+    (define-advice dimmer--dim-face-attribute
+        (:around (orig face attribute target frac) mz/only-string-colors)
+      (let ((value (face-attribute face attribute nil t)))
+        (when (or (stringp value)
+                  (not (and (listp value) (plist-member value :color)))
+                  (stringp (plist-get value :color)))
+          (funcall orig face attribute target frac))))
+    (dimmer-mode 1))
 
 #+end_src
 ** Focus
@@ -2356,7 +2367,9 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
 #+begin_src emacs-lisp
   (use-package bug-reference
     :hook ((prog-mode . bug-reference-prog-mode)
-           (org-mode . bug-reference-mode)))
+           (org-mode . bug-reference-mode))
+    :config (setq bug-reference-bug-regexp "\\(\\b\\)\\([A-Za-z]+-[0-9]+\\)\\b"
+                  bug-reference-url-format "https://rb-tracker.bosch.com/tracker02/browse/%s"))
 #+end_src
 ** Suggest
 “Hey $COLLEAGUE, is there any function that takes this list and returns a list like this?”
@@ -2473,7 +2486,8 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
     :straight t
     :config
     (pdf-tools-install)
-    (setq pdf-view-display-size 'fit-width))
+    (setq pdf-view-display-size 'fit-width)
+    :hook (pdf-view-mode . (lambda () (display-line-numbers-mode 0))))
 #+end_src
 ** EBook reader (nov.el)
 #+begin_src emacs-lisp
@@ -2629,7 +2643,8 @@ Prettify symbols mode, a built-in mode for displaying sequences of characters as
   (use-package restclient
     :straight t
     :init
-    (add-to-list 'auto-mode-alist '("\\.restclient" . restclient-mode)))
+    (add-to-list 'auto-mode-alist '("\\.restclient" . restclient-mode))
+    :config (setq restclient-enable-eval t))
 #+end_src
 *** Project management
 #+begin_src emacs-lisp
@@ -3233,7 +3248,7 @@ Add an overlay for the prompts:
            "*javascript-evaluator*")
       (js-evaluator-mode)))
 
-  (add-to-list  'fi:lisp-listener-mode-hook #'opx2-js-evaluator-mode-switch t)
+  ;(add-to-list  'fi:lisp-listener-mode-hook #'opx2-js-evaluator-mode-switch t)
 #+end_src
 ** Mode override
 Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
@@ -3267,17 +3282,6 @@ Override the pjs-mode to use the opx2-js-mode as pjs mode is shit.
 
 #+end_src
 * Browser
-** Spookfox
-#+begin_src emacs-lisp
-(use-package spookfox
-  :straight
-  (spookfox :type git
-            :host github
-            :repo "bitspook/spookfox"
-            :files ("lisp/*.el" "lisp/apps/*.el"))
-  :config
-  (spookfox-start-server))
-#+end_src
 ** EWW
 #+begin_src emacs-lisp
   (use-package eww
